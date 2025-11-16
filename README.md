@@ -2,6 +2,13 @@
 
 엑셀 형태의 입력 시트와 조회 페이지를 제공하는 웹 애플리케이션입니다.
 
+## 주요 기술 스택
+
+- **Frontend**: HTML, CSS, JavaScript (ES6 Modules)
+- **Backend**: Node.js, Express
+- **Database**: Firebase Firestore
+- **Deployment**: Firebase Hosting (예정)
+
 ## 기능
 
 - **입력 페이지**: 17개 열을 가진 테이블에서 G, I, J, K, L, M 열에 숫자를 입력
@@ -56,25 +63,34 @@ http://localhost:3000/input.html
 3. P열은 결과값과 함께 M값이 표시됨
 4. Q열은 "o" 표시와 함께 L값이 표시됨
 
+## Firebase 설정
+
+이 프로젝트는 Firebase Firestore를 사용하여 데이터를 저장합니다.
+
+1. Firebase Console에서 프로젝트 생성
+2. `public/firebase-config.js` 파일에 Firebase 설정 정보 입력
+3. Firestore Database 생성 및 보안 규칙 설정
+
 ## 파일 구조
 
 ```
 snac/
 ├── public/
-│   ├── input.html      # 입력 페이지
-│   ├── view.html       # 조회 페이지
-│   ├── options.html    # 옵션 설정 페이지
-│   ├── styles.css      # 공통 스타일
-│   ├── app.js          # 공통 JavaScript (API 호출, 계산 로직)
-│   ├── input.js        # 입력 페이지 JavaScript
-│   ├── view.js         # 조회 페이지 JavaScript
-│   └── options.js      # 옵션 설정 페이지 JavaScript
-├── data/
-│   ├── database.json   # 데이터 저장소
-│   └── options.json    # 옵션 설정 저장소
-├── server.js           # Express 서버
-├── package.json        # 프로젝트 설정
-└── README.md          # 이 파일
+│   ├── input.html          # 입력 페이지
+│   ├── view.html           # 조회 페이지
+│   ├── login.html          # 로그인 페이지
+│   ├── options.html        # 옵션 설정 페이지
+│   ├── styles.css          # 공통 스타일
+│   ├── app.js              # 공통 JavaScript (Firebase 연동, 계산 로직)
+│   ├── firebase-config.js  # Firebase 설정
+│   ├── input.js            # 입력 페이지 JavaScript
+│   ├── view.js             # 조회 페이지 JavaScript
+│   ├── login.js            # 로그인 페이지 JavaScript
+│   └── options.js          # 옵션 설정 페이지 JavaScript
+├── server.js               # Express 서버
+├── package.json            # 프로젝트 설정
+├── .gitignore              # Git 제외 파일 목록
+└── README.md               # 이 파일
 ```
 
 ## 계산 로직
