@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Data files (민감한 정보가 포함될 수 있음)
+data/
+*.json
+!package.json
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build files
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Excel and image files (선택사항 - 필요시 제거)
+*.xlsx
+*.xls
+*.jpg
+*.jpeg
+*.png
+*.gif
+
