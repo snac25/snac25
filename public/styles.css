@@ -60,9 +60,16 @@ table {
   border-collapse: collapse;
   margin: 20px 0;
   font-size: 12px;
-  table-layout: fixed;
+  table-layout: fixed !important;
   background: #ffffff;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+#inputTable {
+  table-layout: fixed !important;
+  border: 3px solid #000 !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
 }
 
 th, td {
@@ -115,38 +122,49 @@ td {
 }
 
 .excel-cell.selected {
-  outline: 2px solid #0078d4;
-  outline-offset: -2px;
-  background-color: #e7f3ff;
+  outline: none !important; /* 테두리 제거 */
+  outline-offset: 0;
+  background-color: #ffffcc !important; /* 노란색 */
   z-index: 1;
 }
 
-/* 열 너비 조정 (엑셀 스타일 - 18개 열, 비율: 1:1.5:2.7:2.7:2.7:1.7:1.5:1.7:1.5:1.5:1.5:1.5:1.5:1.7:1.7:3:2:3) */
-/* 전체 비율 합: 35.2 */
-#inputTable th:nth-child(1), #inputTable td:nth-child(1) { width: 2.84%; } /* 번호 (1/35.2) */
-#inputTable th:nth-child(2), #inputTable td:nth-child(2) { width: 4.26%; } /* 시간 (1.5/35.2) */
-#inputTable th:nth-child(3), #inputTable td:nth-child(3) { width: 7.67%; } /* 리그 (2.7/35.2) */
-#inputTable th:nth-child(4), #inputTable td:nth-child(4) { width: 7.67%; } /* 홈팀 (2.7/35.2) */
-#inputTable th:nth-child(5), #inputTable td:nth-child(5) { width: 7.67%; } /* 원정팀 (2.7/35.2) */
-#inputTable th:nth-child(6), #inputTable td:nth-child(6) { width: 8.52%; } /* 승정보 (4.26% * 2) */
-#inputTable th:nth-child(7), #inputTable td:nth-child(7) { width: 8.52%; } /* 승(기준배당) (4.26% * 2) */
-#inputTable th:nth-child(8), #inputTable td:nth-child(8) { width: 8.52%; } /* 오버정보 (4.26% * 2) */
-#inputTable th:nth-child(9), #inputTable td:nth-child(9) { width: 8.52%; } /* 오버(기준배당) (4.26% * 2) */
-#inputTable th:nth-child(10), #inputTable td:nth-child(10) { width: 4.26%; } /* 승(75) (1.5/35.2) */
-#inputTable th:nth-child(11), #inputTable td:nth-child(11) { width: 4.26%; } /* 오버(75) (1.5/35.2) */
-#inputTable th:nth-child(12), #inputTable td:nth-child(12) { width: 4.26%; } /* 승(현배당) (1.5/35.2) */
-#inputTable th:nth-child(13), #inputTable td:nth-child(13) { width: 4.26%; } /* 오버(현배당) (1.5/35.2) */
-#inputTable th:nth-child(14), #inputTable td:nth-child(14) { width: 4.83%; } /* 승(하락수치) (1.7/35.2) */
-#inputTable th:nth-child(15), #inputTable td:nth-child(15) { width: 4.83%; } /* 오버(하락수치) (1.7/35.2) */
-#inputTable th:nth-child(16), #inputTable td:nth-child(16) { width: 8.52%; } /* 승(판정) (3/35.2) */
-#inputTable th:nth-child(17), #inputTable td:nth-child(17) { width: 5.68%; } /* 오버(판정) (2/35.2) */
-#inputTable th:nth-child(18), #inputTable td:nth-child(18) { width: 8.52%; } /* 조작 (3/35.2) */
+#inputTable .excel-cell.selected {
+  background-color: #ffffcc !important; /* 노란색 */
+}
 
-/* 하락수치와 판정 열 데이터 셀 배경색 제거 (14, 15, 16, 17번째 열) */
-#inputTable td:nth-child(14), #inputTable td:nth-child(15),
-#inputTable td:nth-child(16), #inputTable td:nth-child(17) {
+#inputTable td.excel-cell.selected {
+  background-color: #ffffcc !important; /* 노란색 */
+}
+
+/* 열 너비 조정 - 비율: 2.8:4.2:10:10:10:4:4.5:4:4.5:4.5:4.5:4.5:4.5:4.5:4.5:8:5:6 */
+/* 전체 비율 합: 106.3 */
+#inputTable th:nth-child(1), #inputTable td:nth-child(1) { width: 2.63% !important; } /* 번호 (2.8/106.3) */
+#inputTable th:nth-child(2), #inputTable td:nth-child(2) { width: 3.95% !important; } /* 시간 (4.2/106.3) */
+#inputTable th:nth-child(3), #inputTable td:nth-child(3) { width: 9.41% !important; } /* 리그 (10/106.3) */
+#inputTable th:nth-child(4), #inputTable td:nth-child(4) { width: 9.41% !important; } /* 홈팀 (10/106.3) */
+#inputTable th:nth-child(5), #inputTable td:nth-child(5) { width: 9.41% !important; } /* 원정팀 (10/106.3) */
+/* 6-18번째 열 너비 설정 - 비율: 4:4.5:4:4.5:4.5:4.5:4.5:4.5:4.5:4.5:8:5:6 */
+#inputTable th:nth-child(6), #inputTable td:nth-child(6) { width: 3.77% !important; } /* 승정보 (4/106.3) */
+#inputTable th:nth-child(7), #inputTable td:nth-child(7) { width: 4.24% !important; } /* 승-G열 (4.5/106.3) */
+#inputTable th:nth-child(8), #inputTable td:nth-child(8) { width: 3.77% !important; } /* 오버정보 (4/106.3) */
+#inputTable th:nth-child(9), #inputTable td:nth-child(9) { width: 4.24% !important; } /* 오버-I열 (4.5/106.3) */
+#inputTable th:nth-child(10), #inputTable td:nth-child(10) { width: 4.24% !important; } /* 승-J열 (4.5/106.3) */
+#inputTable th:nth-child(11), #inputTable td:nth-child(11) { width: 4.24% !important; } /* 오버-K열 (4.5/106.3) */
+#inputTable th:nth-child(12), #inputTable td:nth-child(12) { width: 4.24% !important; } /* 승-L열 (4.5/106.3) */
+#inputTable th:nth-child(13), #inputTable td:nth-child(13) { width: 4.24% !important; } /* 오버-M열 (4.5/106.3) */
+#inputTable th:nth-child(14), #inputTable td:nth-child(14) { width: 4.24% !important; } /* 승-하락수치 (4.5/106.3) */
+#inputTable th:nth-child(15), #inputTable td:nth-child(15) { width: 4.24% !important; } /* 오버-하락수치 (4.5/106.3) */
+#inputTable th:nth-child(16), #inputTable td:nth-child(16) { width: 7.53% !important; } /* 오버-등급 (8/106.3) */
+#inputTable th:nth-child(17), #inputTable td:nth-child(17) { width: 4.71% !important; } /* 승-등급 (5/106.3) */
+#inputTable th:nth-child(18), #inputTable td:nth-child(18) { width: 5.64% !important; } /* 기능 (6/106.3) */
+
+/* 하락수치와 판정 열 데이터 셀 배경색 제거 (14, 15번째 열만) */
+#inputTable td:nth-child(14), #inputTable td:nth-child(15) {
   background-color: #ffffff;
 }
+
+/* P열과 Q열은 등급 색상이 적용되도록 제외 - 더 구체적인 선택자 사용 */
+/* 등급별 배경색은 .grade-P-A, .grade-P-B 등의 클래스에서 직접 정의 */
 
 th {
   background-color: #4CAF50;
@@ -185,9 +203,120 @@ input[type="number"], input[type="text"] {
   background: transparent;
 }
 
+/* A열 (번호) - 16px, 굵고 찐하게, 헤더와 동일한 배경색 */
+#inputTable td:nth-child(1) {
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  background-color: #f2f2f2 !important; /* 헤더와 동일한 배경색 */
+}
+
+/* B열 (시간) - 16px, 굵고 찐하게 */
+#inputTable td:nth-child(2) input {
+  font-size: 16px !important;
+  font-weight: 900 !important;
+}
+
+/* C~E열 (리그, 홈팀, 원정팀) - 12px */
+#inputTable td:nth-child(3) input,
+#inputTable td:nth-child(4) input,
+#inputTable td:nth-child(5) input {
+  font-size: 12px !important;
+}
+
+/* G, I, J, K, L, M열 (7, 9, 10, 11, 12, 13번째 열) - 숫자 입력 중앙 정렬 */
+#inputTable td:nth-child(7) input,
+#inputTable td:nth-child(9) input,
+#inputTable td:nth-child(10) input,
+#inputTable td:nth-child(11) input,
+#inputTable td:nth-child(12) input,
+#inputTable td:nth-child(13) input {
+  text-align: center !important;
+  padding: 0 !important; /* padding 제거하여 완전한 중앙 정렬 */
+  direction: ltr !important; /* 왼쪽에서 오른쪽 방향 명시 */
+  width: 100% !important;
+  box-sizing: border-box !important;
+  /* 숫자 입력 필드 스피너(화살표) 제거 */
+  -moz-appearance: textfield !important; /* Firefox */
+}
+
+/* Chrome, Safari, Edge에서 숫자 입력 필드 스피너(화살표) 제거 */
+#inputTable td:nth-child(7) input::-webkit-outer-spin-button,
+#inputTable td:nth-child(7) input::-webkit-inner-spin-button,
+#inputTable td:nth-child(9) input::-webkit-outer-spin-button,
+#inputTable td:nth-child(9) input::-webkit-inner-spin-button,
+#inputTable td:nth-child(10) input::-webkit-outer-spin-button,
+#inputTable td:nth-child(10) input::-webkit-inner-spin-button,
+#inputTable td:nth-child(11) input::-webkit-outer-spin-button,
+#inputTable td:nth-child(11) input::-webkit-inner-spin-button,
+#inputTable td:nth-child(12) input::-webkit-outer-spin-button,
+#inputTable td:nth-child(12) input::-webkit-inner-spin-button,
+#inputTable td:nth-child(13) input::-webkit-outer-spin-button,
+#inputTable td:nth-child(13) input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* 특정 열 사이 경계선 굵게 (A-B, E-F, I-J, K-L) - 바디 기준으로 헤더까지 연속 적용 */
+/* A열과 B열 사이 (1번째 열과 2번째 열 사이) */
+#inputTable thead tr:first-child th:nth-child(1),
+#inputTable tbody td:nth-child(1) {
+  border-right: 3px solid #000 !important;
+}
+
+/* E열과 F열 사이 (5번째 열과 6번째 열 사이) */
+#inputTable thead tr:first-child th:nth-child(5),
+#inputTable tbody td:nth-child(5) {
+  border-right: 3px solid #000 !important;
+}
+
+/* I열과 J열 사이 (9번째 열과 10번째 열 사이) */
+/* 첫 번째 헤더 행: 기준배당(colspan=4)의 마지막 */
+#inputTable thead tr:first-child th:nth-child(6),
+#inputTable thead tr:nth-child(2) th:nth-child(4),
+#inputTable tbody td:nth-child(9) {
+  border-right: 5px solid #000 !important;
+}
+
+/* K열과 L열 사이 (11번째 열과 12번째 열 사이) */
+/* 첫 번째 헤더 행: 75(colspan=2)의 마지막 */
+#inputTable thead tr:first-child th:nth-child(7),
+#inputTable thead tr:nth-child(2) th:nth-child(6),
+#inputTable tbody td:nth-child(11) {
+  border-right: 3px solid #000 !important;
+}
+
+/* M열과 N열 사이 (13번째 열과 14번째 열 사이) */
+/* 첫 번째 헤더 행: 현배당(colspan=2)의 마지막 */
+#inputTable thead tr:first-child th:nth-child(8),
+#inputTable thead tr:nth-child(2) th:nth-child(8),
+#inputTable tbody td:nth-child(13) {
+  border-right: 3px solid #000 !important;
+}
+
+/* O열과 P열 사이 (15번째 열과 16번째 열 사이) */
+/* 첫 번째 헤더 행: 하락수치(colspan=2)의 마지막 */
+#inputTable thead tr:first-child th:nth-child(9),
+#inputTable thead tr:nth-child(2) th:nth-child(10),
+#inputTable tbody td:nth-child(15) {
+  border-right: 3px solid #000 !important;
+}
+
+/* Q열과 R열 사이 (17번째 열과 18번째 열 사이) */
+/* 첫 번째 헤더 행: 등급(colspan=2)의 마지막 */
+#inputTable thead tr:first-child th:nth-child(10),
+#inputTable thead tr:nth-child(2) th:nth-child(12),
+#inputTable tbody td:nth-child(17) {
+  border-right: 3px solid #000 !important;
+}
+
 input[type="number"]:focus, input[type="text"]:focus {
-  outline: 1px solid #007bff;
-  background: #fffdf0;
+  outline: none !important; /* 테두리 제거 */
+  background: #ffffcc !important; /* 노란색 */
+}
+
+#inputTable input[type="number"]:focus,
+#inputTable input[type="text"]:focus {
+  background: #ffffcc !important; /* 노란색 */
 }
 
 select {
@@ -201,8 +330,12 @@ select {
 }
 
 select:focus {
-  outline: 1px solid #007bff;
-  background: #fffdf0;
+  outline: none !important; /* 테두리 제거 */
+  background: #ffffcc !important; /* 노란색 */
+}
+
+#inputTable select:focus {
+  background: #ffffcc !important; /* 노란색 */
 }
 
 small {
@@ -235,33 +368,71 @@ small::before {
   font-weight: bold;
 }
 
-/* G, I, J, K, L, M 열 옅은 주황색 배경 */
+/* G, I, J, K, L, M 열 옅은 주황색 배경 및 동일한 너비 */
 .orange-input-cell {
   background-color: #fff5e6;
 }
+
+/* 7, 10, 12번째 열 (G, J, L) 옅은 하늘색 배경 */
+#inputTable tbody td:nth-child(7),
+#inputTable tbody td:nth-child(10),
+#inputTable tbody td:nth-child(12) {
+  background-color: #e6f7ff !important;
+}
+
+/* 기준배당, 75, 현배당, 하락수치, 판정 열 너비를 1.8:1:1:1:1.5 비율로 설정 - 중복 제거 (위에서 이미 설정됨) */
 
 .grade-cell {
   font-weight: bold;
 }
 
-.grade-A {
-  background-color: #ffb3b3;
+/* P열 등급 색상 (대문자) - 글자색은 검은색, 배경색만 등급별 적용 */
+.grade-P-A {
+  background-color: #ff6b6b !important; /* 붉은색 */
+  color: #000 !important; /* 검은색 */
 }
 
-.grade-B {
-  background-color: #fff3b3;
+.grade-P-B {
+  background-color: #ffd93d !important; /* 노란색 */
+  color: #000 !important; /* 검은색 */
 }
 
-.grade-C {
-  background-color: #b3d1ff;
+.grade-P-C {
+  background-color: #4d96ff !important; /* 파란색 */
+  color: #000 !important; /* 검은색 */
 }
 
-.grade-D {
-  background-color: #e0e0e0;
+.grade-P-D {
+  background-color: #95e1d3 !important; /* 연두색 */
+  color: #000 !important; /* 검은색 */
 }
 
 .grade-Q {
-  background-color: #b3d1ff;
+  background-color: transparent !important; /* 배경색 없음 */
+  color: #000 !important; /* 검은색 */
+  font-weight: 900 !important; /* 매우 굵게 */
+  font-size: 1.8em !important; /* 더 크게 */
+}
+
+/* Q열 등급 색상 */
+.grade-Q-A {
+  background-color: #ff6b6b; /* 붉은색 */
+  color: white;
+}
+
+.grade-Q-B {
+  background-color: #ffd93d; /* 노란색 */
+  color: #333;
+}
+
+.grade-Q-C {
+  background-color: #4d96ff; /* 파란색 */
+  color: white;
+}
+
+.grade-Q-D {
+  background-color: #95e1d3; /* 연두색 */
+  color: #333;
 }
 
 .btn-box {
@@ -289,6 +460,10 @@ small::before {
   background: #ff6666;
 }
 
+.hide-btn {
+  background: #6c757d;
+}
+
 .excel-cell.selected input[type="number"]:focus,
 .excel-cell.selected input[type="text"]:focus {
   background-color: transparent;
@@ -296,21 +471,21 @@ small::before {
 
 /* 선택된 셀 스타일 */
 input.selected {
-  outline: 2px solid #007bff !important;
-  background-color: #e3f2fd !important;
+  outline: none !important; /* 테두리 제거 */
+  background-color: #ffffcc !important; /* 노란색 */
 }
 
 /* 드래그 선택된 셀 스타일 */
 input.cell-selected,
 select.cell-selected {
-  background-color: #b3d9ff !important;
-  outline: 2px solid #0078d4;
-  outline-offset: -2px;
+  background-color: #ffffcc !important; /* 노란색 */
+  outline: none !important; /* 테두리 제거 */
+  outline-offset: 0;
 }
 
 input.selected.cell-selected {
-  background-color: #0078d4 !important;
-  color: white;
+  background-color: #ffffcc !important; /* 노란색 */
+  color: #000; /* 검은색 텍스트 */
 }
 
 .readonly-cell {
@@ -413,6 +588,20 @@ input.selected.cell-selected {
 
 .btn:hover {
   background-color: #45a049;
+}
+
+.btn-large {
+  padding: 15px 30px;
+  font-size: 24px;
+  border-radius: 6px;
+  margin: 0;
+}
+
+.sheet-buttons {
+  display: flex;
+  gap: 15px;
+  margin: 15px 0;
+  align-items: center;
 }
 
 .btn-secondary {
@@ -693,6 +882,15 @@ body.view-page::before {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+/* 조회 페이지 테이블 열 너비: 1:1.6:1.6:1.6:2.7:1.5 비율 */
+/* 전체 비율 합: 1 + 1.6 + 1.6 + 1.6 + 2.7 + 1.5 = 10 */
+#viewTable th:nth-child(1), #viewTable td:nth-child(1) { width: 10% !important; } /* 시간 (1/10) */
+#viewTable th:nth-child(2), #viewTable td:nth-child(2) { width: 16% !important; } /* 리그 (1.6/10) */
+#viewTable th:nth-child(3), #viewTable td:nth-child(3) { width: 16% !important; } /* 홈팀 (1.6/10) */
+#viewTable th:nth-child(4), #viewTable td:nth-child(4) { width: 16% !important; } /* 원정팀 (1.6/10) */
+#viewTable th:nth-child(5), #viewTable td:nth-child(5) { width: 27% !important; } /* 등급 (2.7/10) */
+#viewTable th:nth-child(6), #viewTable td:nth-child(6) { width: 15% !important; } /* 승여부 (1.5/10) */
+
 .view-page #viewTable thead th {
   color: #ffffff;
   font-weight: bold;
@@ -742,7 +940,8 @@ body.view-page::before {
 .view-page #viewTable tbody td:nth-child(3),
 .view-page #viewTable tbody td:nth-child(4) {
   color: #000000;
-  font-weight: 600;
+  font-weight: 700 !important; /* 더 굵게 */
+  font-size: 1.1em !important; /* 더 크게 */
 }
 
 .view-page #viewTable tbody td:last-child {

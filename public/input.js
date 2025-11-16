@@ -8,6 +8,41 @@ let pasteStartCell = null;
 let isDragging = false;
 let selectedCells = new Set(); // 선택된 셀들을 Set으로 관리
 
+// 숨김된 행 ID 목록 관리
+function getHiddenRowIds() {
+  try {
+    const hiddenStr = localStorage.getItem('inputHiddenRowIds');
+    return hiddenStr ? JSON.parse(hiddenStr) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function setHiddenRowIds(ids) {
+  try {
+    localStorage.setItem('inputHiddenRowIds', JSON.stringify(ids));
+  } catch (error) {
+    console.warn('localStorage 저장 실패:', error);
+  }
+}
+
+function addHiddenRowId(id) {
+  const hiddenIds = getHiddenRowIds();
+  if (!hiddenIds.includes(id)) {
+    hiddenIds.push(id);
+    setHiddenRowIds(hiddenIds);
+  }
+}
+
+function removeHiddenRowId(id) {
+  const hiddenIds = getHiddenRowIds();
+  const index = hiddenIds.indexOf(id);
+  if (index > -1) {
+    hiddenIds.splice(index, 1);
+    setHiddenRowIds(hiddenIds);
+  }
+}
+
 // 페이지 로드 시 초기화
 window.addEventListener('DOMContentLoaded', async () => {
   await loadOptionsData();
@@ -243,7 +278,7 @@ function addRow(rowNum) {
   tr.appendChild(qTd);
   tr.qTd = qTd;
   
-  // 조작 (삽입/삭제 버튼)
+  // 조작 (삽입/삭제/숨김 버튼)
   const opTd = document.createElement('td');
   const btnBox = document.createElement('div');
   btnBox.className = 'btn-box';
@@ -257,14 +292,103 @@ function addRow(rowNum) {
   delBtn.textContent = '삭제';
   delBtn.className = 'del-btn';
   delBtn.onclick = () => {
+    // A열을 제외한 모든 열에 내용이 있는지 확인
+    const hasContent = () => {
+      // 입력 필드 확인 (B, C, D, E, F, G, H, I, J, K, L, M)
+      const inputCols = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+      for (const col of inputCols) {
+        if (tr.refs[col] && tr.refs[col].value && tr.refs[col].value.trim() !== '') {
+          return true;
+        }
+      }
+      
+      // 계산된 값 확인 (N, O, P, Q)
+      if (tr.nTd && tr.nTd.textContent && tr.nTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.oTd && tr.oTd.textContent && tr.oTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.pTd && tr.pTd.textContent && tr.pTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.qTd && tr.qTd.textContent && tr.qTd.textContent.trim() !== '') {
+        return true;
+      }
+      
+      return false;
+    };
+    
+    // 내용이 있으면 확인 메시지 표시
+    if (hasContent()) {
+      if (!confirm('삭제하겠습니까?')) {
+        return; // No를 선택하면 삭제 취소
+      }
+    }
+    
+    // Yes를 선택하거나 내용이 없으면 삭제
     tr.remove();
     reindex();
   };
   
+  const hideBtn = document.createElement('button');
+  hideBtn.textContent = '숨김';
+  hideBtn.className = 'hide-btn';
+  hideBtn.onclick = () => {
+    // 행의 고유 ID 생성 (B, C, D, E 값을 조합)
+    const rowId = `${tr.refs.B?.value || ''}_${tr.refs.C?.value || ''}_${tr.refs.D?.value || ''}_${tr.refs.E?.value || ''}`;
+    if (rowId !== '___') { // 빈 행이 아닌 경우만
+      const hiddenIds = getHiddenRowIds();
+      const isHidden = hiddenIds.includes(rowId);
+      
+      if (isHidden) {
+        // 숨김 해제
+        removeHiddenRowId(rowId);
+        hideBtn.textContent = '숨김';
+        hideBtn.style.opacity = '1';
+        opTd.style.backgroundColor = ''; // R열 배경색 제거
+      } else {
+        // 숨김 처리
+        addHiddenRowId(rowId);
+        hideBtn.textContent = '숨김됨';
+        hideBtn.style.opacity = '0.5';
+        opTd.style.backgroundColor = '#808080'; // R열 배경색 어둡게
+      }
+    }
+  };
+  tr.refs.hideBtn = hideBtn; // 숨김 버튼 참조 저장
+  tr.refs.opTd = opTd; // R열 참조 저장
+  
   btnBox.appendChild(insertBtn);
   btnBox.appendChild(delBtn);
+  btnBox.appendChild(hideBtn);
   opTd.appendChild(btnBox);
   tr.appendChild(opTd);
+  
+  // 행의 값이 변경될 때 숨김 상태 확인
+  const checkHideStatus = () => {
+    const rowId = `${tr.refs.B?.value || ''}_${tr.refs.C?.value || ''}_${tr.refs.D?.value || ''}_${tr.refs.E?.value || ''}`;
+    const hiddenIds = getHiddenRowIds();
+    if (hiddenIds.includes(rowId)) {
+      hideBtn.textContent = '숨김됨';
+      hideBtn.style.opacity = '0.5';
+      opTd.style.backgroundColor = '#808080'; // R열 배경색 어둡게
+    } else {
+      hideBtn.textContent = '숨김';
+      hideBtn.style.opacity = '1';
+      opTd.style.backgroundColor = ''; // R열 배경색 제거
+    }
+  };
+  
+  // B, C, D, E 값이 변경될 때마다 숨김 상태 확인
+  ['B', 'C', 'D', 'E'].forEach(key => {
+    if (tr.refs[key]) {
+      tr.refs[key].addEventListener('input', checkHideStatus);
+    }
+  });
+  
+  // 초기 숨김 상태 확인
+  setTimeout(checkHideStatus, 0);
   
   tbody.appendChild(tr);
   
@@ -319,13 +443,44 @@ function updateRow(tr) {
   };
   
   const pValue = calculatePColumn(rowData, currentOptions);
-  tr.pTd.textContent = pValue;
-  tr.pTd.className = 'grade-cell grade-' + (pValue || 'D');
+  tr.pTd.textContent = pValue ? pValue.toUpperCase() : '';
+  // P열 등급에 따른 색상 클래스 및 인라인 스타일 적용
+  if (pValue) {
+    const pGrade = pValue.toUpperCase();
+    tr.pTd.className = 'grade-cell grade-P-' + pGrade;
+    tr.pTd.style.color = '#000'; // 검은색 텍스트
+    // 등급별 배경색 직접 적용
+    if (pGrade === 'A') {
+      tr.pTd.style.backgroundColor = '#ff6b6b'; // 붉은색
+    } else if (pGrade === 'B') {
+      tr.pTd.style.backgroundColor = '#ffd93d'; // 노란색
+    } else if (pGrade === 'C') {
+      tr.pTd.style.backgroundColor = '#4d96ff'; // 파란색
+    } else if (pGrade === 'D') {
+      tr.pTd.style.backgroundColor = '#95e1d3'; // 연두색
+    }
+  } else {
+    tr.pTd.className = 'grade-cell';
+    tr.pTd.style.backgroundColor = '';
+    tr.pTd.style.color = '';
+  }
   
-  // Q열 계산 (옵션 기반)
+  // Q열 계산 (옵션 기반) - 체크 표시
   const qValue = calculateQColumn(rowData, currentOptions);
-  tr.qTd.textContent = qValue === 'o' ? 'o' : '';
+  tr.qTd.textContent = qValue === 'o' ? '✓' : '';
   tr.qTd.className = 'grade-cell' + (qValue === 'o' ? ' grade-Q' : '');
+  // Q열은 배경색 없이 체크 표시만 (크고 굵게)
+  if (qValue === 'o') {
+    tr.qTd.style.backgroundColor = '';
+    tr.qTd.style.color = '#000';
+    tr.qTd.style.fontWeight = '900';
+    tr.qTd.style.fontSize = '1.8em';
+  } else {
+    tr.qTd.style.backgroundColor = '';
+    tr.qTd.style.color = '';
+    tr.qTd.style.fontWeight = '';
+    tr.qTd.style.fontSize = '';
+  }
   
   // 데이터 업데이트
   if (tableData[tr.dataset.rowIndex]) {
@@ -961,6 +1116,23 @@ function loadFromLocalStorage() {
             if (item.K && item.K_time) restoreTime(row.refs.K, item.K_time);
             if (item.L && item.L_time) restoreTime(row.refs.L, item.L_time);
             if (item.M && item.M_time) restoreTime(row.refs.M, item.M_time);
+            
+            // 행의 값이 모두 로드된 후 숨김 상태 확인
+            setTimeout(() => {
+              if (row.refs.hideBtn && row.refs.opTd) {
+                const rowId = `${row.refs.B?.value || ''}_${row.refs.C?.value || ''}_${row.refs.D?.value || ''}_${row.refs.E?.value || ''}`;
+                const hiddenIds = getHiddenRowIds();
+                if (hiddenIds.includes(rowId)) {
+                  row.refs.hideBtn.textContent = '숨김됨';
+                  row.refs.hideBtn.style.opacity = '0.5';
+                  row.refs.opTd.style.backgroundColor = '#808080'; // R열 배경색 어둡게
+                } else {
+                  row.refs.hideBtn.textContent = '숨김';
+                  row.refs.hideBtn.style.opacity = '1';
+                  row.refs.opTd.style.backgroundColor = ''; // R열 배경색 제거
+                }
+              }
+            }, 0);
           }
           updateRow(row);
         });
@@ -1132,7 +1304,7 @@ function saveAccount(event) {
   // localStorage에 저장
   localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
   
-  alert('조회 페이지 계정이 저장되었습니다!');
+  alert('계정이 생성되었습니다!');
   closeAccountModal();
 }
 
@@ -1168,6 +1340,32 @@ window.onclick = function(event) {
   }
 }
 
+// 시트 전체 삭제
+function deleteAllRows() {
+  if (!confirm('정말로 시트의 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+    return;
+  }
+  
+  // 한 번 더 확인
+  if (!confirm('마지막 확인입니다. 모든 데이터를 삭제하시겠습니까?')) {
+    return;
+  }
+  
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  tableData = [];
+  
+  // 빈 행 30개 추가
+  for (let i = 1; i <= 30; i++) {
+    addRow(i);
+  }
+  
+  // localStorage도 초기화
+  localStorage.removeItem('inputSheetTemp');
+  
+  showAlert('시트의 모든 데이터가 삭제되었습니다.', 'success');
+}
+
 // 전역으로 함수들을 export (HTML의 onclick 속성에서 사용하기 위해)
 window.addRow = addRow;
 window.openOptions = openOptions;
@@ -1178,3 +1376,4 @@ window.closeAccountModal = closeAccountModal;
 window.closeAccountManageModal = closeAccountManageModal;
 window.saveAccount = saveAccount;
 window.deleteAccount = deleteAccount;
+window.deleteAllRows = deleteAllRows;

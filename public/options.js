@@ -73,9 +73,12 @@ async function saveOptionsData() {
     };
     
     await saveOptions(options);
-    showAlert('옵션이 저장되었습니다.');
+    showAlert('옵션이 저장되었습니다!', 'success');
+    // 추가 알림: alert로도 표시
+    alert('옵션이 저장되었습니다!');
   } catch (error) {
     showAlert('옵션 저장에 실패했습니다.', 'error');
+    alert('옵션 저장에 실패했습니다.');
   }
 }
 

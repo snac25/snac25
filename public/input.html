@@ -16,18 +16,17 @@
     </div>
 
     <div class="options-panel">
-      <button class="btn btn-secondary" onclick="openOptions()">옵션 설정 열기</button>
-      <button class="btn" onclick="addRow()">행 추가</button>
-      <button class="btn btn-secondary" onclick="saveAll()">저장하기</button>
-      <button class="btn btn-info" onclick="openAccountModal()">조회 계정 설정</button>
+      <button class="btn btn-secondary" onclick="openOptions()">옵션 설정</button>
+      <button class="btn btn-info" onclick="openAccountModal()">계정 생성</button>
       <button class="btn btn-warning" onclick="openAccountManageModal()">계정 관리</button>
+      <button class="btn btn-danger" onclick="deleteAllRows()">시트 전체 삭제</button>
     </div>
 
     <!-- 조회 계정 설정 모달 -->
     <div id="accountModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeAccountModal()">&times;</span>
-        <h2>조회 페이지 계정 설정</h2>
+        <h2>계정 생성</h2>
         <form id="accountForm" onsubmit="saveAccount(event)">
           <div class="form-group">
             <label for="accountId">아이디</label>
@@ -62,7 +61,31 @@
     </div>
 
     <h2>입력 시트</h2>
+    <div class="sheet-buttons">
+      <button class="btn btn-secondary btn-large" onclick="saveAll()">저장하기</button>
+      <button class="btn btn-large" onclick="addRow()">행 추가</button>
+    </div>
     <table id="inputTable">
+      <colgroup>
+        <col style="width: 2.63%;">  <!-- 1. 번호 (2.8/106.3) -->
+        <col style="width: 3.95%;">  <!-- 2. 시간 (4.2/106.3) -->
+        <col style="width: 9.41%;">  <!-- 3. 리그 (10/106.3) -->
+        <col style="width: 9.41%;">  <!-- 4. 홈팀 (10/106.3) -->
+        <col style="width: 9.41%;">  <!-- 5. 원정팀 (10/106.3) -->
+        <col style="width: 3.77%;">  <!-- 6. 승정보 (4/106.3) -->
+        <col style="width: 4.24%;">  <!-- 7. 승-G열 (4.5/106.3) -->
+        <col style="width: 3.77%;">  <!-- 8. 오버정보 (4/106.3) -->
+        <col style="width: 4.24%;">  <!-- 9. 오버-I열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 10. 승-J열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 11. 오버-K열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 12. 승-L열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 13. 오버-M열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 14. 승-하락수치 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 15. 오버-하락수치 (4.5/106.3) -->
+        <col style="width: 7.53%;">  <!-- 16. 오버-등급 (8/106.3) -->
+        <col style="width: 4.71%;">  <!-- 17. 승-등급 (5/106.3) -->
+        <col style="width: 5.64%;">  <!-- 18. 기능 (6/106.3) -->
+      </colgroup>
       <thead>
         <tr>
           <th rowspan="2">번호</th>
@@ -74,13 +97,13 @@
           <th colspan="2">75</th>
           <th colspan="2">현배당</th>
           <th colspan="2">하락수치</th>
-          <th colspan="2">판정</th>
-          <th rowspan="2">조작</th>
+          <th colspan="2">등급</th>
+          <th rowspan="2">기능</th>
         </tr>
         <tr>
-          <th>승정보</th>
+          <th>홈/원정</th>
           <th>승</th>
-          <th>오버정보</th>
+          <th>오버기준</th>
           <th>오버</th>
           <th>승</th>
           <th>오버</th>
@@ -88,8 +111,8 @@
           <th>오버</th>
           <th>승</th>
           <th>오버</th>
-          <th>승</th>
           <th>오버</th>
+          <th>승</th>
         </tr>
       </thead>
       <tbody id="tableBody">

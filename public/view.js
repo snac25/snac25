@@ -42,19 +42,25 @@ async function refreshData() {
     
     // 각 행에 대해 P, Q 계산하고 필터링
     const filteredData = [];
+    const hiddenIds = getHiddenRowIds(); // 입력 페이지에서 숨김 처리된 행 ID 목록
     
     tempData.forEach((item) => {
       // P, Q 열 계산
       const pValue = calculatePColumn(item, options);
       const qValue = calculateQColumn(item, options);
       
+      // 행의 고유 ID 생성 (B, C, D, E 값을 조합)
+      const rowId = `${item.B || ''}_${item.C || ''}_${item.D || ''}_${item.E || ''}`;
+      
       // 필터링 조건: P열이 a, b, c, d 중 하나이거나 Q열에 'o' 값이 있는 항목
-      if ((pValue && ['a', 'b', 'c', 'd'].includes(pValue)) || qValue === 'o') {
+      // 그리고 숨김 처리되지 않은 항목만
+      if (((pValue && ['a', 'b', 'c', 'd'].includes(pValue)) || qValue === 'o') && !hiddenIds.includes(rowId)) {
         filteredData.push({
           B: item.B || '',
           C: item.C || '',
           D: item.D || '',
           E: item.E || '',
+          F: item.F || '', // 승정보 (홈/원정)
           P: pValue,
           Q: qValue,
           M: item.M || '',
@@ -95,49 +101,90 @@ function displayData(data) {
     // B열
     const cellB = document.createElement('td');
     cellB.textContent = item.B || '';
+    cellB.style.fontSize = '1.1em';
+    cellB.style.fontWeight = '700';
     row.appendChild(cellB);
     
     // C열
     const cellC = document.createElement('td');
     cellC.textContent = item.C || '';
+    cellC.style.fontSize = '1.1em';
+    cellC.style.fontWeight = '700';
     row.appendChild(cellC);
     
-    // D열
+    // D열 (홈팀)
     const cellD = document.createElement('td');
     cellD.textContent = item.D || '';
+    cellD.style.fontSize = '1.1em';
+    cellD.style.fontWeight = '700';
+    // F열(승정보)이 '홈'이면 배경색 적용
+    if (item.F === '홈') {
+      cellD.style.backgroundColor = '#d0d0d0';
+    }
     row.appendChild(cellD);
     
-    // E열
+    // E열 (원정팀)
     const cellE = document.createElement('td');
     cellE.textContent = item.E || '';
+    cellE.style.fontSize = '1.1em';
+    cellE.style.fontWeight = '700';
+    // F열(승정보)이 '원정'이면 배경색 적용
+    if (item.F === '원정') {
+      cellE.style.backgroundColor = '#d0d0d0';
+    }
     row.appendChild(cellE);
     
     // P열 (결과값 + M값)
     const cellP = document.createElement('td');
     if (item.P && ['a', 'b', 'c', 'd'].includes(item.P)) {
       const mValue = item.M || '';
-      cellP.textContent = `${item.P} (M값: ${mValue})`;
-      cellP.style.fontWeight = 'bold';
-      cellP.style.color = '#4CAF50';
+      const pGrade = item.P.toUpperCase();
+      cellP.textContent = `${pGrade} ( ${mValue} )`;
+      cellP.style.fontWeight = '900'; /* 매우 굵게 */
+      cellP.style.fontSize = '1.8em'; /* 많이 크게 */
+      cellP.style.color = '#000'; /* 검은색 */
+      // P열 등급에 따른 배경색 적용
+      if (pGrade === 'A') {
+        cellP.style.backgroundColor = '#ff6b6b'; /* 붉은색 */
+      } else if (pGrade === 'B') {
+        cellP.style.backgroundColor = '#ffd93d'; /* 노란색 */
+      } else if (pGrade === 'C') {
+        cellP.style.backgroundColor = '#4d96ff'; /* 파란색 */
+      } else if (pGrade === 'D') {
+        cellP.style.backgroundColor = '#95e1d3'; /* 연두색 */
+      }
     } else {
       cellP.textContent = '';
     }
     row.appendChild(cellP);
     
-    // Q열 (o + L값)
+    // Q열 (체크 표시)
     const cellQ = document.createElement('td');
     if (item.Q === 'o') {
       const lValue = item.L || '';
-      cellQ.textContent = `o (L값: ${lValue})`;
-      cellQ.style.fontWeight = 'bold';
-      cellQ.style.color = '#2196F3';
+      cellQ.textContent = `✓ ( ${lValue} )`;
+      cellQ.style.fontWeight = '900'; /* 매우 굵게 */
+      cellQ.style.fontSize = '1.8em'; /* 더 크게 */
+      cellQ.style.color = '#000';
+      cellQ.style.backgroundColor = '#d0d0d0'; /* 진한 회색 */
     } else {
       cellQ.textContent = '';
+      cellQ.style.backgroundColor = '';
     }
     row.appendChild(cellQ);
     
     tbody.appendChild(row);
   });
+}
+
+// 입력 페이지에서 숨김 처리된 행 ID 목록 가져오기
+function getHiddenRowIds() {
+  try {
+    const hiddenStr = localStorage.getItem('inputHiddenRowIds');
+    return hiddenStr ? JSON.parse(hiddenStr) : [];
+  } catch (error) {
+    return [];
+  }
 }
 
 // 로그아웃 처리

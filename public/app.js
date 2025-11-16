@@ -183,7 +183,7 @@ function calculatePColumn(row, options) {
   return '';
 }
 
-// Q열 계산 함수
+// Q열 계산 함수 - 옵션 설정의 모든 값이 맞아야 'o' 반환
 function calculateQColumn(row, options) {
   const { qColumn } = options;
   // 빈 값은 NaN으로 처리 (0으로 변환하지 않음)
@@ -199,9 +199,11 @@ function calculateQColumn(row, options) {
   const gMinusL = G - L;
   const gGreaterThanJGreaterThanL = G > J && J > L;
 
+  // 옵션 설정의 모든 값이 맞아야 함
   const gMinusLInRange = gMinusL >= qColumn.gMinusLRange.min && gMinusL <= qColumn.gMinusLRange.max;
   const gJLCondition = qColumn.gGreaterThanJGreaterThanL ? gGreaterThanJGreaterThanL : true;
 
+  // 모든 조건이 만족되어야 'o' 반환
   if (gMinusLInRange && gJLCondition) {
     return 'o';
   }
