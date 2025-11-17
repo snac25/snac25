@@ -167,6 +167,15 @@ function addRow(rowNum) {
     fSelect.appendChild(option);
   });
   fSelect.dataset.k = 'F';
+  fSelect.dataset.colIndex = 5; // F열은 5번 인덱스
+  fSelect.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 5);
+  });
+  fSelect.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 5);
+  });
   fSelect.onchange = () => { updateRow(tr); saveToLocalStorage(); };
   fTd.appendChild(fSelect);
   tr.appendChild(fTd);
@@ -179,6 +188,15 @@ function addRow(rowNum) {
   gInput.type = 'number';
   gInput.step = '0.01';
   gInput.dataset.k = 'G';
+  gInput.dataset.colIndex = 6; // G열은 6번 인덱스
+  gInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 6);
+  });
+  gInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 6);
+  });
   gInput.oninput = () => { updateTime(gTd); updateRow(tr); saveToLocalStorage(); };
   gTd.appendChild(gInput);
   tr.appendChild(gTd);
@@ -189,6 +207,15 @@ function addRow(rowNum) {
   const hInput = document.createElement('input');
   hInput.type = 'text';
   hInput.dataset.k = 'H';
+  hInput.dataset.colIndex = 7; // H열은 7번 인덱스
+  hInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 7);
+  });
+  hInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 7);
+  });
   hInput.oninput = () => { saveToLocalStorage(); };
   hTd.appendChild(hInput);
   tr.appendChild(hTd);
@@ -201,6 +228,15 @@ function addRow(rowNum) {
   iInput.type = 'number';
   iInput.step = '0.01';
   iInput.dataset.k = 'I';
+  iInput.dataset.colIndex = 8; // I열은 8번 인덱스
+  iInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 8);
+  });
+  iInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 8);
+  });
   iInput.oninput = () => { updateTime(iTd); updateRow(tr); saveToLocalStorage(); };
   iTd.appendChild(iInput);
   tr.appendChild(iTd);
@@ -213,6 +249,15 @@ function addRow(rowNum) {
   jInput.type = 'number';
   jInput.step = '0.01';
   jInput.dataset.k = 'J';
+  jInput.dataset.colIndex = 9; // J열은 9번 인덱스
+  jInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 9);
+  });
+  jInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 9);
+  });
   jInput.oninput = () => { updateTime(jTd); updateRow(tr); saveToLocalStorage(); };
   jTd.appendChild(jInput);
   tr.appendChild(jTd);
@@ -225,6 +270,15 @@ function addRow(rowNum) {
   kInput.type = 'number';
   kInput.step = '0.01';
   kInput.dataset.k = 'K';
+  kInput.dataset.colIndex = 10; // K열은 10번 인덱스
+  kInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 10);
+  });
+  kInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 10);
+  });
   kInput.oninput = () => { updateTime(kTd); updateRow(tr); saveToLocalStorage(); };
   kTd.appendChild(kInput);
   tr.appendChild(kTd);
@@ -237,6 +291,15 @@ function addRow(rowNum) {
   lInput.type = 'number';
   lInput.step = '0.01';
   lInput.dataset.k = 'L';
+  lInput.dataset.colIndex = 11; // L열은 11번 인덱스
+  lInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 11);
+  });
+  lInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 11);
+  });
   lInput.oninput = () => { updateTime(lTd); updateRow(tr); saveToLocalStorage(); };
   lTd.appendChild(lInput);
   tr.appendChild(lTd);
@@ -764,7 +827,8 @@ function setupDragSelection() {
           
           const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M' };
           const colKey = colMap[colIdx];
-          if (colKey && row.refs[colKey]) {
+          // B부터 L까지만 선택 가능 (M은 제외)
+          if (colKey && colIdx <= 11 && row.refs[colKey]) {
             const cell = row.refs[colKey];
             selectedCells.add(cell);
             cell.classList.add('cell-selected');
@@ -863,15 +927,15 @@ function setupKeyboardShortcuts() {
 
 // 다음 셀로 이동
 function moveToNextCell(rowIndex, colIndex, reverse) {
-  const cols = ['B', 'C', 'D', 'E']; // A, B, C, D, E 열 (A는 번호 열이므로 제외)
+  const maxCol = 11; // B부터 L까지 (1~11)
   let nextColIndex = reverse ? colIndex - 1 : colIndex + 1;
   
   if (nextColIndex < 1) {
     // 이전 행의 마지막 열로
     if (rowIndex > 0) {
-      moveToCell(rowIndex - 1, cols.length);
+      moveToCell(rowIndex - 1, maxCol);
     }
-  } else if (nextColIndex > cols.length) {
+  } else if (nextColIndex > maxCol) {
     // 다음 행의 첫 열로
     moveToCell(rowIndex + 1, 1);
   } else {
@@ -891,7 +955,7 @@ function moveToCell(rowIndex, colIndex) {
     addRow(rowIndex + 1);
     const newRows = Array.from(tbody.querySelectorAll('tr'));
     if (newRows[rowIndex]) {
-      const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
+      const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L' };
       const colKey = colMap[colIndex];
       if (colKey && newRows[rowIndex].refs && newRows[rowIndex].refs[colKey]) {
         const actualRowIndex = rows.length; // 새로 추가된 행의 인덱스
@@ -903,7 +967,7 @@ function moveToCell(rowIndex, colIndex) {
   
   const row = rows[rowIndex];
   if (row && row.refs) {
-    const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
+    const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L' };
     const colKey = colMap[colIndex];
     if (colKey && row.refs[colKey]) {
       selectCell(row.refs[colKey], rowIndex, colIndex);
@@ -938,8 +1002,8 @@ function pasteData(text, startCell) {
   let currentRowIndex = startCell.rowIndex;
   let currentColIndex = startCell.colIndex;
   
-  // 열 매핑: B=1, C=2, D=3, E=4 (A열은 번호이므로 제외)
-  const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
+  // 열 매핑: B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11 (A열은 번호이므로 제외)
+  const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L' };
   
   lines.forEach((line, lineIndex) => {
     const values = line.split('\t');
@@ -968,13 +1032,13 @@ function pasteData(text, startCell) {
       }
     }
     
-    // 각 열에 값 붙여넣기 (B, C, D, E 열만)
+    // 각 열에 값 붙여넣기 (B부터 L까지)
     values.forEach((value, colOffset) => {
       const actualColOffset = colOffset - startColOffset;
       const targetColIndex = currentColIndex + actualColOffset;
       
-      // B, C, D, E 열만 처리 (1~4)
-      if (targetColIndex >= 1 && targetColIndex <= 4) {
+      // B부터 L까지 처리 (1~11)
+      if (targetColIndex >= 1 && targetColIndex <= 11) {
         const colKey = colMap[targetColIndex];
         
         if (colKey && currentRow.refs[colKey]) {
@@ -999,12 +1063,12 @@ function pasteData(text, startCell) {
   if (lines.length > 0) {
     const lastLineValues = lines[lines.length - 1].split('\t');
     const finalRowIndex = startCell.rowIndex + lines.length - 1;
-    // 마지막 열 계산 (B, C, D, E 중 하나)
+    // 마지막 열 계산 (B부터 L까지 중 하나)
     let lastColOffset = lastLineValues.length - 1;
     if (currentColIndex === 1 && /^\d+$/.test(lastLineValues[0]?.trim())) {
       lastColOffset--; // A열이 포함된 경우 보정
     }
-    const finalColIndex = Math.min(currentColIndex + lastColOffset, 4);
+    const finalColIndex = Math.min(currentColIndex + lastColOffset, 11);
     moveToCell(finalRowIndex, finalColIndex);
   }
   
