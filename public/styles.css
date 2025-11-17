@@ -782,14 +782,29 @@ input.selected.cell-selected {
 
 /* 조회 페이지 어두운 테마 */
 body.view-page {
-  background-image: url('/ns.jpg'), url('/4respect.jpg');
-  background-size: cover, contain;
-  background-position: center top, center bottom;
-  background-attachment: fixed, fixed;
-  background-repeat: no-repeat, no-repeat;
+  background-image: url('/ns.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   min-height: 100vh;
   padding: 0;
   position: relative;
+}
+
+body.view-page::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40vh;
+  background-image: url('/4respect.jpg');
+  background-size: contain;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  z-index: 0;
+  pointer-events: none;
 }
 
 body.view-page::before {
@@ -799,8 +814,8 @@ body.view-page::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(22, 33, 62, 0.3) 0%, rgba(22, 33, 62, 0.3) 70%, rgba(15, 52, 96, 0.3) 100%);
-  z-index: 0;
+  background: linear-gradient(135deg, rgba(22, 33, 62, 0.3) 0%, rgba(22, 33, 62, 0.3) 60%, rgba(15, 52, 96, 0.3) 100%);
+  z-index: 1;
   pointer-events: none;
 }
 
