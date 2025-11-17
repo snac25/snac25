@@ -782,11 +782,11 @@ input.selected.cell-selected {
 
 /* 조회 페이지 어두운 테마 */
 body.view-page {
-  background-image: url('/hero.jpg');
-  background-size: contain;
-  background-position: center bottom;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-image: url('/ns.jpg'), url('/4respect.jpg');
+  background-size: cover, contain;
+  background-position: center top, center bottom;
+  background-attachment: fixed, fixed;
+  background-repeat: no-repeat, no-repeat;
   min-height: 100vh;
   padding: 0;
   position: relative;
@@ -799,7 +799,7 @@ body.view-page::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(22, 33, 62, 0.3) 0%, rgba(22, 33, 62, 0.3) 60%, rgba(15, 52, 96, 0.75) 100%);
+  background: linear-gradient(135deg, rgba(22, 33, 62, 0.3) 0%, rgba(22, 33, 62, 0.3) 70%, rgba(15, 52, 96, 0.3) 100%);
   z-index: 0;
   pointer-events: none;
 }
@@ -814,10 +814,7 @@ body.view-page::before {
   justify-content: center;
   overflow: hidden;
   z-index: 1;
-  background-image: url('/ns.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
+  background: transparent;
 }
 
 .view-hero::before {
