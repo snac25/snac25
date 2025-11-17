@@ -230,6 +230,11 @@ input[type="number"], input[type="text"] {
 }
 
 /* A열 (번호) - 16px, 굵고 찐하게, 헤더와 동일한 배경색 */
+/* 시간 경고 배경색 (75분 이내) - 더 높은 우선순위 */
+#inputTable tbody td:nth-child(1).time-warning {
+  background-color: #ffff00 !important;
+}
+
 #inputTable td:nth-child(1) {
   font-size: 16px !important;
   font-weight: 900 !important;
