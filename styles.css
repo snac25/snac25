@@ -10,7 +10,7 @@ body {
   padding: 20px;
 }
 
-body.input-page {
+body.input-page.code-screen-active {
   padding: 0;
   margin: 0;
   overflow: hidden;

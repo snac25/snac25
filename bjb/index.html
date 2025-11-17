@@ -179,6 +179,8 @@
     function showInputScreen() {
       document.getElementById('codeScreen').style.display = 'none';
       document.getElementById('inputScreen').style.display = 'block';
+      // overflow 제거
+      document.body.classList.remove('code-screen-active');
       // 입력 페이지 스크립트 로드
       loadInputScripts();
     }
@@ -214,6 +216,9 @@
         window.inputScriptsLoaded = true;
       }
     }
+    
+    // 초기 로드 시 코드 화면 표시 중이므로 overflow hidden 추가
+    document.body.classList.add('code-screen-active');
   </script>
 </body>
 </html>
