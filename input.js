@@ -1256,6 +1256,16 @@ function saveToLocalStorage() {
       saveTimeout = setTimeout(() => {
         saveInputSheetData(tempData).catch(err => {
           console.warn('Firebase 저장 실패:', err);
+          // 내부 오류인 경우 사용자에게 알림
+          if (err.message && err.message.includes('INTERNAL ASSERTION')) {
+            console.error('Firestore 내부 오류. 데이터를 다시 시도합니다...');
+            // 2초 후 재시도
+            setTimeout(() => {
+              saveInputSheetData(tempData).catch(retryErr => {
+                console.error('재시도도 실패:', retryErr);
+              });
+            }, 2000);
+          }
         });
       }, 500);
     }

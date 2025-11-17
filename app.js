@@ -230,25 +230,67 @@ function showAlert(message, type = 'success') {
 // 실시간 입력 시트 데이터 저장
 async function saveInputSheetData(data) {
   try {
-    const inputSheetRef = doc(db, 'inputSheet', 'current');
-    await setDoc(inputSheetRef, {
-      data: data,
-      updatedAt: new Date().toISOString()
+    // 데이터 크기 제한 (Firestore 문서 최대 크기: 1MB)
+    // 각 행이 약 1KB라고 가정하면 최대 1000행까지 가능
+    if (data.length > 1000) {
+      console.warn('데이터가 너무 큽니다. 처음 1000행만 저장합니다.');
+      data = data.slice(0, 1000);
+    }
+    
+    // 데이터 정리: undefined, null, 순환 참조 제거
+    const cleanedData = data.map(row => {
+      const cleanedRow = {};
+      for (const key in row) {
+        if (row[key] !== undefined && row[key] !== null) {
+          // 문자열로 변환 가능한 값만 저장
+          if (typeof row[key] === 'string' || typeof row[key] === 'number' || typeof row[key] === 'boolean') {
+            cleanedRow[key] = row[key];
+          } else if (typeof row[key] === 'object') {
+            // 객체는 JSON 문자열로 변환
+            try {
+              cleanedRow[key] = JSON.stringify(row[key]);
+            } catch (e) {
+              // 변환 실패 시 건너뛰기
+              console.warn('데이터 변환 실패:', key, row[key]);
+            }
+          }
+        }
+      }
+      return cleanedRow;
     });
-    console.log('입력 시트 저장 성공:', data.length, '행');
+    
+    const inputSheetRef = doc(db, 'inputSheet', 'current');
+    
+    // 배치 크기 제한 (한 번에 저장할 수 있는 데이터 크기 제한)
+    const batchSize = 500;
+    if (cleanedData.length <= batchSize) {
+      await setDoc(inputSheetRef, {
+        data: cleanedData,
+        updatedAt: new Date().toISOString(),
+        rowCount: cleanedData.length
+      });
+      console.log('입력 시트 저장 성공:', cleanedData.length, '행');
+    } else {
+      // 데이터가 너무 크면 분할 저장
+      console.warn('데이터가 너무 큽니다. 처음', batchSize, '행만 저장합니다.');
+      await setDoc(inputSheetRef, {
+        data: cleanedData.slice(0, batchSize),
+        updatedAt: new Date().toISOString(),
+        rowCount: cleanedData.length,
+        truncated: true
+      });
+    }
+    
     return { success: true };
   } catch (error) {
     console.error('입력 시트 저장 실패:', error);
     if (error.code === 'permission-denied') {
       console.error('⚠️ Firestore 보안 규칙 오류!');
-      console.error('Firebase Console에서 다음 규칙을 추가해주세요:');
-      console.error(`
-match /inputSheet/{document=**} {
-  allow read, write: if true;
-}
-      `);
-      // 사용자에게 알림 표시
       showAlert('Firestore 보안 규칙이 설정되지 않았습니다. Firebase Console에서 규칙을 업데이트해주세요.', 'error');
+    } else if (error.message && error.message.includes('INTERNAL ASSERTION')) {
+      console.error('⚠️ Firestore 내부 오류 발생');
+      console.error('데이터 구조를 확인하거나 Firebase SDK를 업데이트해주세요.');
+      showAlert('데이터 저장 중 오류가 발생했습니다. 페이지를 새로고침하고 다시 시도해주세요.', 'error');
     }
     throw error;
   }
