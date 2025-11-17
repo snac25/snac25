@@ -649,15 +649,14 @@ function checkTimeAndUpdateRowColor(tr) {
     return;
   }
   
-  // 입력된 시간의 75분 전 시점 계산
-  const targetTime = new Date(inputTime);
-  targetTime.setMinutes(targetTime.getMinutes() - 75);
-  
   const now = new Date();
   
-  // 현재 시간이 입력된 시간의 75분 전 시점 이후이면 노란색 배경
-  // 즉, 현재 시간 >= (입력된 시간 - 75분) 이면 노란색
-  if (now >= targetTime) {
+  // 입력된 시간까지 남은 시간 계산 (분 단위)
+  const diffMinutes = (inputTime - now) / (1000 * 60);
+  
+  // 입력된 시간까지 남은 시간이 75분 이내이고, 아직 지나지 않았으면 노란색 배경
+  // 즉, 0 <= (입력된 시간 - 현재 시간) <= 75분 이면 노란색
+  if (diffMinutes >= 0 && diffMinutes <= 75) {
     tr.noTd.style.backgroundColor = '#ffff00'; // 노란색
   } else {
     tr.noTd.style.backgroundColor = '';
