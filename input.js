@@ -312,6 +312,15 @@ function addRow(rowNum) {
   mInput.type = 'number';
   mInput.step = '0.01';
   mInput.dataset.k = 'M';
+  mInput.dataset.colIndex = 12; // M열은 12번 인덱스
+  mInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 12);
+  });
+  mInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 12);
+  });
   mInput.oninput = () => { updateTime(mTd); updateRow(tr); saveToLocalStorage(); };
   mTd.appendChild(mInput);
   tr.appendChild(mTd);
@@ -827,8 +836,8 @@ function setupDragSelection() {
           
           const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M' };
           const colKey = colMap[colIdx];
-          // B부터 L까지만 선택 가능 (M은 제외)
-          if (colKey && colIdx <= 11 && row.refs[colKey]) {
+          // B부터 M까지 선택 가능
+          if (colKey && colIdx <= 12 && row.refs[colKey]) {
             const cell = row.refs[colKey];
             selectedCells.add(cell);
             cell.classList.add('cell-selected');
@@ -927,7 +936,7 @@ function setupKeyboardShortcuts() {
 
 // 다음 셀로 이동
 function moveToNextCell(rowIndex, colIndex, reverse) {
-  const maxCol = 11; // B부터 L까지 (1~11)
+  const maxCol = 12; // B부터 M까지 (1~12)
   let nextColIndex = reverse ? colIndex - 1 : colIndex + 1;
   
   if (nextColIndex < 1) {
@@ -955,7 +964,7 @@ function moveToCell(rowIndex, colIndex) {
     addRow(rowIndex + 1);
     const newRows = Array.from(tbody.querySelectorAll('tr'));
     if (newRows[rowIndex]) {
-      const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L' };
+      const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M' };
       const colKey = colMap[colIndex];
       if (colKey && newRows[rowIndex].refs && newRows[rowIndex].refs[colKey]) {
         const actualRowIndex = rows.length; // 새로 추가된 행의 인덱스
@@ -967,7 +976,7 @@ function moveToCell(rowIndex, colIndex) {
   
   const row = rows[rowIndex];
   if (row && row.refs) {
-    const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L' };
+    const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M' };
     const colKey = colMap[colIndex];
     if (colKey && row.refs[colKey]) {
       selectCell(row.refs[colKey], rowIndex, colIndex);
@@ -1002,8 +1011,8 @@ function pasteData(text, startCell) {
   let currentRowIndex = startCell.rowIndex;
   let currentColIndex = startCell.colIndex;
   
-  // 열 매핑: B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11 (A열은 번호이므로 제외)
-  const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L' };
+  // 열 매핑: B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12 (A열은 번호이므로 제외)
+  const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M' };
   
   lines.forEach((line, lineIndex) => {
     const values = line.split('\t');
@@ -1037,8 +1046,8 @@ function pasteData(text, startCell) {
       const actualColOffset = colOffset - startColOffset;
       const targetColIndex = currentColIndex + actualColOffset;
       
-      // B부터 L까지 처리 (1~11)
-      if (targetColIndex >= 1 && targetColIndex <= 11) {
+      // B부터 M까지 처리 (1~12)
+      if (targetColIndex >= 1 && targetColIndex <= 12) {
         const colKey = colMap[targetColIndex];
         
         if (colKey && currentRow.refs[colKey]) {
@@ -1063,12 +1072,12 @@ function pasteData(text, startCell) {
   if (lines.length > 0) {
     const lastLineValues = lines[lines.length - 1].split('\t');
     const finalRowIndex = startCell.rowIndex + lines.length - 1;
-    // 마지막 열 계산 (B부터 L까지 중 하나)
+    // 마지막 열 계산 (B부터 M까지 중 하나)
     let lastColOffset = lastLineValues.length - 1;
     if (currentColIndex === 1 && /^\d+$/.test(lastLineValues[0]?.trim())) {
       lastColOffset--; // A열이 포함된 경우 보정
     }
-    const finalColIndex = Math.min(currentColIndex + lastColOffset, 11);
+    const finalColIndex = Math.min(currentColIndex + lastColOffset, 12);
     moveToCell(finalRowIndex, finalColIndex);
   }
   
