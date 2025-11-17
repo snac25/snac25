@@ -611,8 +611,8 @@ function reindex() {
 }
 
 // 시간 문자열을 Date 객체로 변환 (HH:MM 형식)
-// 12:00~24:00는 당일, 00:00~12:00는 다음날로 처리
-function parseTime(timeStr) {
+// 정렬용: 12:00~24:00는 당일, 00:00~12:00는 다음날로 처리
+function parseTimeForSort(timeStr) {
   if (!timeStr || typeof timeStr !== 'string') return null;
   
   const parts = timeStr.trim().split(':');
@@ -635,6 +635,31 @@ function parseTime(timeStr) {
   // 12:00~23:59는 당일 (변경 없음)
   
   return time;
+}
+
+// 시간 문자열을 Date 객체로 변환 (HH:MM 형식)
+// 체크용: 현재 시간 기준으로 가장 가까운 시간으로 변환
+function parseTime(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return null;
+  
+  const parts = timeStr.trim().split(':');
+  if (parts.length !== 2) return null;
+  
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  
+  if (isNaN(hours) || isNaN(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  
+  const now = new Date();
+  const inputTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+  
+  // 현재 시간보다 과거면 다음날로 처리
+  if (inputTime < now) {
+    inputTime.setDate(inputTime.getDate() + 1);
+  }
+  
+  return inputTime;
 }
 
 // 특정 행의 시간을 체크하고 배경색 업데이트
@@ -671,10 +696,20 @@ function checkTimeAndUpdateRowColor(tr) {
   // 입력된 시간까지 남은 시간 계산 (분 단위)
   const diffMinutes = (inputTime - now) / (1000 * 60);
   
+  // 디버깅 로그
+  console.log('시간 체크:', {
+    입력시간: timeStr,
+    입력시간Date: inputTime.toLocaleTimeString('ko-KR'),
+    현재시간: now.toLocaleTimeString('ko-KR'),
+    남은시간: diffMinutes.toFixed(1) + '분',
+    노란색: diffMinutes >= 0 && diffMinutes <= 75
+  });
+  
   // 입력된 시간까지 남은 시간이 75분 이내이고, 아직 지나지 않았으면 노란색 배경
   // 즉, 0 <= (입력된 시간 - 현재 시간) <= 75분 이면 노란색
   if (diffMinutes >= 0 && diffMinutes <= 75) {
     tr.noTd.style.backgroundColor = '#ffff00'; // 노란색
+    console.log('노란색 적용:', timeStr);
   } else {
     tr.noTd.style.backgroundColor = '';
   }
@@ -1248,8 +1283,8 @@ function loadDataFromArray(data) {
   
   // 데이터를 시간 순서로 정렬 (12:00~24:00가 당일 먼저, 00:00~12:00가 다음날)
   const sortedData = [...data].sort((a, b) => {
-    const timeA = parseTime(a.B || '');
-    const timeB = parseTime(b.B || '');
+    const timeA = parseTimeForSort(a.B || '');
+    const timeB = parseTimeForSort(b.B || '');
     
     if (!timeA && !timeB) return 0;
     if (!timeA) return 1; // 시간 없는 것은 뒤로
