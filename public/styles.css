@@ -805,7 +805,9 @@ body.view-page::before {
 }
 
 .view-hero {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   min-height: 60vh;
   height: 60vh;
@@ -935,6 +937,8 @@ body.view-page::before {
 }
 
 .view-container {
+  position: relative;
+  z-index: 2;
   background: rgba(26, 26, 46, 0.85);
   color: #e0e0e0;
   border-radius: 12px;
