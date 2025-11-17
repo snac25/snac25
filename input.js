@@ -101,6 +101,21 @@ function addRow(rowNum) {
   tr.dataset.rowIndex = tableData.length;
   tr.refs = {};
   
+  // 행 클릭 이벤트: 행 전체에 테두리 추가
+  tr.addEventListener('click', function(e) {
+    // 버튼 클릭은 제외
+    if (e.target.tagName === 'BUTTON') return;
+    
+    // 모든 행에서 선택 클래스 제거
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => {
+      row.classList.remove('row-selected');
+    });
+    
+    // 클릭한 행에 선택 클래스 추가
+    tr.classList.add('row-selected');
+  });
+  
   // 번호
   const noTd = document.createElement('td');
   noTd.textContent = rowNum || (tableData.length + 1);

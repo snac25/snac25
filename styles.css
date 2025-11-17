@@ -230,6 +230,17 @@ input[type="number"], input[type="text"] {
 }
 
 /* A열 (번호) - 16px, 굵고 찐하게, 헤더와 동일한 배경색 */
+/* 행 선택 시 테두리 */
+#inputTable tbody tr.row-selected {
+  outline: 3px solid #0066ff !important;
+  outline-offset: -3px;
+}
+
+#inputTable tbody tr.row-selected td {
+  position: relative;
+  z-index: 1;
+}
+
 /* 시간 경고 배경색 (75분 이내) - 더 높은 우선순위 */
 #inputTable tbody td:nth-child(1).time-warning {
   background-color: #ffff00 !important;
