@@ -9,6 +9,7 @@ let isDragging = false;
 let selectedCells = new Set(); // 선택된 셀들을 Set으로 관리
 let realtimeUnsubscribe = null; // 실시간 리스너 구독 해제 함수
 let isUpdatingFromFirebase = false; // Firebase에서 업데이트 중인지 플래그
+let saveTimeout = null; // 디바운싱을 위한 타이머
 
 // 숨김된 행 ID 목록 관리
 function getHiddenRowIds() {
@@ -55,11 +56,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     loadDataFromArray(firebaseData);
   } else {
     // Firebase에 데이터가 없으면 localStorage에서 복원 시도
-    if (!loadFromLocalStorage()) {
+    const localData = loadFromLocalStorage();
+    if (!localData) {
       // 임시 데이터가 없으면 빈 행 생성
       for (let i = 1; i <= 30; i++) {
         addRow(i);
       }
+      // 빈 행도 Firebase에 저장
+      setTimeout(() => {
+        saveToLocalStorage();
+      }, 1000);
     }
   }
   
@@ -1099,10 +1105,15 @@ function pasteData(text, startCell) {
 // 실시간 리스너 설정
 function setupRealtimeListener() {
   realtimeUnsubscribe = setupInputSheetListener((data) => {
+    // 자신이 저장한 변경사항은 무시 (무한 루프 방지)
     if (!isUpdatingFromFirebase) {
       isUpdatingFromFirebase = true;
+      console.log('Firebase에서 데이터 업데이트 받음:', data.length, '행');
       loadDataFromArray(data);
-      isUpdatingFromFirebase = false;
+      // 약간의 지연 후 플래그 해제
+      setTimeout(() => {
+        isUpdatingFromFirebase = false;
+      }, 100);
     }
   });
 }
@@ -1237,10 +1248,16 @@ function saveToLocalStorage() {
     localStorage.setItem('inputSheetTemp', JSON.stringify(tempData));
     
     // Firebase에 실시간 저장 (Firebase에서 업데이트 중이 아닐 때만)
-    if (!isUpdatingFromFirebase && tempData.length > 0) {
-      saveInputSheetData(tempData).catch(err => {
-        console.warn('Firebase 저장 실패:', err);
-      });
+    // 디바운싱: 500ms 내에 여러 번 호출되면 마지막 것만 저장
+    if (!isUpdatingFromFirebase) {
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+      saveTimeout = setTimeout(() => {
+        saveInputSheetData(tempData).catch(err => {
+          console.warn('Firebase 저장 실패:', err);
+        });
+      }, 500);
     }
   } catch (error) {
     console.warn('localStorage 저장 실패:', error);

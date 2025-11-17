@@ -262,15 +262,20 @@ async function loadInputSheetData() {
 function setupInputSheetListener(callback) {
   try {
     const inputSheetRef = doc(db, 'inputSheet', 'current');
-    const unsubscribe = onSnapshot(inputSheetRef, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data().data || [];
+    const unsubscribe = onSnapshot(inputSheetRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data().data || [];
+        console.log('실시간 업데이트 감지:', data.length, '행');
         callback(data);
+      } else {
+        console.log('입력 시트 문서가 없습니다.');
+        callback([]);
       }
     }, (error) => {
       console.error('입력 시트 리스너 에러:', error);
     });
     
+    console.log('실시간 리스너 설정 완료');
     return unsubscribe;
   } catch (error) {
     console.error('입력 시트 리스너 설정 실패:', error);
