@@ -76,6 +76,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   setupPasteHandler();
   setupDragSelection();
   
+  // 시간 체크를 주기적으로 실행 (1분마다)
+  setInterval(checkAllRowsTime, 60000); // 60000ms = 1분
+  
 });
 
 // 옵션 데이터 불러오기
@@ -96,7 +99,9 @@ function addRow(rowNum) {
   // 번호
   const noTd = document.createElement('td');
   noTd.textContent = rowNum || (tableData.length + 1);
+  noTd.className = 'row-number-cell';
   tr.appendChild(noTd);
+  tr.noTd = noTd; // 번호 셀 참조 저장
   
   // 시간 (B)
   const timeTd = document.createElement('td');
@@ -112,7 +117,10 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 1);
   });
-  timeInput.oninput = () => { saveToLocalStorage(); };
+  timeInput.oninput = () => { 
+    saveToLocalStorage();
+    checkTimeAndUpdateRowColor(tr); // 시간 체크 및 배경색 업데이트
+  };
   timeTd.appendChild(timeInput);
   tr.appendChild(timeTd);
   tr.refs.B = timeInput;
@@ -594,6 +602,76 @@ function reindex() {
   const rows = document.querySelectorAll('#tableBody tr');
   rows.forEach((r, i) => {
     r.cells[0].textContent = i + 1;
+  });
+}
+
+// 시간 문자열을 Date 객체로 변환 (HH:MM 형식)
+// 12:00~24:00는 당일, 00:00~12:00는 다음날로 처리
+function parseTime(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return null;
+  
+  const parts = timeStr.trim().split(':');
+  if (parts.length !== 2) return null;
+  
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  
+  if (isNaN(hours) || isNaN(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  
+  const now = new Date();
+  const time = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+  
+  // 12:00~24:00는 당일, 00:00~12:00는 다음날로 처리
+  if (hours < 12) {
+    // 00:00~11:59는 다음날
+    time.setDate(time.getDate() + 1);
+  }
+  // 12:00~23:59는 당일 (변경 없음)
+  
+  return time;
+}
+
+// 특정 행의 시간을 체크하고 배경색 업데이트
+function checkTimeAndUpdateRowColor(tr) {
+  if (!tr || !tr.refs || !tr.refs.B || !tr.noTd) return;
+  
+  const timeStr = tr.refs.B.value.trim();
+  if (!timeStr) {
+    // 시간이 없으면 배경색 제거
+    tr.noTd.style.backgroundColor = '';
+    return;
+  }
+  
+  const inputTime = parseTime(timeStr);
+  if (!inputTime) {
+    tr.noTd.style.backgroundColor = '';
+    return;
+  }
+  
+  // 입력된 시간의 75분 전 시점 계산
+  const targetTime = new Date(inputTime);
+  targetTime.setMinutes(targetTime.getMinutes() - 75);
+  
+  const now = new Date();
+  
+  // 현재 시간이 입력된 시간의 75분 전 시점 이후이면 노란색 배경
+  // 즉, 현재 시간 >= (입력된 시간 - 75분) 이면 노란색
+  if (now >= targetTime) {
+    tr.noTd.style.backgroundColor = '#ffff00'; // 노란색
+  } else {
+    tr.noTd.style.backgroundColor = '';
+  }
+}
+
+// 모든 행의 시간을 체크하고 배경색 업데이트
+function checkAllRowsTime() {
+  const tbody = document.getElementById('tableBody');
+  if (!tbody) return;
+  
+  const rows = tbody.querySelectorAll('tr');
+  rows.forEach(row => {
+    checkTimeAndUpdateRowColor(row);
   });
 }
 
@@ -1143,8 +1221,20 @@ function loadDataFromArray(data) {
   tbody.innerHTML = '';
   tableData = [];
   
+  // 데이터를 시간 순서로 정렬 (12:00~24:00가 당일 먼저, 00:00~12:00가 다음날)
+  const sortedData = [...data].sort((a, b) => {
+    const timeA = parseTime(a.B || '');
+    const timeB = parseTime(b.B || '');
+    
+    if (!timeA && !timeB) return 0;
+    if (!timeA) return 1; // 시간 없는 것은 뒤로
+    if (!timeB) return -1;
+    
+    return timeA - timeB; // 시간 순서대로 정렬
+  });
+  
   // 데이터 로드
-  data.forEach((item, index) => {
+  sortedData.forEach((item, index) => {
     const row = addRow(index + 1);
     if (row.refs) {
       row.refs.B.value = item.B || '';
@@ -1159,6 +1249,9 @@ function loadDataFromArray(data) {
       row.refs.K.value = item.K || '';
       row.refs.L.value = item.L || '';
       row.refs.M.value = item.M || '';
+      
+      // 시간 체크 및 배경색 업데이트
+      checkTimeAndUpdateRowColor(row);
       
       // 시간 정보 복원
       const restoreTime = (ref, timeStr) => {
@@ -1304,6 +1397,9 @@ function loadFromLocalStorage() {
             row.refs.K.value = item.K || '';
             row.refs.L.value = item.L || '';
             row.refs.M.value = item.M || '';
+            
+            // 시간 체크 및 배경색 업데이트
+            checkTimeAndUpdateRowColor(row);
             
             // 시간 정보 복원
             const restoreTime = (ref, timeStr) => {
