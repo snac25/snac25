@@ -822,14 +822,13 @@ body.view-page::before {
 .view-hero {
   position: relative;
   width: 100%;
-  min-height: 60vh;
-  height: 60vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   z-index: 1;
   background: transparent;
+  padding-bottom: 0;
 }
 
 .view-hero::before {
