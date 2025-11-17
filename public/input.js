@@ -418,6 +418,7 @@ function addRow(rowNum) {
     // Yes를 선택하거나 내용이 없으면 삭제
     tr.remove();
     reindex();
+    saveToLocalStorage(); // Firebase에 삭제 반영
   };
   
   const hideBtn = document.createElement('button');
@@ -1577,6 +1578,9 @@ function deleteAllRows() {
   
   // localStorage도 초기화
   localStorage.removeItem('inputSheetTemp');
+  
+  // Firebase에도 빈 상태 저장
+  saveToLocalStorage();
   
   showAlert('시트의 모든 데이터가 삭제되었습니다.', 'success');
 }
