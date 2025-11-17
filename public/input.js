@@ -1,5 +1,5 @@
 // app.js에서 함수 import
-import { loadOptions, showAlert, calculatePColumn, calculateQColumn } from './app.js';
+import { loadOptions, showAlert, calculatePColumn, calculateQColumn, saveInputSheetData, loadInputSheetData, setupInputSheetListener } from './app.js';
 
 let currentOptions = null;
 let tableData = [];
@@ -7,6 +7,8 @@ let selectedCell = null;
 let pasteStartCell = null;
 let isDragging = false;
 let selectedCells = new Set(); // 선택된 셀들을 Set으로 관리
+let realtimeUnsubscribe = null; // 실시간 리스너 구독 해제 함수
+let isUpdatingFromFirebase = false; // Firebase에서 업데이트 중인지 플래그
 
 // 숨김된 행 ID 목록 관리
 function getHiddenRowIds() {
@@ -47,13 +49,22 @@ function removeHiddenRowId(id) {
 window.addEventListener('DOMContentLoaded', async () => {
   await loadOptionsData();
   
-  // localStorage에서 임시 데이터 복원 시도
-  if (!loadFromLocalStorage()) {
-    // 임시 데이터가 없으면 빈 행 생성
-    for (let i = 1; i <= 30; i++) {
-      addRow(i);
+  // Firebase에서 실시간 데이터 불러오기
+  const firebaseData = await loadInputSheetData();
+  if (firebaseData && firebaseData.length > 0) {
+    loadDataFromArray(firebaseData);
+  } else {
+    // Firebase에 데이터가 없으면 localStorage에서 복원 시도
+    if (!loadFromLocalStorage()) {
+      // 임시 데이터가 없으면 빈 행 생성
+      for (let i = 1; i <= 30; i++) {
+        addRow(i);
+      }
     }
   }
+  
+  // 실시간 리스너 설정
+  setupRealtimeListener();
   
   setupKeyboardShortcuts();
   setupPasteHandler();
@@ -1085,7 +1096,98 @@ function pasteData(text, startCell) {
   saveToLocalStorage();
 }
 
-// localStorage에 임시 저장
+// 실시간 리스너 설정
+function setupRealtimeListener() {
+  realtimeUnsubscribe = setupInputSheetListener((data) => {
+    if (!isUpdatingFromFirebase) {
+      isUpdatingFromFirebase = true;
+      loadDataFromArray(data);
+      isUpdatingFromFirebase = false;
+    }
+  });
+}
+
+// 배열 데이터를 테이블에 로드
+function loadDataFromArray(data) {
+  const tbody = document.getElementById('tableBody');
+  
+  // 현재 포커스된 셀 저장
+  const activeElement = document.activeElement;
+  const isFocusedInTable = activeElement && activeElement.closest('#tableBody');
+  
+  // 포커스된 셀의 위치 저장
+  let focusedRowIndex = -1;
+  let focusedColKey = null;
+  if (isFocusedInTable) {
+    const focusedRow = activeElement.closest('tr');
+    if (focusedRow) {
+      focusedRowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(focusedRow);
+      focusedColKey = activeElement.dataset.k;
+    }
+  }
+  
+  // 기존 행 제거
+  tbody.innerHTML = '';
+  tableData = [];
+  
+  // 데이터 로드
+  data.forEach((item, index) => {
+    const row = addRow(index + 1);
+    if (row.refs) {
+      row.refs.B.value = item.B || '';
+      row.refs.C.value = item.C || '';
+      row.refs.D.value = item.D || '';
+      row.refs.E.value = item.E || '';
+      row.refs.F.value = item.F || '';
+      row.refs.G.value = item.G || '';
+      row.refs.H.value = item.H || '';
+      row.refs.I.value = item.I || '';
+      row.refs.J.value = item.J || '';
+      row.refs.K.value = item.K || '';
+      row.refs.L.value = item.L || '';
+      row.refs.M.value = item.M || '';
+      
+      // 시간 정보 복원
+      const restoreTime = (ref, timeStr) => {
+        if (ref && timeStr) {
+          const td = ref.parentElement;
+          if (td) {
+            let s = td.querySelector('small');
+            if (!s) {
+              s = document.createElement('small');
+              td.appendChild(s);
+            }
+            s.textContent = timeStr;
+          }
+        }
+      };
+      
+      if (item.G_time) restoreTime(row.refs.G, item.G_time);
+      if (item.I_time) restoreTime(row.refs.I, item.I_time);
+      if (item.J_time) restoreTime(row.refs.J, item.J_time);
+      if (item.K_time) restoreTime(row.refs.K, item.K_time);
+      if (item.L_time) restoreTime(row.refs.L, item.L_time);
+      if (item.M_time) restoreTime(row.refs.M, item.M_time);
+    }
+    updateRow(row);
+  });
+  
+  // 최소 30개 행 유지
+  const currentRowCount = tbody.querySelectorAll('tr').length;
+  for (let i = currentRowCount; i < 30; i++) {
+    addRow(i + 1);
+  }
+  
+  // 포커스 복원 (사용자가 입력 중이었다면)
+  if (focusedRowIndex >= 0 && focusedColKey) {
+    const rows = tbody.querySelectorAll('tr');
+    if (rows[focusedRowIndex] && rows[focusedRowIndex].refs && rows[focusedRowIndex].refs[focusedColKey]) {
+      rows[focusedRowIndex].refs[focusedColKey].focus();
+    }
+  }
+}
+
+// localStorage에 임시 저장 및 Firebase에 실시간 저장
 function saveToLocalStorage() {
   const tbody = document.getElementById('tableBody');
   const rows = tbody.querySelectorAll('tr');
@@ -1133,6 +1235,13 @@ function saveToLocalStorage() {
   
   try {
     localStorage.setItem('inputSheetTemp', JSON.stringify(tempData));
+    
+    // Firebase에 실시간 저장 (Firebase에서 업데이트 중이 아닐 때만)
+    if (!isUpdatingFromFirebase && tempData.length > 0) {
+      saveInputSheetData(tempData).catch(err => {
+        console.warn('Firebase 저장 실패:', err);
+      });
+    }
   } catch (error) {
     console.warn('localStorage 저장 실패:', error);
   }

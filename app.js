@@ -10,7 +10,8 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy
+  orderBy,
+  onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Firebase Firestore를 사용한 옵션 불러오기
@@ -226,7 +227,58 @@ function showAlert(message, type = 'success') {
 }
 
 // 모듈 export
-export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, calculatePColumn, calculateQColumn, showAlert };
+// 실시간 입력 시트 데이터 저장
+async function saveInputSheetData(data) {
+  try {
+    const inputSheetRef = doc(db, 'inputSheet', 'current');
+    await setDoc(inputSheetRef, {
+      data: data,
+      updatedAt: new Date().toISOString()
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('입력 시트 저장 실패:', error);
+    throw error;
+  }
+}
+
+// 실시간 입력 시트 데이터 불러오기
+async function loadInputSheetData() {
+  try {
+    const inputSheetRef = doc(db, 'inputSheet', 'current');
+    const inputSheetSnap = await getDoc(inputSheetRef);
+    
+    if (inputSheetSnap.exists()) {
+      return inputSheetSnap.data().data || [];
+    }
+    return [];
+  } catch (error) {
+    console.error('입력 시트 불러오기 실패:', error);
+    return [];
+  }
+}
+
+// 실시간 입력 시트 리스너 설정
+function setupInputSheetListener(callback) {
+  try {
+    const inputSheetRef = doc(db, 'inputSheet', 'current');
+    const unsubscribe = onSnapshot(inputSheetRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data().data || [];
+        callback(data);
+      }
+    }, (error) => {
+      console.error('입력 시트 리스너 에러:', error);
+    });
+    
+    return unsubscribe;
+  } catch (error) {
+    console.error('입력 시트 리스너 설정 실패:', error);
+    return null;
+  }
+}
+
+export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener };
 
 // 전역으로 함수들을 export (기존 코드와의 호환성을 위해)
 window.loadOptions = loadOptions;
