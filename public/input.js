@@ -1154,7 +1154,13 @@ function loadFromLocalStorage() {
 
 // 옵션 설정 페이지 열기
 function openOptions() {
-  window.location.href = 'options.html';
+  // 현재 경로에 따라 상대 경로 결정
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/bjb')) {
+    window.location.href = '../options.html';
+  } else {
+    window.location.href = 'options.html';
+  }
 }
 
 // 계정 설정 모달 열기
