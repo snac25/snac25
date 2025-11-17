@@ -1665,27 +1665,18 @@ function refreshAccountList() {
           </div>
         </div>
         <div class="account-actions">
-          <button class="btn btn-danger btn-sm" onclick="deleteAccount('${account.userId}')">삭제</button>
+          <!-- 계정 삭제 기능 제거: 생성된 계정 정보는 삭제할 수 없습니다 -->
         </div>
       </div>
     `;
   }).join('');
 }
 
-// 계정 삭제
-function deleteAccount(userId) {
-  if (!confirm(`계정 "${userId}"을(를) 삭제하시겠습니까?`)) {
-    return;
-  }
-  
-  let accounts = getAllAccounts();
-  accounts = accounts.filter(acc => acc.userId !== userId);
-  
-  localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
-  
-  alert('계정이 삭제되었습니다.');
-  refreshAccountList();
-}
+// 계정 삭제 기능 제거됨 - 생성된 계정 정보는 삭제할 수 없습니다
+// function deleteAccount(userId) {
+//   // 계정 삭제 기능이 비활성화되었습니다.
+//   alert('계정 정보는 삭제할 수 없습니다.');
+// }
 
 
 // 계정 설정 모달 닫기
@@ -1852,5 +1843,5 @@ window.openAccountManageModal = openAccountManageModal;
 window.closeAccountModal = closeAccountModal;
 window.closeAccountManageModal = closeAccountManageModal;
 window.saveAccount = saveAccount;
-window.deleteAccount = deleteAccount;
+// window.deleteAccount = deleteAccount; // 계정 삭제 기능 제거됨
 window.deleteAllRows = deleteAllRows;
