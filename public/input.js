@@ -1372,8 +1372,45 @@ function deleteAllRows() {
   showAlert('시트의 모든 데이터가 삭제되었습니다.', 'success');
 }
 
+// 여러 행 추가 함수
+function addMultipleRows() {
+  const count = prompt('추가할 행 개수를 입력하세요:', '1');
+  
+  // 취소 버튼을 누르면 null 반환
+  if (count === null) {
+    return;
+  }
+  
+  // 숫자로 변환
+  const numRows = parseInt(count, 10);
+  
+  // 유효성 검사
+  if (isNaN(numRows) || numRows <= 0) {
+    alert('올바른 숫자를 입력해주세요.');
+    return;
+  }
+  
+  // 최대 100개로 제한
+  if (numRows > 100) {
+    alert('한 번에 최대 100개의 행만 추가할 수 있습니다.');
+    return;
+  }
+  
+  // 현재 행 개수 확인
+  const tbody = document.getElementById('tableBody');
+  const currentRowCount = tbody.querySelectorAll('tr').length;
+  
+  // 지정된 개수만큼 행 추가
+  for (let i = 0; i < numRows; i++) {
+    addRow(currentRowCount + i + 1);
+  }
+  
+  showAlert(`${numRows}개의 행이 추가되었습니다.`);
+}
+
 // 전역으로 함수들을 export (HTML의 onclick 속성에서 사용하기 위해)
 window.addRow = addRow;
+window.addMultipleRows = addMultipleRows;
 window.openOptions = openOptions;
 window.saveAll = saveAll;
 window.openAccountModal = openAccountModal;
