@@ -607,10 +607,78 @@ function updateRow(tr) {
 
 // 삽입
 function insertAfter(tr) {
+  // 실시간 리스너가 이 변경사항을 무시하도록 플래그 설정
+  isUpdatingFromFirebase = true;
+  
   const newRow = addRow(parseInt(tr.cells[0].textContent) + 1);
   tr.parentNode.insertBefore(newRow, tr.nextSibling);
   reindex();
-  saveToLocalStorage(); // Firebase에 삽입 반영
+  
+  // 빈 행도 포함하여 저장 (새로 추가된 행이 사라지지 않도록)
+  const tbody = document.getElementById('tableBody');
+  const rows = tbody.querySelectorAll('tr');
+  const tempData = [];
+  
+  rows.forEach((row) => {
+    if (row.refs) {
+      const getTimeFromCell = (ref) => {
+        if (!ref) return '';
+        const td = ref.parentElement;
+        if (!td) return '';
+        const small = td.querySelector('small');
+        return small ? small.textContent : '';
+      };
+      
+      const rowData = {
+        B: row.refs.B.value || '',
+        C: row.refs.C.value || '',
+        D: row.refs.D.value || '',
+        E: row.refs.E.value || '',
+        F: row.refs.F.value || '',
+        G: row.refs.G.value || '',
+        G_time: getTimeFromCell(row.refs.G),
+        H: row.refs.H.value || '',
+        I: row.refs.I.value || '',
+        I_time: getTimeFromCell(row.refs.I),
+        J: row.refs.J.value || '',
+        J_time: getTimeFromCell(row.refs.J),
+        K: row.refs.K.value || '',
+        K_time: getTimeFromCell(row.refs.K),
+        L: row.refs.L.value || '',
+        L_time: getTimeFromCell(row.refs.L),
+        M: row.refs.M.value || '',
+        M_time: getTimeFromCell(row.refs.M)
+      };
+      
+      // 삽입 시에는 빈 행도 포함하여 저장
+      tempData.push(rowData);
+    }
+  });
+  
+  // localStorage에 저장
+  try {
+    localStorage.setItem('inputSheetTemp', JSON.stringify(tempData));
+  } catch (error) {
+    console.warn('localStorage 저장 실패:', error);
+  }
+  
+  // Firebase에 즉시 저장 (디바운싱 없이)
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+  }
+  
+  saveInputSheetData(tempData).then(() => {
+    // 저장 완료 후 플래그 해제 (약간의 지연을 두어 실시간 리스너가 트리거되지 않도록)
+    setTimeout(() => {
+      isUpdatingFromFirebase = false;
+    }, 1000);
+  }).catch(err => {
+    console.warn('Firebase 저장 실패:', err);
+    // 실패해도 플래그 해제
+    setTimeout(() => {
+      isUpdatingFromFirebase = false;
+    }, 1000);
+  });
 }
 
 // 번호 재인덱싱
