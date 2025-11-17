@@ -861,6 +861,7 @@ body.view-page::before {
   padding: 40px 20px;
   width: 100%;
   max-width: 1200px;
+  margin-bottom: 0;
 }
 
 .view-page .view-hero .logout-btn {
@@ -947,17 +948,13 @@ body.view-page::before {
 }
 
 .view-container {
-  position: absolute;
-  top: calc(100vh - 40vh);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 1200px;
+  position: relative;
   z-index: 2;
   background: rgba(26, 26, 46, 0.85);
   color: #e0e0e0;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  margin-top: 0;
   padding-top: 20px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
