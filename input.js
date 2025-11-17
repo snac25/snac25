@@ -1,0 +1,1385 @@
+// app.js에서 함수 import
+import { loadOptions, showAlert, calculatePColumn, calculateQColumn } from './app.js';
+
+let currentOptions = null;
+let tableData = [];
+let selectedCell = null;
+let pasteStartCell = null;
+let isDragging = false;
+let selectedCells = new Set(); // 선택된 셀들을 Set으로 관리
+
+// 숨김된 행 ID 목록 관리
+function getHiddenRowIds() {
+  try {
+    const hiddenStr = localStorage.getItem('inputHiddenRowIds');
+    return hiddenStr ? JSON.parse(hiddenStr) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function setHiddenRowIds(ids) {
+  try {
+    localStorage.setItem('inputHiddenRowIds', JSON.stringify(ids));
+  } catch (error) {
+    console.warn('localStorage 저장 실패:', error);
+  }
+}
+
+function addHiddenRowId(id) {
+  const hiddenIds = getHiddenRowIds();
+  if (!hiddenIds.includes(id)) {
+    hiddenIds.push(id);
+    setHiddenRowIds(hiddenIds);
+  }
+}
+
+function removeHiddenRowId(id) {
+  const hiddenIds = getHiddenRowIds();
+  const index = hiddenIds.indexOf(id);
+  if (index > -1) {
+    hiddenIds.splice(index, 1);
+    setHiddenRowIds(hiddenIds);
+  }
+}
+
+// 페이지 로드 시 초기화
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadOptionsData();
+  
+  // localStorage에서 임시 데이터 복원 시도
+  if (!loadFromLocalStorage()) {
+    // 임시 데이터가 없으면 빈 행 생성
+    for (let i = 1; i <= 30; i++) {
+      addRow(i);
+    }
+  }
+  
+  setupKeyboardShortcuts();
+  setupPasteHandler();
+  setupDragSelection();
+  
+});
+
+// 옵션 데이터 불러오기
+async function loadOptionsData() {
+  currentOptions = await loadOptions();
+  if (!currentOptions) {
+    showAlert('옵션을 불러올 수 없습니다. 옵션 설정 페이지에서 먼저 설정해주세요.', 'error');
+  }
+}
+
+// 행 추가
+function addRow(rowNum) {
+  const tbody = document.getElementById('tableBody');
+  const tr = document.createElement('tr');
+  tr.dataset.rowIndex = tableData.length;
+  tr.refs = {};
+  
+  // 번호
+  const noTd = document.createElement('td');
+  noTd.textContent = rowNum || (tableData.length + 1);
+  tr.appendChild(noTd);
+  
+  // 시간 (B)
+  const timeTd = document.createElement('td');
+  const timeInput = document.createElement('input');
+  timeInput.type = 'text';
+  timeInput.dataset.k = 'B';
+  timeInput.dataset.colIndex = 1; // B열은 1번 인덱스 (A=0, B=1)
+  timeInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 1);
+  });
+  timeInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 1);
+  });
+  timeInput.oninput = () => { saveToLocalStorage(); };
+  timeTd.appendChild(timeInput);
+  tr.appendChild(timeTd);
+  tr.refs.B = timeInput;
+  
+  // 리그 (C)
+  const leagueTd = document.createElement('td');
+  const leagueInput = document.createElement('input');
+  leagueInput.type = 'text';
+  leagueInput.dataset.k = 'C';
+  leagueInput.dataset.colIndex = 2; // C열은 2번 인덱스
+  leagueInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 2);
+  });
+  leagueInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 2);
+  });
+  leagueInput.oninput = () => { saveToLocalStorage(); };
+  leagueTd.appendChild(leagueInput);
+  tr.appendChild(leagueTd);
+  tr.refs.C = leagueInput;
+  
+  // 홈팀 (D)
+  const homeTd = document.createElement('td');
+  const homeInput = document.createElement('input');
+  homeInput.type = 'text';
+  homeInput.dataset.k = 'D';
+  homeInput.dataset.colIndex = 3; // D열은 3번 인덱스
+  homeInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 3);
+  });
+  homeInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 3);
+  });
+  homeInput.oninput = () => { saveToLocalStorage(); };
+  homeTd.appendChild(homeInput);
+  tr.appendChild(homeTd);
+  tr.refs.D = homeInput;
+  
+  // 원정팀 (E)
+  const awayTd = document.createElement('td');
+  const awayInput = document.createElement('input');
+  awayInput.type = 'text';
+  awayInput.dataset.k = 'E';
+  awayInput.dataset.colIndex = 4; // E열은 4번 인덱스
+  awayInput.addEventListener('click', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 4);
+  });
+  awayInput.addEventListener('focus', function() {
+    const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+    selectCell(this, rowIndex, 4);
+  });
+  awayInput.oninput = () => { saveToLocalStorage(); };
+  awayTd.appendChild(awayInput);
+  tr.appendChild(awayTd);
+  tr.refs.E = awayInput;
+  
+  // 승정보 (F) - select
+  const fTd = document.createElement('td');
+  const fSelect = document.createElement('select');
+  ['', '홈', '원정'].forEach(v => {
+    const option = document.createElement('option');
+    option.textContent = v;
+    option.value = v;
+    fSelect.appendChild(option);
+  });
+  fSelect.dataset.k = 'F';
+  fSelect.onchange = () => { updateRow(tr); saveToLocalStorage(); };
+  fTd.appendChild(fSelect);
+  tr.appendChild(fTd);
+  tr.refs.F = fSelect;
+  
+  // 승 (G)
+  const gTd = document.createElement('td');
+  gTd.className = 'orange-input-cell';
+  const gInput = document.createElement('input');
+  gInput.type = 'number';
+  gInput.step = '0.01';
+  gInput.dataset.k = 'G';
+  gInput.oninput = () => { updateTime(gTd); updateRow(tr); saveToLocalStorage(); };
+  gTd.appendChild(gInput);
+  tr.appendChild(gTd);
+  tr.refs.G = gInput;
+  
+  // 오버정보 (H)
+  const hTd = document.createElement('td');
+  const hInput = document.createElement('input');
+  hInput.type = 'text';
+  hInput.dataset.k = 'H';
+  hInput.oninput = () => { saveToLocalStorage(); };
+  hTd.appendChild(hInput);
+  tr.appendChild(hTd);
+  tr.refs.H = hInput;
+  
+  // 오버 (I)
+  const iTd = document.createElement('td');
+  iTd.className = 'orange-input-cell';
+  const iInput = document.createElement('input');
+  iInput.type = 'number';
+  iInput.step = '0.01';
+  iInput.dataset.k = 'I';
+  iInput.oninput = () => { updateTime(iTd); updateRow(tr); saveToLocalStorage(); };
+  iTd.appendChild(iInput);
+  tr.appendChild(iTd);
+  tr.refs.I = iInput;
+  
+  // 75분전 승 (J)
+  const jTd = document.createElement('td');
+  jTd.className = 'orange-input-cell';
+  const jInput = document.createElement('input');
+  jInput.type = 'number';
+  jInput.step = '0.01';
+  jInput.dataset.k = 'J';
+  jInput.oninput = () => { updateTime(jTd); updateRow(tr); saveToLocalStorage(); };
+  jTd.appendChild(jInput);
+  tr.appendChild(jTd);
+  tr.refs.J = jInput;
+  
+  // 75분전 오버 (K)
+  const kTd = document.createElement('td');
+  kTd.className = 'orange-input-cell';
+  const kInput = document.createElement('input');
+  kInput.type = 'number';
+  kInput.step = '0.01';
+  kInput.dataset.k = 'K';
+  kInput.oninput = () => { updateTime(kTd); updateRow(tr); saveToLocalStorage(); };
+  kTd.appendChild(kInput);
+  tr.appendChild(kTd);
+  tr.refs.K = kInput;
+  
+  // 현배당 승 (L)
+  const lTd = document.createElement('td');
+  lTd.className = 'orange-input-cell';
+  const lInput = document.createElement('input');
+  lInput.type = 'number';
+  lInput.step = '0.01';
+  lInput.dataset.k = 'L';
+  lInput.oninput = () => { updateTime(lTd); updateRow(tr); saveToLocalStorage(); };
+  lTd.appendChild(lInput);
+  tr.appendChild(lTd);
+  tr.refs.L = lInput;
+  
+  // 현배당 오버 (M)
+  const mTd = document.createElement('td');
+  mTd.className = 'orange-input-cell';
+  const mInput = document.createElement('input');
+  mInput.type = 'number';
+  mInput.step = '0.01';
+  mInput.dataset.k = 'M';
+  mInput.oninput = () => { updateTime(mTd); updateRow(tr); saveToLocalStorage(); };
+  mTd.appendChild(mInput);
+  tr.appendChild(mTd);
+  tr.refs.M = mInput;
+  
+  // 하락수치 승 (N) - 계산된 값
+  const nTd = document.createElement('td');
+  nTd.className = 'calculated-cell';
+  tr.appendChild(nTd);
+  tr.nTd = nTd;
+  
+  // 하락수치 오버 (O) - 계산된 값
+  const oTd = document.createElement('td');
+  oTd.className = 'calculated-cell';
+  tr.appendChild(oTd);
+  tr.oTd = oTd;
+  
+  // 판정 승 (P) - 등급
+  const pTd = document.createElement('td');
+  pTd.className = 'grade-cell';
+  tr.appendChild(pTd);
+  tr.pTd = pTd;
+  
+  // 판정 오버 (Q) - 등급
+  const qTd = document.createElement('td');
+  qTd.className = 'grade-cell';
+  tr.appendChild(qTd);
+  tr.qTd = qTd;
+  
+  // 조작 (삽입/삭제/숨김 버튼)
+  const opTd = document.createElement('td');
+  const btnBox = document.createElement('div');
+  btnBox.className = 'btn-box';
+  
+  const insertBtn = document.createElement('button');
+  insertBtn.textContent = '삽입';
+  insertBtn.className = 'insert-btn';
+  insertBtn.onclick = () => insertAfter(tr);
+  
+  const delBtn = document.createElement('button');
+  delBtn.textContent = '삭제';
+  delBtn.className = 'del-btn';
+  delBtn.onclick = () => {
+    // A열을 제외한 모든 열에 내용이 있는지 확인
+    const hasContent = () => {
+      // 입력 필드 확인 (B, C, D, E, F, G, H, I, J, K, L, M)
+      const inputCols = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+      for (const col of inputCols) {
+        if (tr.refs[col] && tr.refs[col].value && tr.refs[col].value.trim() !== '') {
+          return true;
+        }
+      }
+      
+      // 계산된 값 확인 (N, O, P, Q)
+      if (tr.nTd && tr.nTd.textContent && tr.nTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.oTd && tr.oTd.textContent && tr.oTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.pTd && tr.pTd.textContent && tr.pTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.qTd && tr.qTd.textContent && tr.qTd.textContent.trim() !== '') {
+        return true;
+      }
+      
+      return false;
+    };
+    
+    // 내용이 있으면 확인 메시지 표시
+    if (hasContent()) {
+      if (!confirm('삭제하겠습니까?')) {
+        return; // No를 선택하면 삭제 취소
+      }
+    }
+    
+    // Yes를 선택하거나 내용이 없으면 삭제
+    tr.remove();
+    reindex();
+  };
+  
+  const hideBtn = document.createElement('button');
+  hideBtn.textContent = '숨김';
+  hideBtn.className = 'hide-btn';
+  hideBtn.onclick = () => {
+    // 행의 고유 ID 생성 (B, C, D, E 값을 조합)
+    const rowId = `${tr.refs.B?.value || ''}_${tr.refs.C?.value || ''}_${tr.refs.D?.value || ''}_${tr.refs.E?.value || ''}`;
+    if (rowId !== '___') { // 빈 행이 아닌 경우만
+      const hiddenIds = getHiddenRowIds();
+      const isHidden = hiddenIds.includes(rowId);
+      
+      if (isHidden) {
+        // 숨김 해제
+        removeHiddenRowId(rowId);
+        hideBtn.textContent = '숨김';
+        hideBtn.style.opacity = '1';
+        opTd.style.backgroundColor = ''; // R열 배경색 제거
+      } else {
+        // 숨김 처리
+        addHiddenRowId(rowId);
+        hideBtn.textContent = '숨김됨';
+        hideBtn.style.opacity = '0.5';
+        opTd.style.backgroundColor = '#808080'; // R열 배경색 어둡게
+      }
+    }
+  };
+  tr.refs.hideBtn = hideBtn; // 숨김 버튼 참조 저장
+  tr.refs.opTd = opTd; // R열 참조 저장
+  
+  btnBox.appendChild(insertBtn);
+  btnBox.appendChild(delBtn);
+  btnBox.appendChild(hideBtn);
+  opTd.appendChild(btnBox);
+  tr.appendChild(opTd);
+  
+  // 행의 값이 변경될 때 숨김 상태 확인
+  const checkHideStatus = () => {
+    const rowId = `${tr.refs.B?.value || ''}_${tr.refs.C?.value || ''}_${tr.refs.D?.value || ''}_${tr.refs.E?.value || ''}`;
+    const hiddenIds = getHiddenRowIds();
+    if (hiddenIds.includes(rowId)) {
+      hideBtn.textContent = '숨김됨';
+      hideBtn.style.opacity = '0.5';
+      opTd.style.backgroundColor = '#808080'; // R열 배경색 어둡게
+    } else {
+      hideBtn.textContent = '숨김';
+      hideBtn.style.opacity = '1';
+      opTd.style.backgroundColor = ''; // R열 배경색 제거
+    }
+  };
+  
+  // B, C, D, E 값이 변경될 때마다 숨김 상태 확인
+  ['B', 'C', 'D', 'E'].forEach(key => {
+    if (tr.refs[key]) {
+      tr.refs[key].addEventListener('input', checkHideStatus);
+    }
+  });
+  
+  // 초기 숨김 상태 확인
+  setTimeout(checkHideStatus, 0);
+  
+  tbody.appendChild(tr);
+  
+  // 초기 데이터 객체 생성
+  const rowData = {};
+  ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'].forEach(col => {
+    rowData[col] = '';
+  });
+  tableData.push(rowData);
+  
+  return tr;
+}
+
+// 시간 업데이트
+function updateTime(td) {
+  const d = new Date();
+  const t = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  let s = td.querySelector('small');
+  if (!s) {
+    s = document.createElement('small');
+    td.appendChild(s);
+  }
+  s.textContent = t;
+}
+
+// 행 계산 업데이트
+function updateRow(tr) {
+  if (!currentOptions) return;
+  
+  // 빈 값은 NaN으로 처리 (0으로 변환하지 않음)
+  const G = tr.refs.G.value.trim() === '' ? NaN : parseFloat(tr.refs.G.value);
+  const J = tr.refs.J.value.trim() === '' ? NaN : parseFloat(tr.refs.J.value);
+  const L = tr.refs.L.value.trim() === '' ? NaN : parseFloat(tr.refs.L.value);
+  const I = tr.refs.I.value.trim() === '' ? NaN : parseFloat(tr.refs.I.value);
+  const K = tr.refs.K.value.trim() === '' ? NaN : parseFloat(tr.refs.K.value);
+  const M = tr.refs.M.value.trim() === '' ? NaN : parseFloat(tr.refs.M.value);
+  
+  // N열: G-L
+  tr.nTd.textContent = (!isNaN(G) && !isNaN(L)) ? (G - L).toFixed(2) : '';
+  
+  // O열: I-M
+  tr.oTd.textContent = (!isNaN(I) && !isNaN(M)) ? (I - M).toFixed(2) : '';
+  
+  // P열 계산 (옵션 기반)
+  const rowData = {
+    G: isNaN(G) ? '' : G.toString(),
+    I: isNaN(I) ? '' : I.toString(),
+    J: isNaN(J) ? '' : J.toString(),
+    K: isNaN(K) ? '' : K.toString(),
+    L: isNaN(L) ? '' : L.toString(),
+    M: isNaN(M) ? '' : M.toString()
+  };
+  
+  const pValue = calculatePColumn(rowData, currentOptions);
+  tr.pTd.textContent = pValue ? pValue.toUpperCase() : '';
+  // P열 등급에 따른 색상 클래스 및 인라인 스타일 적용
+  if (pValue) {
+    const pGrade = pValue.toUpperCase();
+    tr.pTd.className = 'grade-cell grade-P-' + pGrade;
+    tr.pTd.style.color = '#000'; // 검은색 텍스트
+    // 등급별 배경색 직접 적용
+    if (pGrade === 'A') {
+      tr.pTd.style.backgroundColor = '#ff6b6b'; // 붉은색
+    } else if (pGrade === 'B') {
+      tr.pTd.style.backgroundColor = '#ffd93d'; // 노란색
+    } else if (pGrade === 'C') {
+      tr.pTd.style.backgroundColor = '#4d96ff'; // 파란색
+    } else if (pGrade === 'D') {
+      tr.pTd.style.backgroundColor = '#95e1d3'; // 연두색
+    }
+  } else {
+    tr.pTd.className = 'grade-cell';
+    tr.pTd.style.backgroundColor = '';
+    tr.pTd.style.color = '';
+  }
+  
+  // Q열 계산 (옵션 기반) - 체크 표시
+  const qValue = calculateQColumn(rowData, currentOptions);
+  tr.qTd.textContent = qValue === 'o' ? '✓' : '';
+  tr.qTd.className = 'grade-cell' + (qValue === 'o' ? ' grade-Q' : '');
+  // Q열은 배경색 없이 체크 표시만 (크고 굵게)
+  if (qValue === 'o') {
+    tr.qTd.style.backgroundColor = '';
+    tr.qTd.style.color = '#000';
+    tr.qTd.style.fontWeight = '900';
+    tr.qTd.style.fontSize = '1.8em';
+  } else {
+    tr.qTd.style.backgroundColor = '';
+    tr.qTd.style.color = '';
+    tr.qTd.style.fontWeight = '';
+    tr.qTd.style.fontSize = '';
+  }
+  
+  // 데이터 업데이트
+  if (tableData[tr.dataset.rowIndex]) {
+    tableData[tr.dataset.rowIndex].P = pValue;
+    tableData[tr.dataset.rowIndex].Q = qValue;
+    tableData[tr.dataset.rowIndex].N = tr.nTd.textContent;
+    tableData[tr.dataset.rowIndex].O = tr.oTd.textContent;
+  }
+}
+
+// 삽입
+function insertAfter(tr) {
+  const newRow = addRow(parseInt(tr.cells[0].textContent) + 1);
+  tr.parentNode.insertBefore(newRow, tr.nextSibling);
+  reindex();
+}
+
+// 번호 재인덱싱
+function reindex() {
+  const rows = document.querySelectorAll('#tableBody tr');
+  rows.forEach((r, i) => {
+    r.cells[0].textContent = i + 1;
+  });
+}
+
+// 모든 행 계산
+function calculateAll() {
+  if (!currentOptions) {
+    showAlert('옵션을 먼저 불러와주세요.', 'error');
+    return;
+  }
+  
+  const rows = document.querySelectorAll('#tableBody tr');
+  rows.forEach((row) => {
+    updateRow(row);
+  });
+  
+  showAlert('모든 행이 계산되었습니다.');
+}
+
+// 모든 데이터 저장
+async function saveAll() {
+  if (!currentOptions) {
+    showAlert('옵션을 먼저 불러와주세요.', 'error');
+    return;
+  }
+  
+  const rows = document.querySelectorAll('#tableBody tr');
+  const dataToSave = [];
+  
+  rows.forEach((row) => {
+    updateRow(row); // 계산 후 저장
+    
+    const rowData = {
+      A: row.cells[0].textContent,
+      B: row.refs.B.value,
+      C: row.refs.C.value,
+      D: row.refs.D.value,
+      E: row.refs.E.value,
+      F: row.refs.F.value,
+      G: row.refs.G.value,
+      H: row.refs.H.value,
+      I: row.refs.I.value,
+      J: row.refs.J.value,
+      K: row.refs.K.value,
+      L: row.refs.L.value,
+      M: row.refs.M.value,
+      N: row.nTd.textContent,
+      O: row.oTd.textContent,
+      P: row.pTd.textContent,
+      Q: row.qTd.textContent
+    };
+    
+    // 빈 행이 아닌 경우만 저장
+    const hasData = ['B', 'C', 'D', 'E', 'G', 'H', 'I', 'J', 'K', 'L', 'M'].some(k => rowData[k]);
+    if (hasData) {
+      dataToSave.push(rowData);
+    }
+  });
+  
+  if (dataToSave.length === 0) {
+    showAlert('저장할 데이터가 없습니다.', 'error');
+    return;
+  }
+  
+  try {
+    for (const data of dataToSave) {
+      await saveData(data);
+    }
+    showAlert(`${dataToSave.length}개의 행이 저장되었습니다.`);
+    
+    // 서버 저장 성공 시 localStorage도 업데이트
+    saveToLocalStorage();
+  } catch (error) {
+    showAlert('데이터 저장에 실패했습니다.', 'error');
+  }
+}
+
+// 데이터 불러오기
+async function loadTableData() {
+  try {
+    const data = await loadData();
+    if (data.length === 0) {
+      showAlert('저장된 데이터가 없습니다.', 'error');
+      return;
+    }
+    
+    // 기존 행 제거
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    tableData = [];
+    
+    // 데이터 로드
+    data.forEach((item, index) => {
+      const row = addRow(index + 1);
+      if (row.refs) {
+        row.refs.B.value = item.B || '';
+        row.refs.C.value = item.C || '';
+        row.refs.D.value = item.D || '';
+        row.refs.E.value = item.E || '';
+        row.refs.F.value = item.F || '';
+        row.refs.G.value = item.G || '';
+        row.refs.H.value = item.H || '';
+        row.refs.I.value = item.I || '';
+        row.refs.J.value = item.J || '';
+        row.refs.K.value = item.K || '';
+        row.refs.L.value = item.L || '';
+        row.refs.M.value = item.M || '';
+      }
+      updateRow(row);
+    });
+    
+    showAlert(`${data.length}개의 행이 불러와졌습니다.`);
+  } catch (error) {
+    showAlert('데이터 불러오기에 실패했습니다.', 'error');
+  }
+}
+
+// 셀 선택 함수
+function selectCell(input, rowIndex, colIndex, skipClear) {
+  // skipClear가 true가 아니면 기존 선택 초기화
+  if (!skipClear) {
+    clearCellSelection();
+  }
+  
+  selectedCell = input;
+  input.classList.add('selected');
+  input.focus();
+  
+  // 선택된 셀 정보 저장
+  pasteStartCell = {
+    input: input,
+    rowIndex: rowIndex,
+    colIndex: colIndex
+  };
+}
+
+// 셀 선택 초기화
+function clearCellSelection() {
+  if (selectedCell) {
+    selectedCell.classList.remove('selected');
+  }
+  selectedCell = null;
+  selectedCells.forEach(cell => {
+    if (cell.classList) cell.classList.remove('cell-selected');
+  });
+  selectedCells.clear();
+}
+
+// 선택된 셀들 삭제
+function clearSelectedCells() {
+  selectedCells.forEach(cell => {
+    if (cell.tagName === 'INPUT' || cell.tagName === 'SELECT') {
+      cell.value = '';
+      if (cell.oninput) {
+        cell.oninput();
+      }
+      const tr = cell.closest('tr');
+      if (tr) updateRow(tr);
+    }
+    cell.classList.remove('cell-selected');
+  });
+  selectedCells.clear();
+  saveToLocalStorage();
+}
+
+// 드래그 선택 설정
+function setupDragSelection() {
+  const tbody = document.getElementById('tableBody');
+  let startCell = null;
+  let mouseDownPos = null;
+  
+  tbody.addEventListener('mousedown', (e) => {
+    const td = e.target.closest('td');
+    if (!td) return;
+    
+    const input = td.querySelector('input, select');
+    if (!input) return;
+    
+    // 조작 열은 제외
+    if (td.querySelector('.btn-box')) return;
+    
+    // 계산된 열(N, O, P, Q)은 제외
+    if (td.classList.contains('calculated-cell') || td.classList.contains('grade-cell')) return;
+    
+    // 버튼 클릭은 제외
+    if (e.target.tagName === 'BUTTON') return;
+    
+    mouseDownPos = { x: e.clientX, y: e.clientY };
+    startCell = { td, input, row: td.closest('tr') };
+    
+    // Shift 키를 누르지 않으면 기존 선택 초기화
+    if (!e.shiftKey) {
+      clearCellSelection();
+    }
+    
+    // 시작 셀 선택
+    if (!e.shiftKey) {
+      const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(startCell.row);
+      const colIndex = getColumnIndex(td);
+      selectCell(startCell.input, rowIndex, colIndex, true);
+    }
+    
+    // input 내부 클릭이 아닌 경우에만 preventDefault
+    if (e.target !== input && e.target.tagName !== 'OPTION') {
+      e.preventDefault();
+    }
+  });
+  
+  tbody.addEventListener('mousemove', (e) => {
+    if (!startCell || !mouseDownPos) return;
+    
+    // 마우스가 3픽셀 이상 움직였을 때만 드래그 시작
+    const deltaX = Math.abs(e.clientX - mouseDownPos.x);
+    const deltaY = Math.abs(e.clientY - mouseDownPos.y);
+    
+    if (deltaX > 3 || deltaY > 3) {
+      isDragging = true;
+      
+      const td = e.target.closest('td');
+      if (!td) return;
+      
+      const input = td.querySelector('input, select');
+      if (!input) return;
+      
+      // 조작 열은 제외
+      if (td.querySelector('.btn-box')) return;
+      
+      // 계산된 열은 제외
+      if (td.classList.contains('calculated-cell') || td.classList.contains('grade-cell')) return;
+      
+      const endRow = td.closest('tr');
+      const startRow = startCell.row;
+      
+      const startRowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(startRow);
+      const endRowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(endRow);
+      const startColIndex = getColumnIndex(startCell.td);
+      const endColIndex = getColumnIndex(td);
+      
+      // 범위 내의 모든 셀 선택
+      const minRow = Math.min(startRowIndex, endRowIndex);
+      const maxRow = Math.max(startRowIndex, endRowIndex);
+      const minCol = Math.min(startColIndex, endColIndex);
+      const maxCol = Math.max(startColIndex, endColIndex);
+      
+      // 기존 선택 제거
+      selectedCells.forEach(cell => {
+        cell.classList.remove('cell-selected');
+      });
+      selectedCells.clear();
+      
+      // 범위 내의 모든 셀 선택
+      // colIdx는 0부터 시작 (0=번호, 1=B, 2=C, ...)
+      for (let rowIdx = minRow; rowIdx <= maxRow; rowIdx++) {
+        const row = tbody.querySelectorAll('tr')[rowIdx];
+        if (!row || !row.refs) continue;
+        
+        for (let colIdx = minCol; colIdx <= maxCol; colIdx++) {
+          // 번호 열(0)은 제외
+          if (colIdx === 0) continue;
+          
+          const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M' };
+          const colKey = colMap[colIdx];
+          if (colKey && row.refs[colKey]) {
+            const cell = row.refs[colKey];
+            selectedCells.add(cell);
+            cell.classList.add('cell-selected');
+          }
+        }
+      }
+    }
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isDragging && startCell) {
+      isDragging = false;
+    }
+    startCell = null;
+    mouseDownPos = null;
+  });
+}
+
+// 열 인덱스 가져오기
+function getColumnIndex(td) {
+  const row = td.closest('tr');
+  if (!row) return -1;
+  
+  const cells = Array.from(row.querySelectorAll('td'));
+  const index = cells.indexOf(td);
+  
+  // 번호 열이 0번이므로, B열은 1번부터 시작
+  // index가 0이면 번호 열, 1이면 B열, 2이면 C열...
+  return index; // index를 그대로 반환 (번호 열=0, B열=1, C열=2...)
+}
+
+// 키보드 단축키 설정
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    // Delete 또는 Backspace 키로 선택된 셀 삭제
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey && !e.metaKey) {
+      if (selectedCells.size > 0) {
+        e.preventDefault();
+        clearSelectedCells();
+        return;
+      } else if (selectedCell && document.activeElement === selectedCell) {
+        e.preventDefault();
+        selectedCell.value = '';
+        if (selectedCell.oninput) {
+          selectedCell.oninput();
+        }
+        const tr = selectedCell.closest('tr');
+        if (tr) updateRow(tr);
+        saveToLocalStorage();
+        return;
+      }
+    }
+    
+    if (e.ctrlKey && e.key === 'c') {
+      // 복사는 기본 동작 사용
+      return;
+    }
+    
+    // Tab, Enter, 화살표 키로 셀 이동
+    if (selectedCell && document.activeElement === selectedCell) {
+      // rowIndex를 동적으로 가져오기
+      const tbody = document.getElementById('tableBody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const tr = selectedCell.closest('tr');
+      const rowIndex = rows.indexOf(tr);
+      const colIndex = parseInt(selectedCell.dataset.colIndex);
+      
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        clearCellSelection();
+        moveToNextCell(rowIndex, colIndex, e.shiftKey);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        clearCellSelection();
+        moveToNextCell(rowIndex, colIndex, false);
+      } else if (e.key === 'ArrowRight' && !e.ctrlKey) {
+        e.preventDefault();
+        clearCellSelection();
+        moveToNextCell(rowIndex, colIndex, false);
+      } else if (e.key === 'ArrowLeft' && !e.ctrlKey) {
+        e.preventDefault();
+        clearCellSelection();
+        moveToNextCell(rowIndex, colIndex, true);
+      } else if (e.key === 'ArrowDown' && !e.ctrlKey) {
+        e.preventDefault();
+        clearCellSelection();
+        moveToCell(rowIndex + 1, colIndex);
+      } else if (e.key === 'ArrowUp' && !e.ctrlKey) {
+        e.preventDefault();
+        clearCellSelection();
+        moveToCell(rowIndex - 1, colIndex);
+      }
+    }
+  });
+}
+
+// 다음 셀로 이동
+function moveToNextCell(rowIndex, colIndex, reverse) {
+  const cols = ['B', 'C', 'D', 'E']; // A, B, C, D, E 열 (A는 번호 열이므로 제외)
+  let nextColIndex = reverse ? colIndex - 1 : colIndex + 1;
+  
+  if (nextColIndex < 1) {
+    // 이전 행의 마지막 열로
+    if (rowIndex > 0) {
+      moveToCell(rowIndex - 1, cols.length);
+    }
+  } else if (nextColIndex > cols.length) {
+    // 다음 행의 첫 열로
+    moveToCell(rowIndex + 1, 1);
+  } else {
+    moveToCell(rowIndex, nextColIndex);
+  }
+}
+
+// 특정 셀로 이동
+function moveToCell(rowIndex, colIndex) {
+  if (rowIndex < 0) return;
+  
+  const tbody = document.getElementById('tableBody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  
+  if (rowIndex >= rows.length) {
+    // 행이 없으면 추가
+    addRow(rowIndex + 1);
+    const newRows = Array.from(tbody.querySelectorAll('tr'));
+    if (newRows[rowIndex]) {
+      const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
+      const colKey = colMap[colIndex];
+      if (colKey && newRows[rowIndex].refs && newRows[rowIndex].refs[colKey]) {
+        const actualRowIndex = rows.length; // 새로 추가된 행의 인덱스
+        selectCell(newRows[rowIndex].refs[colKey], actualRowIndex, colIndex);
+      }
+    }
+    return;
+  }
+  
+  const row = rows[rowIndex];
+  if (row && row.refs) {
+    const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
+    const colKey = colMap[colIndex];
+    if (colKey && row.refs[colKey]) {
+      selectCell(row.refs[colKey], rowIndex, colIndex);
+    }
+  }
+}
+
+// 붙여넣기 핸들러 설정
+function setupPasteHandler() {
+  document.addEventListener('paste', (e) => {
+    if (!pasteStartCell) return;
+    
+    e.preventDefault();
+    
+    const clipboardData = e.clipboardData || window.clipboardData;
+    const pastedText = clipboardData.getData('text');
+    
+    if (pastedText) {
+      pasteData(pastedText, pasteStartCell);
+    }
+  });
+}
+
+// 데이터 붙여넣기 함수
+function pasteData(text, startCell) {
+  if (!startCell) return;
+  
+  const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+  if (lines.length === 0) return;
+  
+  const tbody = document.getElementById('tableBody');
+  let currentRowIndex = startCell.rowIndex;
+  let currentColIndex = startCell.colIndex;
+  
+  // 열 매핑: B=1, C=2, D=3, E=4 (A열은 번호이므로 제외)
+  const colMap = { 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
+  
+  lines.forEach((line, lineIndex) => {
+    const values = line.split('\t');
+    
+    // 필요한 행이 없으면 추가
+    while (currentRowIndex >= tbody.querySelectorAll('tr').length) {
+      addRow(tbody.querySelectorAll('tr').length + 1);
+    }
+    
+    const rows = tbody.querySelectorAll('tr');
+    const currentRow = rows[currentRowIndex];
+    
+    if (!currentRow || !currentRow.refs) return;
+    
+    // 엑셀에서 복사한 데이터 처리
+    // A열(번호)이 포함되어 있을 수 있으므로, 첫 번째 값이 숫자인지 확인
+    let startColOffset = 0;
+    
+    // 만약 첫 번째 값이 숫자이고, 현재 선택된 열이 B열(1)이라면
+    // A열이 포함된 것으로 간주하고 건너뛰기
+    if (currentColIndex === 1 && values.length > 0) {
+      const firstValue = values[0].trim();
+      // 첫 번째 값이 숫자이고, 현재 선택이 B열이면 A열이 포함된 것으로 간주
+      if (/^\d+$/.test(firstValue)) {
+        startColOffset = 1; // A열 건너뛰기
+      }
+    }
+    
+    // 각 열에 값 붙여넣기 (B, C, D, E 열만)
+    values.forEach((value, colOffset) => {
+      const actualColOffset = colOffset - startColOffset;
+      const targetColIndex = currentColIndex + actualColOffset;
+      
+      // B, C, D, E 열만 처리 (1~4)
+      if (targetColIndex >= 1 && targetColIndex <= 4) {
+        const colKey = colMap[targetColIndex];
+        
+        if (colKey && currentRow.refs[colKey]) {
+          const input = currentRow.refs[colKey];
+          input.value = value.trim();
+          
+          // tableData 업데이트
+          if (tableData[currentRowIndex]) {
+            tableData[currentRowIndex][colKey] = value.trim();
+          }
+          
+          // 행 계산 업데이트
+          updateRow(currentRow);
+        }
+      }
+    });
+    
+    currentRowIndex++;
+  });
+  
+  // 마지막으로 붙여넣은 셀 선택
+  if (lines.length > 0) {
+    const lastLineValues = lines[lines.length - 1].split('\t');
+    const finalRowIndex = startCell.rowIndex + lines.length - 1;
+    // 마지막 열 계산 (B, C, D, E 중 하나)
+    let lastColOffset = lastLineValues.length - 1;
+    if (currentColIndex === 1 && /^\d+$/.test(lastLineValues[0]?.trim())) {
+      lastColOffset--; // A열이 포함된 경우 보정
+    }
+    const finalColIndex = Math.min(currentColIndex + lastColOffset, 4);
+    moveToCell(finalRowIndex, finalColIndex);
+  }
+  
+  // 붙여넣기 후 localStorage에 저장
+  saveToLocalStorage();
+}
+
+// localStorage에 임시 저장
+function saveToLocalStorage() {
+  const tbody = document.getElementById('tableBody');
+  const rows = tbody.querySelectorAll('tr');
+  const tempData = [];
+  
+  rows.forEach((row) => {
+    if (row.refs) {
+      // 시간 정보 추출 (small 태그에서)
+      const getTimeFromCell = (ref) => {
+        if (!ref) return '';
+        const td = ref.parentElement;
+        if (!td) return '';
+        const small = td.querySelector('small');
+        return small ? small.textContent : '';
+      };
+      
+      const rowData = {
+        B: row.refs.B.value || '',
+        C: row.refs.C.value || '',
+        D: row.refs.D.value || '',
+        E: row.refs.E.value || '',
+        F: row.refs.F.value || '',
+        G: row.refs.G.value || '',
+        G_time: getTimeFromCell(row.refs.G),
+        H: row.refs.H.value || '',
+        I: row.refs.I.value || '',
+        I_time: getTimeFromCell(row.refs.I),
+        J: row.refs.J.value || '',
+        J_time: getTimeFromCell(row.refs.J),
+        K: row.refs.K.value || '',
+        K_time: getTimeFromCell(row.refs.K),
+        L: row.refs.L.value || '',
+        L_time: getTimeFromCell(row.refs.L),
+        M: row.refs.M.value || '',
+        M_time: getTimeFromCell(row.refs.M)
+      };
+      
+      // 빈 행이 아닌 경우만 저장
+      const hasData = ['B', 'C', 'D', 'E', 'G', 'H', 'I', 'J', 'K', 'L', 'M'].some(k => rowData[k]);
+      if (hasData) {
+        tempData.push(rowData);
+      }
+    }
+  });
+  
+  try {
+    localStorage.setItem('inputSheetTemp', JSON.stringify(tempData));
+  } catch (error) {
+    console.warn('localStorage 저장 실패:', error);
+  }
+}
+
+// localStorage에서 복원
+function loadFromLocalStorage() {
+  try {
+    const tempDataStr = localStorage.getItem('inputSheetTemp');
+    if (tempDataStr) {
+      const tempData = JSON.parse(tempDataStr);
+      if (tempData && tempData.length > 0) {
+        // 기존 행 제거
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        tableData = [];
+        
+        // 데이터 복원
+        tempData.forEach((item, index) => {
+          const row = addRow(index + 1);
+          if (row.refs) {
+            row.refs.B.value = item.B || '';
+            row.refs.C.value = item.C || '';
+            row.refs.D.value = item.D || '';
+            row.refs.E.value = item.E || '';
+            row.refs.F.value = item.F || '';
+            row.refs.G.value = item.G || '';
+            row.refs.H.value = item.H || '';
+            row.refs.I.value = item.I || '';
+            row.refs.J.value = item.J || '';
+            row.refs.K.value = item.K || '';
+            row.refs.L.value = item.L || '';
+            row.refs.M.value = item.M || '';
+            
+            // 시간 정보 복원
+            const restoreTime = (ref, timeStr) => {
+              if (ref && timeStr) {
+                const td = ref.parentElement;
+                if (td) {
+                  let s = td.querySelector('small');
+                  if (!s) {
+                    s = document.createElement('small');
+                    td.appendChild(s);
+                  }
+                  s.textContent = timeStr;
+                }
+              }
+            };
+            
+            // G, I, J, K, L, M 열의 시간 정보 복원
+            if (item.G && item.G_time) restoreTime(row.refs.G, item.G_time);
+            if (item.I && item.I_time) restoreTime(row.refs.I, item.I_time);
+            if (item.J && item.J_time) restoreTime(row.refs.J, item.J_time);
+            if (item.K && item.K_time) restoreTime(row.refs.K, item.K_time);
+            if (item.L && item.L_time) restoreTime(row.refs.L, item.L_time);
+            if (item.M && item.M_time) restoreTime(row.refs.M, item.M_time);
+            
+            // 행의 값이 모두 로드된 후 숨김 상태 확인
+            setTimeout(() => {
+              if (row.refs.hideBtn && row.refs.opTd) {
+                const rowId = `${row.refs.B?.value || ''}_${row.refs.C?.value || ''}_${row.refs.D?.value || ''}_${row.refs.E?.value || ''}`;
+                const hiddenIds = getHiddenRowIds();
+                if (hiddenIds.includes(rowId)) {
+                  row.refs.hideBtn.textContent = '숨김됨';
+                  row.refs.hideBtn.style.opacity = '0.5';
+                  row.refs.opTd.style.backgroundColor = '#808080'; // R열 배경색 어둡게
+                } else {
+                  row.refs.hideBtn.textContent = '숨김';
+                  row.refs.hideBtn.style.opacity = '1';
+                  row.refs.opTd.style.backgroundColor = ''; // R열 배경색 제거
+                }
+              }
+            }, 0);
+          }
+          updateRow(row);
+        });
+        
+        // 빈 행 몇 개 추가 (최소 30개 유지)
+        const currentRowCount = tbody.querySelectorAll('tr').length;
+        for (let i = currentRowCount; i < 30; i++) {
+          addRow(i + 1);
+        }
+        
+        return true;
+      }
+    }
+  } catch (error) {
+    console.warn('localStorage 불러오기 실패:', error);
+  }
+  return false;
+}
+
+// 옵션 설정 페이지 열기
+function openOptions() {
+  // 현재 경로에 따라 상대 경로 결정
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/bjb')) {
+    window.location.href = '../options.html';
+  } else {
+    window.location.href = 'options.html';
+  }
+}
+
+// 계정 설정 모달 열기
+function openAccountModal() {
+  const modal = document.getElementById('accountModal');
+  // 새 계정 추가 모드이므로 폼 초기화
+  document.getElementById('accountForm').reset();
+  modal.style.display = 'block';
+}
+
+// 계정 관리 모달 열기
+function openAccountManageModal() {
+  const modal = document.getElementById('accountManageModal');
+  refreshAccountList();
+  modal.style.display = 'block';
+}
+
+// 계정 관리 모달 닫기
+function closeAccountManageModal() {
+  const modal = document.getElementById('accountManageModal');
+  modal.style.display = 'none';
+}
+
+// 모든 계정 가져오기
+function getAllAccounts() {
+  try {
+    const accountsStr = localStorage.getItem('viewPageAccounts');
+    if (accountsStr) {
+      return JSON.parse(accountsStr);
+    }
+    // 기존 단일 계정 형식 호환성 처리
+    const oldAccountStr = localStorage.getItem('viewPageAccount');
+    if (oldAccountStr) {
+      const oldAccount = JSON.parse(oldAccountStr);
+      const accounts = [{
+        userId: oldAccount.userId,
+        password: oldAccount.password,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }];
+      localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+      localStorage.removeItem('viewPageAccount');
+      return accounts;
+    }
+  } catch (error) {
+    console.warn('계정 불러오기 실패:', error);
+  }
+  return [];
+}
+
+// 계정 목록 새로고침
+function refreshAccountList() {
+  const accountList = document.getElementById('accountList');
+  const accounts = getAllAccounts();
+  
+  if (accounts.length === 0) {
+    accountList.innerHTML = '<p class="no-accounts">등록된 계정이 없습니다.</p>';
+    return;
+  }
+  
+  accountList.innerHTML = accounts.map((account, index) => {
+    const createdDate = account.createdAt ? new Date(account.createdAt).toLocaleString('ko-KR') : '알 수 없음';
+    
+    return `
+      <div class="account-item">
+        <div class="account-info">
+          <div class="account-id">아이디: ${account.userId}</div>
+          <div class="account-password">비밀번호: ${account.password}</div>
+          <div class="account-dates">
+            <small>생성일: ${createdDate}</small>
+          </div>
+        </div>
+        <div class="account-actions">
+          <button class="btn btn-danger btn-sm" onclick="deleteAccount('${account.userId}')">삭제</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 계정 삭제
+function deleteAccount(userId) {
+  if (!confirm(`계정 "${userId}"을(를) 삭제하시겠습니까?`)) {
+    return;
+  }
+  
+  let accounts = getAllAccounts();
+  accounts = accounts.filter(acc => acc.userId !== userId);
+  
+  localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+  
+  alert('계정이 삭제되었습니다.');
+  refreshAccountList();
+}
+
+
+// 계정 설정 모달 닫기
+function closeAccountModal() {
+  const modal = document.getElementById('accountModal');
+  modal.style.display = 'none';
+  document.getElementById('accountForm').reset();
+}
+
+// 계정 저장
+function saveAccount(event) {
+  event.preventDefault();
+  
+  const userId = document.getElementById('accountId').value.trim();
+  const password = document.getElementById('accountPassword').value;
+  const passwordConfirm = document.getElementById('accountPasswordConfirm').value;
+  
+  if (!userId) {
+    alert('아이디를 입력해주세요.');
+    return;
+  }
+  
+  if (!password) {
+    alert('비밀번호를 입력해주세요.');
+    return;
+  }
+  
+  if (password !== passwordConfirm) {
+    alert('비밀번호가 일치하지 않습니다.');
+    document.getElementById('accountPasswordConfirm').focus();
+    return;
+  }
+  
+  // 계정 목록 가져오기
+  let accounts = getAllAccounts();
+  
+  // 중복 체크
+  const existingIndex = accounts.findIndex(acc => acc.userId === userId);
+  if (existingIndex !== -1) {
+    // 기존 계정 업데이트
+    accounts[existingIndex].password = password;
+    accounts[existingIndex].updatedAt = new Date().toISOString();
+  } else {
+    // 새 계정 추가
+    accounts.push({
+      userId: userId,
+      password: password,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+  
+  // localStorage에 저장
+  localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+  
+  alert('계정이 생성되었습니다!');
+  closeAccountModal();
+}
+
+
+// 아이디 복사
+function copyUserId(userId) {
+  navigator.clipboard.writeText(userId).then(() => {
+    alert('아이디가 클립보드에 복사되었습니다!');
+  }).catch(() => {
+    // 클립보드 API 실패 시 대체 방법
+    const textArea = document.createElement('textarea');
+    textArea.value = userId;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    alert('아이디가 클립보드에 복사되었습니다!');
+  });
+}
+
+// 모달 외부 클릭 시 닫기
+window.onclick = function(event) {
+  const accountModal = document.getElementById('accountModal');
+  const accountManageModal = document.getElementById('accountManageModal');
+  
+  if (event.target === accountModal) {
+    closeAccountModal();
+  }
+  if (event.target === accountManageModal) {
+    closeAccountManageModal();
+  }
+}
+
+// 시트 전체 삭제
+function deleteAllRows() {
+  if (!confirm('정말로 시트의 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+    return;
+  }
+  
+  // 한 번 더 확인
+  if (!confirm('마지막 확인입니다. 모든 데이터를 삭제하시겠습니까?')) {
+    return;
+  }
+  
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  tableData = [];
+  
+  // 빈 행 30개 추가
+  for (let i = 1; i <= 30; i++) {
+    addRow(i);
+  }
+  
+  // localStorage도 초기화
+  localStorage.removeItem('inputSheetTemp');
+  
+  showAlert('시트의 모든 데이터가 삭제되었습니다.', 'success');
+}
+
+// 전역으로 함수들을 export (HTML의 onclick 속성에서 사용하기 위해)
+window.addRow = addRow;
+window.openOptions = openOptions;
+window.saveAll = saveAll;
+window.openAccountModal = openAccountModal;
+window.openAccountManageModal = openAccountManageModal;
+window.closeAccountModal = closeAccountModal;
+window.closeAccountManageModal = closeAccountManageModal;
+window.saveAccount = saveAccount;
+window.deleteAccount = deleteAccount;
+window.deleteAllRows = deleteAllRows;
