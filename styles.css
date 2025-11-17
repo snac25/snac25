@@ -943,7 +943,8 @@ body.view-page::before {
   color: #e0e0e0;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  margin-top: -50px;
+  margin-top: 400px;
+  padding-top: 20px;
   position: relative;
   z-index: 2;
   backdrop-filter: blur(10px);
