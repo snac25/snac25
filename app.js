@@ -150,6 +150,26 @@ async function deleteData(id) {
   }
 }
 
+// 모든 저장된 데이터 삭제하기 (Firebase)
+async function deleteAllData() {
+  try {
+    const dataRef = collection(db, 'data');
+    const querySnapshot = await getDocs(dataRef);
+    
+    // 모든 문서 삭제
+    const deletePromises = [];
+    querySnapshot.forEach((docSnapshot) => {
+      deletePromises.push(deleteDoc(doc(db, 'data', docSnapshot.id)));
+    });
+    
+    await Promise.all(deletePromises);
+    return { success: true, count: querySnapshot.size };
+  } catch (error) {
+    console.error('모든 데이터 삭제 실패:', error);
+    throw error;
+  }
+}
+
 // P열 계산 함수
 function calculatePColumn(row, options) {
   const { pColumn } = options;
@@ -359,7 +379,7 @@ match /inputSheet/{document=**} {
   }
 }
 
-export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener };
+export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, deleteAllData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener };
 
 // 전역으로 함수들을 export (기존 코드와의 호환성을 위해)
 window.loadOptions = loadOptions;

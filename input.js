@@ -1,5 +1,5 @@
 // app.js에서 함수 import
-import { loadOptions, showAlert, calculatePColumn, calculateQColumn, saveInputSheetData, loadInputSheetData, setupInputSheetListener } from './app.js';
+import { loadOptions, showAlert, calculatePColumn, calculateQColumn, saveInputSheetData, loadInputSheetData, setupInputSheetListener, deleteAllData } from './app.js';
 
 let currentOptions = null;
 let tableData = [];
@@ -401,49 +401,11 @@ function addRow(rowNum) {
   insertBtn.className = 'insert-btn';
   insertBtn.onclick = () => insertAfter(tr);
   
-  const delBtn = document.createElement('button');
-  delBtn.textContent = '삭제';
-  delBtn.className = 'del-btn';
-  delBtn.onclick = () => {
-    // A열을 제외한 모든 열에 내용이 있는지 확인
-    const hasContent = () => {
-      // 입력 필드 확인 (B, C, D, E, F, G, H, I, J, K, L, M)
-      const inputCols = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
-      for (const col of inputCols) {
-        if (tr.refs[col] && tr.refs[col].value && tr.refs[col].value.trim() !== '') {
-          return true;
-        }
-      }
-      
-      // 계산된 값 확인 (N, O, P, Q)
-      if (tr.nTd && tr.nTd.textContent && tr.nTd.textContent.trim() !== '') {
-        return true;
-      }
-      if (tr.oTd && tr.oTd.textContent && tr.oTd.textContent.trim() !== '') {
-        return true;
-      }
-      if (tr.pTd && tr.pTd.textContent && tr.pTd.textContent.trim() !== '') {
-        return true;
-      }
-      if (tr.qTd && tr.qTd.textContent && tr.qTd.textContent.trim() !== '') {
-        return true;
-      }
-      
-      return false;
-    };
-    
-    // 내용이 있으면 확인 메시지 표시
-    if (hasContent()) {
-      if (!confirm('삭제하겠습니까?')) {
-        return; // No를 선택하면 삭제 취소
-      }
-    }
-    
-    // Yes를 선택하거나 내용이 없으면 삭제
-    tr.remove();
-    reindex();
-    saveToLocalStorage(); // Firebase에 삭제 반영
-  };
+  // 행 삭제 버튼 제거됨 - 자동 삭제 기능 비활성화
+  // const delBtn = document.createElement('button');
+  // delBtn.textContent = '삭제';
+  // delBtn.className = 'del-btn';
+  // delBtn.onclick = () => { ... };
   
   const hideBtn = document.createElement('button');
   hideBtn.textContent = '숨김';
@@ -474,7 +436,7 @@ function addRow(rowNum) {
   tr.refs.opTd = opTd; // R열 참조 저장
   
   btnBox.appendChild(insertBtn);
-  btnBox.appendChild(delBtn);
+  // btnBox.appendChild(delBtn); // 행 삭제 버튼 제거됨
   btnBox.appendChild(hideBtn);
   opTd.appendChild(btnBox);
   tr.appendChild(opTd);
@@ -1768,33 +1730,43 @@ window.onclick = function(event) {
   }
 }
 
-// 시트 전체 삭제
-function deleteAllRows() {
-  if (!confirm('정말로 시트의 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+// 시트 전체 삭제 (저장된 데이터도 함께 삭제)
+async function deleteAllRows() {
+  if (!confirm('정말로 시트의 모든 데이터를 삭제하시겠습니까?\n저장된 데이터도 함께 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.')) {
     return;
   }
   
   // 한 번 더 확인
-  if (!confirm('마지막 확인입니다. 모든 데이터를 삭제하시겠습니까?')) {
+  if (!confirm('마지막 확인입니다. 모든 데이터(저장된 데이터 포함)를 삭제하시겠습니까?')) {
     return;
   }
   
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-  tableData = [];
-  
-  // 빈 행 30개 추가
-  for (let i = 1; i <= 30; i++) {
-    addRow(i);
+  try {
+    // Firebase의 data 컬렉션에 저장된 모든 데이터 삭제
+    const result = await deleteAllData();
+    console.log(`${result.count}개의 저장된 데이터가 삭제되었습니다.`);
+    
+    // 입력 시트 초기화
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    tableData = [];
+    
+    // 빈 행 30개 추가
+    for (let i = 1; i <= 30; i++) {
+      addRow(i);
+    }
+    
+    // localStorage도 초기화
+    localStorage.removeItem('inputSheetTemp');
+    
+    // Firebase의 inputSheet도 빈 상태로 저장
+    await saveToLocalStorage();
+    
+    showAlert(`시트의 모든 데이터가 삭제되었습니다. (저장된 데이터 ${result.count}개 포함)`, 'success');
+  } catch (error) {
+    console.error('데이터 삭제 실패:', error);
+    showAlert('데이터 삭제 중 오류가 발생했습니다.', 'error');
   }
-  
-  // localStorage도 초기화
-  localStorage.removeItem('inputSheetTemp');
-  
-  // Firebase에도 빈 상태 저장
-  saveToLocalStorage();
-  
-  showAlert('시트의 모든 데이터가 삭제되었습니다.', 'success');
 }
 
 // 여러 행 추가 함수
