@@ -39,6 +39,7 @@ build/
 *.jpg
 !hero.jpg
 !4인.jpg
+!ns.jpg
 *.jpeg
 *.png
 *.gif

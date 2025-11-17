@@ -813,7 +813,7 @@ body.view-page::before {
   justify-content: center;
   overflow: hidden;
   z-index: 1;
-  background-image: url('/4인.jpg');
+  background-image: url('/ns.jpg');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
