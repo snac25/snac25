@@ -235,9 +235,21 @@ async function saveInputSheetData(data) {
       data: data,
       updatedAt: new Date().toISOString()
     });
+    console.log('입력 시트 저장 성공:', data.length, '행');
     return { success: true };
   } catch (error) {
     console.error('입력 시트 저장 실패:', error);
+    if (error.code === 'permission-denied') {
+      console.error('⚠️ Firestore 보안 규칙 오류!');
+      console.error('Firebase Console에서 다음 규칙을 추가해주세요:');
+      console.error(`
+match /inputSheet/{document=**} {
+  allow read, write: if true;
+}
+      `);
+      // 사용자에게 알림 표시
+      showAlert('Firestore 보안 규칙이 설정되지 않았습니다. Firebase Console에서 규칙을 업데이트해주세요.', 'error');
+    }
     throw error;
   }
 }
@@ -254,6 +266,15 @@ async function loadInputSheetData() {
     return [];
   } catch (error) {
     console.error('입력 시트 불러오기 실패:', error);
+    if (error.code === 'permission-denied') {
+      console.error('⚠️ Firestore 보안 규칙 오류!');
+      console.error('Firebase Console에서 다음 규칙을 추가해주세요:');
+      console.error(`
+match /inputSheet/{document=**} {
+  allow read, write: if true;
+}
+      `);
+    }
     return [];
   }
 }
@@ -273,12 +294,25 @@ function setupInputSheetListener(callback) {
       }
     }, (error) => {
       console.error('입력 시트 리스너 에러:', error);
+      if (error.code === 'permission-denied') {
+        console.error('⚠️ Firestore 보안 규칙 오류!');
+        console.error('Firebase Console에서 다음 규칙을 추가해주세요:');
+        console.error(`
+match /inputSheet/{document=**} {
+  allow read, write: if true;
+}
+        `);
+        showAlert('Firestore 보안 규칙이 설정되지 않았습니다. Firebase Console에서 규칙을 업데이트해주세요.', 'error');
+      }
     });
     
     console.log('실시간 리스너 설정 완료');
     return unsubscribe;
   } catch (error) {
     console.error('입력 시트 리스너 설정 실패:', error);
+    if (error.code === 'permission-denied') {
+      console.error('⚠️ Firestore 보안 규칙 오류!');
+    }
     return null;
   }
 }
