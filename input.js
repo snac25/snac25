@@ -918,8 +918,10 @@ function setupRowSelection() {
   }
   
   let rowSelectionMouseDown = false;
+  let rowSelectionStartTime = 0;
+  let rowSelectionStartPos = null;
   
-  // mousedown 이벤트로 행 선택 처리 (click 이벤트보다 먼저 실행)
+  // mousedown 이벤트로 행 선택 처리 (모든 열에서 작동)
   tbody.addEventListener('mousedown', function(e) {
     // 버튼 클릭은 제외
     if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
@@ -939,15 +941,10 @@ function setupRowSelection() {
     const tr = td.closest('tr');
     if (!tr) return;
     
-    // 드래그 선택이 활성화된 셀인지 확인 (input이 있는 셀)
-    const input = td.querySelector('input, select');
-    if (input && !td.classList.contains('calculated-cell') && !td.classList.contains('grade-cell') && !td.querySelector('.btn-box')) {
-      // 드래그 선택 대상이면 행 선택하지 않음
-      return;
-    }
-    
-    // 행 선택 플래그 설정
+    // 행 선택 시작 정보 저장
     rowSelectionMouseDown = true;
+    rowSelectionStartTime = Date.now();
+    rowSelectionStartPos = { x: e.clientX, y: e.clientY };
     
     // 모든 행에서 선택 클래스 제거
     const allRows = tbody.querySelectorAll('tr');
@@ -955,9 +952,27 @@ function setupRowSelection() {
       row.classList.remove('row-selected');
     });
     
-    // 클릭한 행에 선택 클래스 추가
+    // 클릭한 행에 선택 클래스 추가 (A열, B~M열 모두 포함)
     tr.classList.add('row-selected');
     console.log('행 선택됨 (mousedown):', tr.cells[0]?.textContent || '알 수 없음');
+  }, true); // capture phase에서 먼저 실행
+  
+  // mousemove에서 드래그 감지
+  tbody.addEventListener('mousemove', function(e) {
+    if (rowSelectionMouseDown && rowSelectionStartPos) {
+      // 마우스가 3픽셀 이상 움직였으면 드래그로 간주하고 행 선택 제거
+      const deltaX = Math.abs(e.clientX - rowSelectionStartPos.x);
+      const deltaY = Math.abs(e.clientY - rowSelectionStartPos.y);
+      
+      if (deltaX > 3 || deltaY > 3) {
+        // 드래그가 발생했으므로 행 선택 제거
+        const allRows = tbody.querySelectorAll('tr');
+        allRows.forEach(row => {
+          row.classList.remove('row-selected');
+        });
+        rowSelectionMouseDown = false;
+      }
+    }
   });
   
   // click 이벤트도 처리 (백업)
@@ -980,15 +995,13 @@ function setupRowSelection() {
     const tr = td.closest('tr');
     if (!tr) return;
     
-    // 드래그 선택이 활성화된 셀인지 확인
-    const input = td.querySelector('input, select');
-    if (input && !td.classList.contains('calculated-cell') && !td.classList.contains('grade-cell') && !td.querySelector('.btn-box')) {
+    // 드래그가 발생했으면 행 선택하지 않음
+    if (isDragging) {
       return;
     }
     
     // mousedown에서 이미 처리했으면 중복 처리 방지
     if (rowSelectionMouseDown) {
-      rowSelectionMouseDown = false;
       return;
     }
     
@@ -1005,7 +1018,12 @@ function setupRowSelection() {
   
   // mouseup에서 플래그 리셋
   tbody.addEventListener('mouseup', function() {
+    // 드래그가 발생하지 않았으면 행 선택 유지
+    if (!isDragging && rowSelectionMouseDown) {
+      // 행 선택은 이미 mousedown에서 처리되었으므로 유지
+    }
     rowSelectionMouseDown = false;
+    rowSelectionStartPos = null;
   });
   
   console.log('행 선택 기능이 설정되었습니다.');
