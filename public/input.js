@@ -79,6 +79,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 시간 체크를 주기적으로 실행 (1분마다)
   setInterval(checkAllRowsTime, 60000); // 60000ms = 1분
   
+  // 초기 로드 시 모든 행 체크
+  setTimeout(() => {
+    checkAllRowsTime();
+  }, 1000);
+  
 });
 
 // 옵션 데이터 불러오기
@@ -634,7 +639,19 @@ function parseTime(timeStr) {
 
 // 특정 행의 시간을 체크하고 배경색 업데이트
 function checkTimeAndUpdateRowColor(tr) {
-  if (!tr || !tr.refs || !tr.refs.B || !tr.noTd) return;
+  if (!tr) return;
+  
+  // noTd가 없으면 첫 번째 셀(번호 셀)을 찾기
+  if (!tr.noTd) {
+    tr.noTd = tr.cells[0];
+  }
+  
+  if (!tr.noTd) return;
+  
+  if (!tr.refs || !tr.refs.B) {
+    tr.noTd.style.backgroundColor = '';
+    return;
+  }
   
   const timeStr = tr.refs.B.value.trim();
   if (!timeStr) {
@@ -666,10 +683,19 @@ function checkTimeAndUpdateRowColor(tr) {
 // 모든 행의 시간을 체크하고 배경색 업데이트
 function checkAllRowsTime() {
   const tbody = document.getElementById('tableBody');
-  if (!tbody) return;
+  if (!tbody) {
+    console.log('tableBody를 찾을 수 없습니다.');
+    return;
+  }
   
   const rows = tbody.querySelectorAll('tr');
-  rows.forEach(row => {
+  console.log('시간 체크 실행:', rows.length, '행');
+  
+  rows.forEach((row, index) => {
+    // noTd가 없으면 설정
+    if (!row.noTd && row.cells && row.cells[0]) {
+      row.noTd = row.cells[0];
+    }
     checkTimeAndUpdateRowColor(row);
   });
 }
@@ -1448,6 +1474,11 @@ function loadFromLocalStorage() {
         for (let i = currentRowCount; i < 30; i++) {
           addRow(i + 1);
         }
+        
+        // 데이터 로드 후 모든 행의 시간 체크
+        setTimeout(() => {
+          checkAllRowsTime();
+        }, 500);
         
         return true;
       }
