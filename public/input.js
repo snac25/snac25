@@ -708,10 +708,12 @@ function checkTimeAndUpdateRowColor(tr) {
   // 입력된 시간까지 남은 시간이 75분 이내이고, 아직 지나지 않았으면 노란색 배경
   // 즉, 0 <= (입력된 시간 - 현재 시간) <= 75분 이면 노란색
   if (diffMinutes >= 0 && diffMinutes <= 75) {
-    tr.noTd.style.backgroundColor = '#ffff00'; // 노란색
-    console.log('노란색 적용:', timeStr);
+    tr.noTd.style.setProperty('background-color', '#ffff00', 'important'); // 노란색
+    tr.noTd.classList.add('time-warning');
+    console.log('노란색 적용:', timeStr, '셀:', tr.noTd);
   } else {
-    tr.noTd.style.backgroundColor = '';
+    tr.noTd.style.removeProperty('background-color');
+    tr.noTd.classList.remove('time-warning');
   }
 }
 
