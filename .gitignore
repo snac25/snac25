@@ -37,6 +37,7 @@ build/
 *.xlsx
 *.xls
 *.jpg
+!hero.jpg
 *.jpeg
 *.png
 *.gif
