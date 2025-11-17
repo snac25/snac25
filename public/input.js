@@ -586,6 +586,7 @@ function insertAfter(tr) {
   const newRow = addRow(parseInt(tr.cells[0].textContent) + 1);
   tr.parentNode.insertBefore(newRow, tr.nextSibling);
   reindex();
+  saveToLocalStorage(); // Firebase에 삽입 반영
 }
 
 // 번호 재인덱싱
