@@ -108,37 +108,57 @@ function addRow(rowNum) {
       return;
     }
     
-    // input이나 select를 직접 클릭한 경우가 아니라 td 영역을 클릭한 경우만 행 선택
-    const clickedElement = e.target;
-    const isInputOrSelect = clickedElement.tagName === 'INPUT' || clickedElement.tagName === 'SELECT' || clickedElement.tagName === 'OPTION';
-    const isTd = clickedElement.tagName === 'TD';
-    const isSmall = clickedElement.tagName === 'SMALL';
-    
-    // input/select를 직접 클릭한 경우가 아니고, td나 그 안의 요소를 클릭한 경우
-    if (!isInputOrSelect && (isTd || clickedElement.closest('td'))) {
-      e.stopPropagation();
-      
-      // 모든 행에서 선택 클래스 제거
-      const allRows = tbody.querySelectorAll('tr');
-      allRows.forEach(row => {
-        row.classList.remove('row-selected');
-      });
-      
-      // 클릭한 행에 선택 클래스 추가
-      tr.classList.add('row-selected');
-      console.log('행 선택:', rowNum || (tableData.length + 1));
+    // input이나 select를 직접 클릭한 경우는 제외 (입력 편의)
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') {
+      return;
     }
-  });
+    
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // 모든 행에서 선택 클래스 제거
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => {
+      row.classList.remove('row-selected');
+    });
+    
+    // 클릭한 행에 선택 클래스 추가
+    tr.classList.add('row-selected');
+    console.log('행 선택됨:', rowNum || (tableData.length + 1), '클래스 추가됨:', tr.classList.contains('row-selected'));
+  }, true); // capture phase에서 실행
   
   // 번호
   const noTd = document.createElement('td');
   noTd.textContent = rowNum || (tableData.length + 1);
   noTd.className = 'row-number-cell';
+  // 번호 셀 클릭 시 행 선택
+  noTd.addEventListener('click', function(e) {
+    e.stopPropagation();
+    // 모든 행에서 선택 클래스 제거
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => {
+      row.classList.remove('row-selected');
+    });
+    // 클릭한 행에 선택 클래스 추가
+    tr.classList.add('row-selected');
+    console.log('행 선택됨 (번호열):', rowNum || (tableData.length + 1));
+  });
   tr.appendChild(noTd);
   tr.noTd = noTd; // 번호 셀 참조 저장
   
   // 시간 (B)
   const timeTd = document.createElement('td');
+  // td 클릭 시 행 선택 (input 클릭은 제외)
+  timeTd.addEventListener('click', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+      return; // input/select 직접 클릭은 제외
+    }
+    e.stopPropagation();
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => row.classList.remove('row-selected'));
+    tr.classList.add('row-selected');
+    console.log('행 선택됨 (시간열):', rowNum || (tableData.length + 1));
+  });
   const timeInput = document.createElement('input');
   timeInput.type = 'text';
   timeInput.dataset.k = 'B';
@@ -388,29 +408,69 @@ function addRow(rowNum) {
   // 하락수치 승 (N) - 계산된 값
   const nTd = document.createElement('td');
   nTd.className = 'calculated-cell';
+  nTd.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => row.classList.remove('row-selected'));
+    tr.classList.add('row-selected');
+  });
   tr.appendChild(nTd);
   tr.nTd = nTd;
-  
+
   // 하락수치 오버 (O) - 계산된 값
   const oTd = document.createElement('td');
   oTd.className = 'calculated-cell';
+  oTd.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => row.classList.remove('row-selected'));
+    tr.classList.add('row-selected');
+  });
   tr.appendChild(oTd);
   tr.oTd = oTd;
-  
+
   // 판정 승 (P) - 등급
   const pTd = document.createElement('td');
   pTd.className = 'grade-cell';
+  pTd.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => row.classList.remove('row-selected'));
+    tr.classList.add('row-selected');
+  });
   tr.appendChild(pTd);
   tr.pTd = pTd;
-  
+
   // 판정 오버 (Q) - 등급
   const qTd = document.createElement('td');
   qTd.className = 'grade-cell';
+  qTd.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => row.classList.remove('row-selected'));
+    tr.classList.add('row-selected');
+  });
   tr.appendChild(qTd);
   tr.qTd = qTd;
   
   // 조작 (삽입/삭제/숨김 버튼)
   const opTd = document.createElement('td');
+  // 조작 열 클릭 시에도 행 선택
+  opTd.addEventListener('click', function(e) {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+      return; // 버튼 클릭은 제외
+    }
+    e.stopPropagation();
+    // 모든 행에서 선택 클래스 제거
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => {
+      row.classList.remove('row-selected');
+    });
+    // 클릭한 행에 선택 클래스 추가
+    tr.classList.add('row-selected');
+    console.log('행 선택됨 (조작열):', rowNum || (tableData.length + 1));
+  });
+  
   const btnBox = document.createElement('div');
   btnBox.className = 'btn-box';
   
