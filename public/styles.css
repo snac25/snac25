@@ -782,7 +782,7 @@ input.selected.cell-selected {
 
 /* 조회 페이지 어두운 테마 */
 body.view-page {
-  background-image: url('hero.jpg');
+  background-image: url('/hero.jpg');
   background-size: contain;
   background-position: center bottom;
   background-attachment: fixed;
