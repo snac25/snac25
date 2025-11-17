@@ -917,7 +917,50 @@ function setupRowSelection() {
     return;
   }
   
-  // tbody에 이벤트 위임으로 클릭 이벤트 처리
+  let rowSelectionMouseDown = false;
+  
+  // mousedown 이벤트로 행 선택 처리 (click 이벤트보다 먼저 실행)
+  tbody.addEventListener('mousedown', function(e) {
+    // 버튼 클릭은 제외
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+      return;
+    }
+    
+    // input이나 select를 직접 클릭한 경우는 제외 (입력 편의)
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') {
+      return;
+    }
+    
+    // td를 찾기
+    const td = e.target.closest('td');
+    if (!td) return;
+    
+    // tr 찾기
+    const tr = td.closest('tr');
+    if (!tr) return;
+    
+    // 드래그 선택이 활성화된 셀인지 확인 (input이 있는 셀)
+    const input = td.querySelector('input, select');
+    if (input && !td.classList.contains('calculated-cell') && !td.classList.contains('grade-cell') && !td.querySelector('.btn-box')) {
+      // 드래그 선택 대상이면 행 선택하지 않음
+      return;
+    }
+    
+    // 행 선택 플래그 설정
+    rowSelectionMouseDown = true;
+    
+    // 모든 행에서 선택 클래스 제거
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(row => {
+      row.classList.remove('row-selected');
+    });
+    
+    // 클릭한 행에 선택 클래스 추가
+    tr.classList.add('row-selected');
+    console.log('행 선택됨 (mousedown):', tr.cells[0]?.textContent || '알 수 없음');
+  });
+  
+  // click 이벤트도 처리 (백업)
   tbody.addEventListener('click', function(e) {
     // 버튼 클릭은 제외
     if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
@@ -937,6 +980,18 @@ function setupRowSelection() {
     const tr = td.closest('tr');
     if (!tr) return;
     
+    // 드래그 선택이 활성화된 셀인지 확인
+    const input = td.querySelector('input, select');
+    if (input && !td.classList.contains('calculated-cell') && !td.classList.contains('grade-cell') && !td.querySelector('.btn-box')) {
+      return;
+    }
+    
+    // mousedown에서 이미 처리했으면 중복 처리 방지
+    if (rowSelectionMouseDown) {
+      rowSelectionMouseDown = false;
+      return;
+    }
+    
     // 모든 행에서 선택 클래스 제거
     const allRows = tbody.querySelectorAll('tr');
     allRows.forEach(row => {
@@ -945,7 +1000,12 @@ function setupRowSelection() {
     
     // 클릭한 행에 선택 클래스 추가
     tr.classList.add('row-selected');
-    console.log('행 선택됨:', tr.cells[0]?.textContent || '알 수 없음');
+    console.log('행 선택됨 (click):', tr.cells[0]?.textContent || '알 수 없음');
+  });
+  
+  // mouseup에서 플래그 리셋
+  tbody.addEventListener('mouseup', function() {
+    rowSelectionMouseDown = false;
   });
   
   console.log('행 선택 기능이 설정되었습니다.');
