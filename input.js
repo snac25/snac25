@@ -401,11 +401,49 @@ function addRow(rowNum) {
   insertBtn.className = 'insert-btn';
   insertBtn.onclick = () => insertAfter(tr);
   
-  // 행 삭제 버튼 제거됨 - 자동 삭제 기능 비활성화
-  // const delBtn = document.createElement('button');
-  // delBtn.textContent = '삭제';
-  // delBtn.className = 'del-btn';
-  // delBtn.onclick = () => { ... };
+  const delBtn = document.createElement('button');
+  delBtn.textContent = '삭제';
+  delBtn.className = 'del-btn';
+  delBtn.onclick = () => {
+    // A열을 제외한 모든 열에 내용이 있는지 확인
+    const hasContent = () => {
+      // 입력 필드 확인 (B, C, D, E, F, G, H, I, J, K, L, M)
+      const inputCols = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+      for (const col of inputCols) {
+        if (tr.refs[col] && tr.refs[col].value && tr.refs[col].value.trim() !== '') {
+          return true;
+        }
+      }
+      
+      // 계산된 값 확인 (N, O, P, Q)
+      if (tr.nTd && tr.nTd.textContent && tr.nTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.oTd && tr.oTd.textContent && tr.oTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.pTd && tr.pTd.textContent && tr.pTd.textContent.trim() !== '') {
+        return true;
+      }
+      if (tr.qTd && tr.qTd.textContent && tr.qTd.textContent.trim() !== '') {
+        return true;
+      }
+      
+      return false;
+    };
+    
+    // 내용이 있으면 확인 메시지 표시
+    if (hasContent()) {
+      if (!confirm('삭제하겠습니까?')) {
+        return; // No를 선택하면 삭제 취소
+      }
+    }
+    
+    // Yes를 선택하거나 내용이 없으면 삭제
+    tr.remove();
+    reindex();
+    saveToLocalStorage(); // Firebase inputSheet에 삭제 반영 (Firebase data는 삭제하지 않음)
+  };
   
   const hideBtn = document.createElement('button');
   hideBtn.textContent = '숨김';
@@ -436,7 +474,7 @@ function addRow(rowNum) {
   tr.refs.opTd = opTd; // R열 참조 저장
   
   btnBox.appendChild(insertBtn);
-  // btnBox.appendChild(delBtn); // 행 삭제 버튼 제거됨
+  btnBox.appendChild(delBtn);
   btnBox.appendChild(hideBtn);
   opTd.appendChild(btnBox);
   tr.appendChild(opTd);
