@@ -849,7 +849,6 @@ body.view-page::before {
   padding: 40px 20px;
   width: 100%;
   max-width: 1200px;
-  margin-bottom: 2cm;
 }
 
 .view-page .view-hero .logout-btn {
@@ -883,7 +882,7 @@ body.view-page::before {
   color: #000000;
   font-size: 12rem;
   font-weight: 900;
-  margin-bottom: 30px;
+  margin-bottom: 0;
   line-height: 0.85;
   text-shadow: 
     0 0 8px rgba(255, 215, 0, 0.4),
@@ -897,6 +896,7 @@ body.view-page::before {
   display: inline-block;
   letter-spacing: 12px;
   filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.3));
+  margin-bottom: 0;
 }
 
 .view-page .view-hero .nav a {
