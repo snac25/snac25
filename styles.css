@@ -230,15 +230,25 @@ input[type="number"], input[type="text"] {
 }
 
 /* A열 (번호) - 16px, 굵고 찐하게, 헤더와 동일한 배경색 */
-/* 행 선택 시 테두리 */
+/* 행 선택 시 테두리 - 붉은색 */
 #inputTable tbody tr.row-selected {
-  outline: 3px solid #0066ff !important;
+  outline: 3px solid #ff0000 !important;
   outline-offset: -3px;
+  box-shadow: 0 0 0 3px #ff0000 !important;
 }
 
 #inputTable tbody tr.row-selected td {
   position: relative;
   z-index: 1;
+  border-color: #ff0000 !important;
+}
+
+#inputTable tbody tr.row-selected td:first-child {
+  border-left: 3px solid #ff0000 !important;
+}
+
+#inputTable tbody tr.row-selected td:last-child {
+  border-right: 3px solid #ff0000 !important;
 }
 
 /* 시간 경고 배경색 (75분 이내) - 더 높은 우선순위 */

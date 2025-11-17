@@ -104,16 +104,30 @@ function addRow(rowNum) {
   // 행 클릭 이벤트: 행 전체에 테두리 추가
   tr.addEventListener('click', function(e) {
     // 버튼 클릭은 제외
-    if (e.target.tagName === 'BUTTON') return;
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+      return;
+    }
     
-    // 모든 행에서 선택 클래스 제거
-    const allRows = tbody.querySelectorAll('tr');
-    allRows.forEach(row => {
-      row.classList.remove('row-selected');
-    });
+    // input이나 select를 직접 클릭한 경우가 아니라 td 영역을 클릭한 경우만 행 선택
+    const clickedElement = e.target;
+    const isInputOrSelect = clickedElement.tagName === 'INPUT' || clickedElement.tagName === 'SELECT' || clickedElement.tagName === 'OPTION';
+    const isTd = clickedElement.tagName === 'TD';
+    const isSmall = clickedElement.tagName === 'SMALL';
     
-    // 클릭한 행에 선택 클래스 추가
-    tr.classList.add('row-selected');
+    // input/select를 직접 클릭한 경우가 아니고, td나 그 안의 요소를 클릭한 경우
+    if (!isInputOrSelect && (isTd || clickedElement.closest('td'))) {
+      e.stopPropagation();
+      
+      // 모든 행에서 선택 클래스 제거
+      const allRows = tbody.querySelectorAll('tr');
+      allRows.forEach(row => {
+        row.classList.remove('row-selected');
+      });
+      
+      // 클릭한 행에 선택 클래스 추가
+      tr.classList.add('row-selected');
+      console.log('행 선택:', rowNum || (tableData.length + 1));
+    }
   });
   
   // 번호
