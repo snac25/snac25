@@ -1388,14 +1388,16 @@ function loadDataFromArray(data) {
   const activeElement = document.activeElement;
   const isFocusedInTable = activeElement && activeElement.closest('#tableBody');
   
-  // 포커스된 셀의 위치 저장
+  // 포커스된 셀의 위치와 현재 값 저장
   let focusedRowIndex = -1;
   let focusedColKey = null;
-  if (isFocusedInTable) {
+  let focusedValue = null;
+  if (isFocusedInTable && activeElement.tagName === 'INPUT') {
     const focusedRow = activeElement.closest('tr');
     if (focusedRow) {
       focusedRowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(focusedRow);
       focusedColKey = activeElement.dataset.k;
+      focusedValue = activeElement.value; // 현재 입력 중인 값 저장
     }
   }
   
@@ -1419,18 +1421,21 @@ function loadDataFromArray(data) {
   sortedData.forEach((item, index) => {
     const row = addRow(index + 1);
     if (row.refs) {
-      row.refs.B.value = item.B || '';
-      row.refs.C.value = item.C || '';
-      row.refs.D.value = item.D || '';
-      row.refs.E.value = item.E || '';
-      row.refs.F.value = item.F || '';
-      row.refs.G.value = item.G || '';
-      row.refs.H.value = item.H || '';
-      row.refs.I.value = item.I || '';
-      row.refs.J.value = item.J || '';
-      row.refs.K.value = item.K || '';
-      row.refs.L.value = item.L || '';
-      row.refs.M.value = item.M || '';
+      // 포커스된 필드가 현재 행이고 해당 열이면 저장된 값을 사용, 아니면 로드된 값 사용
+      const isFocusedCell = (index === focusedRowIndex);
+      
+      row.refs.B.value = (isFocusedCell && focusedColKey === 'B') ? focusedValue : (item.B || '');
+      row.refs.C.value = (isFocusedCell && focusedColKey === 'C') ? focusedValue : (item.C || '');
+      row.refs.D.value = (isFocusedCell && focusedColKey === 'D') ? focusedValue : (item.D || '');
+      row.refs.E.value = (isFocusedCell && focusedColKey === 'E') ? focusedValue : (item.E || '');
+      row.refs.F.value = (isFocusedCell && focusedColKey === 'F') ? focusedValue : (item.F || '');
+      row.refs.G.value = (isFocusedCell && focusedColKey === 'G') ? focusedValue : (item.G || '');
+      row.refs.H.value = (isFocusedCell && focusedColKey === 'H') ? focusedValue : (item.H || '');
+      row.refs.I.value = (isFocusedCell && focusedColKey === 'I') ? focusedValue : (item.I || '');
+      row.refs.J.value = (isFocusedCell && focusedColKey === 'J') ? focusedValue : (item.J || '');
+      row.refs.K.value = (isFocusedCell && focusedColKey === 'K') ? focusedValue : (item.K || '');
+      row.refs.L.value = (isFocusedCell && focusedColKey === 'L') ? focusedValue : (item.L || '');
+      row.refs.M.value = (isFocusedCell && focusedColKey === 'M') ? focusedValue : (item.M || '');
       
       // 시간 체크는 주기적 체크(setInterval)에서만 수행
       // 실시간 리스너에서는 시간 체크하지 않음
@@ -1470,7 +1475,16 @@ function loadDataFromArray(data) {
   if (focusedRowIndex >= 0 && focusedColKey) {
     const rows = tbody.querySelectorAll('tr');
     if (rows[focusedRowIndex] && rows[focusedRowIndex].refs && rows[focusedRowIndex].refs[focusedColKey]) {
-      rows[focusedRowIndex].refs[focusedColKey].focus();
+      const input = rows[focusedRowIndex].refs[focusedColKey];
+      // 저장된 값으로 복원 (소수점이 포함된 경우를 위해)
+      if (focusedValue !== null) {
+        input.value = focusedValue;
+      }
+      // 커서를 끝으로 이동
+      input.focus();
+      if (input.setSelectionRange) {
+        input.setSelectionRange(focusedValue.length, focusedValue.length);
+      }
     }
   }
 }
