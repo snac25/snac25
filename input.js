@@ -77,13 +77,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   setupDragSelection();
   setupRowSelection(); // 행 선택 기능 설정
   
-  // 시간 체크를 주기적으로 실행 (1분마다)
+  // 시간 체크를 주기적으로 실행 (1분마다만)
   setInterval(checkAllRowsTime, 60000); // 60000ms = 1분
-  
-  // 초기 로드 시 모든 행 체크
-  setTimeout(() => {
-    checkAllRowsTime();
-  }, 1000);
   
 });
 
@@ -1437,8 +1432,8 @@ function loadDataFromArray(data) {
       row.refs.L.value = item.L || '';
       row.refs.M.value = item.M || '';
       
-      // 시간 체크 및 배경색 업데이트
-      checkTimeAndUpdateRowColor(row);
+      // 시간 체크는 주기적 체크(setInterval)에서만 수행
+      // 실시간 리스너에서는 시간 체크하지 않음
       
       // 시간 정보 복원
       const restoreTime = (ref, timeStr) => {
@@ -1585,8 +1580,8 @@ function loadFromLocalStorage() {
             row.refs.L.value = item.L || '';
             row.refs.M.value = item.M || '';
             
-            // 시간 체크 및 배경색 업데이트
-            checkTimeAndUpdateRowColor(row);
+            // 시간 체크는 주기적 체크(setInterval)에서만 수행
+            // localStorage 로드 시에는 시간 체크하지 않음
             
             // 시간 정보 복원
             const restoreTime = (ref, timeStr) => {
@@ -1637,10 +1632,8 @@ function loadFromLocalStorage() {
           addRow(i + 1);
         }
         
-        // 데이터 로드 후 모든 행의 시간 체크
-        setTimeout(() => {
-          checkAllRowsTime();
-        }, 500);
+        // 시간 체크는 주기적 체크(setInterval)에서만 수행
+        // localStorage 로드 시에는 시간 체크하지 않음
         
         return true;
       }
