@@ -69,11 +69,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
   
-  // 실시간 리스너 설정 (초기 로드 완료 후 지연)
+  // 실시간 리스너 설정 (초기 로드 완료 후 지연 및 조건부 활성화)
   // 초기 로드가 완료된 후에만 실시간 리스너 활성화
+  // 하지만 첫 번째 로드 시에는 비활성화하여 데이터 손실 방지
+  let initialLoadComplete = false;
   setTimeout(() => {
+    initialLoadComplete = true;
+    console.log('✅ 초기 로드 완료, 실시간 리스너 활성화');
     setupRealtimeListener();
-  }, 2000);
+  }, 3000);
   
   setupKeyboardShortcuts();
   setupPasteHandler();
@@ -1372,13 +1376,24 @@ function setupRealtimeListener() {
   realtimeUnsubscribe = setupInputSheetListener((data) => {
     // 자신이 저장한 변경사항은 무시 (무한 루프 방지)
     if (!isUpdatingFromFirebase) {
+      // 디버깅: 실시간 업데이트 받은 데이터 확인
+      const rowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
+      const rowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
+      console.log('🔄 Firebase 실시간 업데이트:', {
+        totalRows: data.length,
+        rowsWithL: rowsWithL.length,
+        rowsWithM: rowsWithM.length,
+        sampleL: rowsWithL.length > 0 ? rowsWithL[0].L : '없음',
+        sampleM: rowsWithM.length > 0 ? rowsWithM[0].M : '없음'
+      });
+      
       isUpdatingFromFirebase = true;
       console.log('Firebase에서 데이터 업데이트 받음:', data.length, '행');
       loadDataFromArray(data);
       // 약간의 지연 후 플래그 해제
       setTimeout(() => {
         isUpdatingFromFirebase = false;
-      }, 100);
+      }, 500);
     }
   });
 }
