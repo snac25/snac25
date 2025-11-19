@@ -257,10 +257,11 @@ async function saveInputSheetData(data) {
       data = data.slice(0, 1000);
     }
     
-    // 데이터 정리: undefined, null, 순환 참조 제거
-    const cleanedData = data.map(row => {
+    // 데이터 정리: undefined, null, 순환 참조 제거 (빈 문자열도 유지)
+    const cleanedData = data.map((row, index) => {
       const cleanedRow = {};
       for (const key in row) {
+        // undefined와 null만 제외 (빈 문자열은 유지)
         if (row[key] !== undefined && row[key] !== null) {
           // 문자열로 변환 가능한 값만 저장
           if (typeof row[key] === 'string' || typeof row[key] === 'number' || typeof row[key] === 'boolean') {
@@ -274,8 +275,17 @@ async function saveInputSheetData(data) {
               console.warn('데이터 변환 실패:', key, row[key]);
             }
           }
+        } else if (row[key] === '') {
+          // 빈 문자열은 명시적으로 저장
+          cleanedRow[key] = '';
         }
       }
+      
+      // 디버깅: 첫 번째 행의 모든 데이터 확인
+      if (index === 0) {
+        console.log('🔥 Firebase 저장 첫 번째 행:', cleanedRow);
+      }
+      
       return cleanedRow;
     });
     
@@ -690,6 +700,7 @@ window.loadAccounts = loadAccounts;
 window.deleteAccount = deleteAccount;
 window.saveSheet1Data = saveSheet1Data;
 window.loadSheet1Data = loadSheet1Data;
+
 
 
 

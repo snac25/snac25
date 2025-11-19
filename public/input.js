@@ -1432,7 +1432,19 @@ function loadDataFromArray(data) {
     return timeA - timeB; // 시간 순서대로 정렬
   });
   
-  // 데이터 로드
+  // 데이터 로드 - 모든 값을 명시적으로 처리
+  const getItemValue = (item, key, focusedColKey, focusedValue, isFocusedCell) => {
+    // 포커스된 셀이면 저장된 값 사용, 아니면 로드된 값 사용
+    if (isFocusedCell && focusedColKey === key) {
+      return focusedValue !== null && focusedValue !== undefined ? focusedValue : '';
+    }
+    // 로드된 값이 있으면 사용 (숫자 0도 유효한 값)
+    if (item[key] !== null && item[key] !== undefined && item[key] !== '') {
+      return item[key];
+    }
+    return '';
+  };
+  
   sortedData.forEach((item, index) => {
     const row = addRow(index + 1);
     if (row.refs) {
@@ -1441,26 +1453,40 @@ function loadDataFromArray(data) {
       const currentRowKey = `${item.B || ''}_${item.C || ''}_${item.D || ''}_${item.E || ''}`;
       const isFocusedCell = (focusedRowKey && currentRowKey === focusedRowKey && focusedColKey);
       
-      row.refs.B.value = (isFocusedCell && focusedColKey === 'B') ? focusedValue : (item.B || '');
-      row.refs.C.value = (isFocusedCell && focusedColKey === 'C') ? focusedValue : (item.C || '');
-      row.refs.D.value = (isFocusedCell && focusedColKey === 'D') ? focusedValue : (item.D || '');
-      row.refs.E.value = (isFocusedCell && focusedColKey === 'E') ? focusedValue : (item.E || '');
-      row.refs.F.value = (isFocusedCell && focusedColKey === 'F') ? focusedValue : (item.F || '');
-      row.refs.G.value = (isFocusedCell && focusedColKey === 'G') ? focusedValue : (item.G || '');
-      row.refs.H.value = (isFocusedCell && focusedColKey === 'H') ? focusedValue : (item.H || '');
-      row.refs.I.value = (isFocusedCell && focusedColKey === 'I') ? focusedValue : (item.I || '');
-      row.refs.J.value = (isFocusedCell && focusedColKey === 'J') ? focusedValue : (item.J || '');
-      row.refs.K.value = (isFocusedCell && focusedColKey === 'K') ? focusedValue : (item.K || '');
-      // L열과 M열 데이터 로드 (항상 Firebase에서 로드한 값 사용)
-      const lValue = (isFocusedCell && focusedColKey === 'L') ? focusedValue : (item.L !== undefined && item.L !== null ? item.L : '');
-      const mValue = (isFocusedCell && focusedColKey === 'M') ? focusedValue : (item.M !== undefined && item.M !== null ? item.M : '');
+      // 모든 열을 명시적으로 로드
+      row.refs.B.value = getItemValue(item, 'B', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.C.value = getItemValue(item, 'C', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.D.value = getItemValue(item, 'D', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.E.value = getItemValue(item, 'E', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.F.value = getItemValue(item, 'F', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.G.value = getItemValue(item, 'G', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.H.value = getItemValue(item, 'H', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.I.value = getItemValue(item, 'I', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.J.value = getItemValue(item, 'J', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.K.value = getItemValue(item, 'K', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.L.value = getItemValue(item, 'L', focusedColKey, focusedValue, isFocusedCell);
+      row.refs.M.value = getItemValue(item, 'M', focusedColKey, focusedValue, isFocusedCell);
       
-      if (index === 0 && (lValue || mValue)) {
-        console.log('✅ 첫 번째 행 L/M 열 로드:', { L: lValue, M: mValue, item_L: item.L, item_M: item.M, isFocused: isFocusedCell });
+      // 디버깅: 첫 번째 행의 모든 데이터 확인
+      if (index === 0) {
+        console.log('✅ 첫 번째 행 로드:', {
+          B: row.refs.B.value,
+          C: row.refs.C.value,
+          D: row.refs.D.value,
+          E: row.refs.E.value,
+          F: row.refs.F.value,
+          G: row.refs.G.value,
+          H: row.refs.H.value,
+          I: row.refs.I.value,
+          J: row.refs.J.value,
+          K: row.refs.K.value,
+          L: row.refs.L.value,
+          M: row.refs.M.value,
+          item_L: item.L,
+          item_M: item.M,
+          isFocused: isFocusedCell
+        });
       }
-      
-      row.refs.L.value = lValue;
-      row.refs.M.value = mValue;
       
       // 시간 체크는 주기적 체크(setInterval)에서만 수행
       // 실시간 리스너에서는 시간 체크하지 않음
@@ -1493,14 +1519,6 @@ function loadDataFromArray(data) {
         if (index === 0) console.log('✅ 첫 번째 행 M열 시간 복원:', item.M_time);
       }
       
-      if (index === 0 && row.refs.L && row.refs.M) {
-        console.log('✅ 첫 번째 행 로드 완료:', { 
-          L_value: row.refs.L.value, 
-          M_value: row.refs.M.value,
-          L_time: item.L_time || '없음',
-          M_time: item.M_time || '없음'
-        });
-      }
     }
     updateRow(row);
   });
