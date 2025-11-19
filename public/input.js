@@ -234,7 +234,25 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 6);
   });
-  gInput.oninput = () => { updateTime(gTd); updateRow(tr); saveToLocalStorage(); };
+  // 소수점 입력 시 보존을 위한 처리
+  gInput.addEventListener('input', (e) => {
+    const currentValue = e.target.value;
+    // number 타입 input에서 소수점으로 끝나는 값을 보존
+    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
+      // 소수점으로 끝나는 경우 값 유지
+      return; // updateTime과 updateRow를 실행하지 않음
+    }
+    updateTime(gTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
+  
+  // blur 이벤트: 포커스를 잃을 때 최종 검증
+  gInput.addEventListener('blur', () => {
+    updateTime(gTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
   gTd.appendChild(gInput);
   tr.appendChild(gTd);
   tr.refs.G = gInput;
@@ -274,7 +292,25 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 8);
   });
-  iInput.oninput = () => { updateTime(iTd); updateRow(tr); saveToLocalStorage(); };
+  // 소수점 입력 시 보존을 위한 처리
+  iInput.addEventListener('input', (e) => {
+    const currentValue = e.target.value;
+    // number 타입 input에서 소수점으로 끝나는 값을 보존
+    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
+      // 소수점으로 끝나는 경우 값 유지
+      return; // updateTime과 updateRow를 실행하지 않음
+    }
+    updateTime(iTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
+  
+  // blur 이벤트: 포커스를 잃을 때 최종 검증
+  iInput.addEventListener('blur', () => {
+    updateTime(iTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
   iTd.appendChild(iInput);
   tr.appendChild(iTd);
   tr.refs.I = iInput;
@@ -295,7 +331,25 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 9);
   });
-  jInput.oninput = () => { updateTime(jTd); updateRow(tr); saveToLocalStorage(); };
+  // 소수점 입력 시 보존을 위한 처리
+  jInput.addEventListener('input', (e) => {
+    const currentValue = e.target.value;
+    // number 타입 input에서 소수점으로 끝나는 값을 보존
+    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
+      // 소수점으로 끝나는 경우 값 유지
+      return; // updateTime과 updateRow를 실행하지 않음
+    }
+    updateTime(jTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
+  
+  // blur 이벤트: 포커스를 잃을 때 최종 검증
+  jInput.addEventListener('blur', () => {
+    updateTime(jTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
   jTd.appendChild(jInput);
   tr.appendChild(jTd);
   tr.refs.J = jInput;
@@ -316,7 +370,25 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 10);
   });
-  kInput.oninput = () => { updateTime(kTd); updateRow(tr); saveToLocalStorage(); };
+  // 소수점 입력 시 보존을 위한 처리
+  kInput.addEventListener('input', (e) => {
+    const currentValue = e.target.value;
+    // number 타입 input에서 소수점으로 끝나는 값을 보존
+    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
+      // 소수점으로 끝나는 경우 값 유지
+      return; // updateTime과 updateRow를 실행하지 않음
+    }
+    updateTime(kTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
+  
+  // blur 이벤트: 포커스를 잃을 때 최종 검증
+  kInput.addEventListener('blur', () => {
+    updateTime(kTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
   kTd.appendChild(kInput);
   tr.appendChild(kTd);
   tr.refs.K = kInput;
@@ -337,7 +409,25 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 11);
   });
-  lInput.oninput = () => { updateTime(lTd); updateRow(tr); saveToLocalStorage(); };
+  // 소수점 입력 시 보존을 위한 처리
+  lInput.addEventListener('input', (e) => {
+    const currentValue = e.target.value;
+    // number 타입 input에서 소수점으로 끝나는 값을 보존
+    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
+      // 소수점으로 끝나는 경우 값 유지
+      return; // updateTime과 updateRow를 실행하지 않음
+    }
+    updateTime(lTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
+  
+  // blur 이벤트: 포커스를 잃을 때 최종 검증
+  lInput.addEventListener('blur', () => {
+    updateTime(lTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
   lTd.appendChild(lInput);
   tr.appendChild(lTd);
   tr.refs.L = lInput;
@@ -358,7 +448,25 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 12);
   });
-  mInput.oninput = () => { updateTime(mTd); updateRow(tr); saveToLocalStorage(); };
+  // 소수점 입력 시 보존을 위한 처리
+  mInput.addEventListener('input', (e) => {
+    const currentValue = e.target.value;
+    // number 타입 input에서 소수점으로 끝나는 값을 보존
+    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
+      // 소수점으로 끝나는 경우 값 유지
+      return; // updateTime과 updateRow를 실행하지 않음
+    }
+    updateTime(mTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
+  
+  // blur 이벤트: 포커스를 잃을 때 최종 검증
+  mInput.addEventListener('blur', () => {
+    updateTime(mTd);
+    updateRow(tr);
+    saveToLocalStorage();
+  });
   mTd.appendChild(mInput);
   tr.appendChild(mTd);
   tr.refs.M = mInput;
