@@ -1533,7 +1533,7 @@ body.login-page {
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 24px !important;
   width: 92% !important;
-  max-width: 1400px !important;
+  max-width: 2100px !important;
   box-shadow: 
     0 25px 80px rgba(0, 0, 0, 0.8),
     0 0 60px rgba(76, 175, 80, 0.15),
@@ -1723,6 +1723,37 @@ body.login-page {
 
 .view-page #sheet1Modal #sheet1Table tbody td:last-child {
   border-right: none !important;
+}
+
+/* 금지 팝업 열 너비 비율: 0.7:1.3:1.6:1.6:1.6:3.2 */
+.view-page #sheet1Modal #sheet1Table th:nth-child(1),
+.view-page #sheet1Modal #sheet1Table td:nth-child(1) {
+  width: 7% !important; /* 번호 */
+}
+
+.view-page #sheet1Modal #sheet1Table th:nth-child(2),
+.view-page #sheet1Modal #sheet1Table td:nth-child(2) {
+  width: 13% !important; /* 시간 */
+}
+
+.view-page #sheet1Modal #sheet1Table th:nth-child(3),
+.view-page #sheet1Modal #sheet1Table td:nth-child(3) {
+  width: 16% !important; /* 리그 */
+}
+
+.view-page #sheet1Modal #sheet1Table th:nth-child(4),
+.view-page #sheet1Modal #sheet1Table td:nth-child(4) {
+  width: 16% !important; /* 홈팀 */
+}
+
+.view-page #sheet1Modal #sheet1Table th:nth-child(5),
+.view-page #sheet1Modal #sheet1Table td:nth-child(5) {
+  width: 16% !important; /* 원정팀 */
+}
+
+.view-page #sheet1Modal #sheet1Table th:nth-child(6),
+.view-page #sheet1Modal #sheet1Table td:nth-child(6) {
+  width: 32% !important; /* 내용 */
 }
 
 .view-page #sheet1Modal .close {
