@@ -329,10 +329,45 @@
             renderSheet1Data(cachedSheet1Data, tbody);
           } else {
             console.log('📋 캐시된 데이터 없음 - Firebase에서 불러오기');
+            
+            // window.loadSheet1Data가 로드될 때까지 대기
+            let waitCount = 0;
+            const maxWait = 20; // 4초 (200ms * 20)
+            
+            const waitForFirebase = setInterval(async () => {
+              waitCount++;
+              
+              if (typeof window.loadSheet1Data === 'function') {
+                console.log('✅ window.loadSheet1Data 로드 완료 - 데이터 불러오기 시작');
+                clearInterval(waitForFirebase);
+                
+                try {
+                  const sheet1Data = await window.loadSheet1Data();
+                  console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data ? sheet1Data.length : 0, '개 항목');
+                  
+                  if (sheet1Data && sheet1Data.length > 0) {
+                    // 데이터를 캐시에 저장
+                    cachedSheet1Data = sheet1Data;
+                    // 테이블에 데이터 표시
+                    renderSheet1Data(sheet1Data, tbody);
+                    console.log('✅ 금지 탭 데이터 표시 완료');
+                  } else {
+                    console.log('ℹ️ Firebase에 저장된 금지 데이터가 없습니다.');
+                  }
+                } catch (error) {
+                  console.error('❌ Firebase에서 데이터 불러오기 실패:', error);
+                }
+              } else if (waitCount >= maxWait) {
+                console.warn('⚠️ window.loadSheet1Data 로드 시간 초과');
+                clearInterval(waitForFirebase);
+              }
+            }, 200);
           }
           
-          // 항상 Firebase에서 최신 데이터 확인
-          await loadSheet1Data();
+          // 캐시된 데이터가 있어도 Firebase에서 최신 데이터 확인
+          loadSheet1Data().catch(err => {
+            console.error('❌ loadSheet1Data 실패:', err);
+          });
         }, 200);
       }
     }
