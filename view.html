@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SNAC</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="styles.css?v=26">
+  <link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body class="view-page">
   <div class="view-hero">
@@ -17,26 +17,25 @@
   </div>
   
   <div class="container view-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; position: relative; z-index: 10;">
-      <h2 style="margin: 0;">조회 결과</h2>
-      <button class="btn btn-info" onclick="showSheet1Modal()" style="margin-left: auto; flex-shrink: 0; position: relative; z-index: 10; display: block !important; visibility: visible !important;">금지</button>
-    </div>
+    <button class="btn btn-info view-ban-button" onclick="showSheet1Modal()">금지</button>
     <div id="resultCount"></div>
-    <table id="viewTable">
-      <thead>
-        <tr>
-          <th>시간</th>
-          <th>리그</th>
-          <th>홈팀</th>
-          <th>원정팀</th>
-          <th>등급</th>
-          <th>승여부</th>
-        </tr>
-      </thead>
-      <tbody id="viewTableBody">
-        <!-- 필터링된 데이터가 여기에 표시됩니다 -->
-      </tbody>
-    </table>
+    <div class="view-table-wrapper">
+      <table id="viewTable">
+        <thead>
+          <tr>
+            <th>시간</th>
+            <th>리그</th>
+            <th>홈팀</th>
+            <th>원정팀</th>
+            <th>등급</th>
+            <th>승여부</th>
+          </tr>
+        </thead>
+        <tbody id="viewTableBody">
+          <!-- 필터링된 데이터가 여기에 표시됩니다 -->
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- 시트1 팝업 모달 -->

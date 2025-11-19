@@ -932,20 +932,14 @@ input.selected.cell-selected {
 
 /* 조회 페이지 어두운 테마 */
 body.view-page {
-  background-image: url('/ns.jpg');
+  background: url('ns.jpg') no-repeat center center fixed;
   background-size: cover;
-  background-position: center top;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
   min-height: 100vh;
-  height: 100vh;
   padding: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 html {
@@ -957,32 +951,7 @@ html > #sheet1Modal {
   z-index: 999999 !important;
 }
 
-body.view-page::after {
-  content: '';
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40vh;
-  background-image: url('/4respect.jpg');
-  background-size: contain;
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  z-index: 0;
-  pointer-events: none;
-}
-
-body.view-page::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(22, 33, 62, 0.3) 0%, rgba(22, 33, 62, 0.3) 60%, rgba(15, 52, 96, 0.3) 100%);
-  z-index: 1;
-  pointer-events: none;
-}
+/* body.view-page의 배경은 ns.jpg만 사용 */
 
 .view-hero {
   position: absolute;
@@ -1042,7 +1011,7 @@ body.view-page::before {
   top: 20px;
   right: 40px;
   z-index: 1000;
-  background-color: rgba(220, 53, 69, 0.8);
+  background-color: rgba(108, 117, 125, 0.8); /* 회색 */
   color: #ffffff;
   font-size: 1.1rem;
   font-weight: bold;
@@ -1058,9 +1027,9 @@ body.view-page::before {
 }
 
 .view-page .view-hero .logout-btn:hover {
-  background-color: rgba(220, 53, 69, 1);
+  background-color: rgba(108, 117, 125, 1); /* 회색 hover */
   border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
   transform: translateY(-2px);
 }
 
@@ -1110,17 +1079,18 @@ body.view-page::before {
 }
 
 .view-page .view-hero .nav a.logout-btn {
-  background-color: rgba(220, 53, 69, 0.8);
+  background-color: rgba(108, 117, 125, 0.8); /* 회색 */
   border-color: rgba(255, 255, 255, 0.3);
 }
 
 .view-page .view-hero .nav a.logout-btn:hover {
-  background-color: rgba(220, 53, 69, 1);
+  background-color: rgba(108, 117, 125, 1); /* 회색 hover */
   border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
 }
 
-.view-container {
+/* 기존 .view-container 스타일 - view-content-wrapper 안에 있을 때는 무시됨 */
+.view-container:not(.view-content-wrapper > .view-container) {
   position: absolute;
   top: calc(100px + 40px + 12rem * 0.85 + 38px + 6px + 50px);
   left: 50%;
@@ -1151,17 +1121,7 @@ body.view-page::before {
   letter-spacing: 0.5px;
 }
 
-.view-page #resultCount {
-  color: #ffffff;
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
-  background: rgba(76, 175, 80, 0.2);
-  padding: 5px 8px;
-  border-radius: 6px;
-  display: inline-block;
-}
+/* .view-page #resultCount는 .view-container #resultCount로 덮어쓰기 */
 
 .view-page #viewTable {
   width: 100%;
@@ -1474,18 +1434,26 @@ body.login-page {
 }
 
 .btn-info {
-  background-color: #17a2b8;
+  background-color: #dc3545; /* 빨간색 */
   color: white;
 }
 
+.btn-info:hover {
+  background-color: #c82333; /* 빨간색 hover */
+}
+
 .view-page .btn-info {
-  background-color: #17a2b8 !important;
+  background-color: #dc3545 !important; /* 빨간색 */
   color: white !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
   z-index: 100 !important;
   position: relative !important;
+}
+
+.view-page .btn-info:hover {
+  background-color: #c82333 !important; /* 빨간색 hover */
 }
 
 /* 모달 스타일 */
@@ -1981,4 +1949,161 @@ body.login-page {
   color: #ffffff;
   transform: scale(1.2);
 }
+
+/* =====================================
+   SNAC 조회 UI – 중앙 정렬 + 밝은 글래스 + 새 배경
+   ===================================== */
+
+/* 전체 페이지 배경을 ns.jpg로 변경 */
+.view-page {
+  position: relative;
+  min-height: 100vh;
+  background: url("ns.jpg") no-repeat center center fixed;
+  background-size: cover;
+  background-position: center center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0; /* 모든 요소 간 간격 제거 */
+}
+
+/* 조회 결과 컨테이너를 화면 가운데 정렬 */
+.view-container {
+  position: relative;
+  margin: 400px auto 40px auto;
+  width: 95%;
+  max-width: 95%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  background: transparent;
+}
+
+/* 4respect.jpg를 컨테이너 배경으로 (상단이 잘리지 않도록 top 정렬) */
+.view-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("4respect.jpg");
+  background-repeat: no-repeat;
+  background-position: top center;  /* 상단 기준 정렬 */
+  background-size: cover;
+  filter: brightness(0.4);
+  z-index: -2;
+}
+
+/* 어두운 그라데이션 오버레이 */
+.view-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9));
+  z-index: -1;
+}
+
+/* 내부 콘텐츠는 배경 위에 표시 */
+.view-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 조회 결과 타이틀 */
+.view-container h2 {
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* 금지 버튼 - 컨테이너 내부 오른쪽 상단 */
+.view-container .view-ban-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 1.1rem;
+  padding: 12px 45px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+  z-index: 10;
+}
+
+.view-container .view-ban-button:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.6);
+}
+
+/* 결과 수 텍스트 pill 스타일 - 컨테이너 안에 위치 */
+.view-container #resultCount {
+  color: #bbf7d0;
+  font-size: 1.235rem; /* 1.3배: 0.95rem * 1.3 = 1.235rem */
+  font-weight: 500;
+  background: rgba(22, 101, 52, 0.45);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(74, 222, 128, 0.6);
+  display: block;
+  box-shadow: 0 0 10px rgba(0, 255, 128, 0.2);
+  margin: 0 0 15px 0; /* 테이블과 15px 여백 */
+  width: fit-content;
+}
+
+/* 테이블 글래스 효과: 좀 더 밝게 조정 */
+.view-container .view-table-wrapper {
+  margin-top: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(20, 30, 60, 0.35);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0;
+}
+
+/* 테이블 */
+.view-page #viewTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+/* 헤더 – 진한 남색으로 바디와 구분 */
+.view-page #viewTable thead {
+  background: rgba(10, 20, 40, 0.85);
+}
+
+.view-page #viewTable thead th {
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 14px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  text-shadow: none;
+}
+
+/* 바디 – 반투명 밝은 배경 */
+.view-page #viewTable tbody tr {
+  background: rgba(15, 23, 42, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.view-page #viewTable tbody tr:nth-child(even) {
+  background: rgba(20, 30, 60, 0.35);
+}
+
+.view-page #viewTable tbody tr:hover {
+  background: rgba(56, 189, 248, 0.35);
+}
+
+/* 셀 기본 */
+.view-page #viewTable tbody td {
+  color: #f9fafb;
+  padding: 12px 10px;
+  font-size: 0.95rem;
+}
+
 

@@ -875,7 +875,7 @@ async function saveAll() {
     for (const data of dataToSave) {
       await saveData(data);
     }
-    showAlert(`${dataToSave.length}개의 행이 저장되었습니다.`);
+    showAlert('저장되었습니다.');
     
     // 서버 저장 성공 시 localStorage도 업데이트
     saveToLocalStorage();
