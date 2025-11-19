@@ -382,6 +382,11 @@ match /inputSheet/{document=**} {
 // 시트1 데이터 저장
 async function saveSheet1Data(data) {
   try {
+    // db가 초기화되었는지 확인
+    if (!db) {
+      throw new Error('Firebase db가 초기화되지 않았습니다.');
+    }
+    
     // 데이터 크기 제한
     if (data.length > 1000) {
       console.warn('데이터가 너무 큽니다. 처음 1000행만 저장합니다.');
@@ -400,6 +405,8 @@ async function saveSheet1Data(data) {
       }
       return cleanedRow;
     });
+    
+    console.log('🔄 Firebase에 금지 데이터 저장 시도 중...', cleanedData.length, '개 항목');
     
     const sheet1Ref = doc(db, 'sheet1', 'current');
     const dataToSave = {
@@ -429,6 +436,24 @@ async function saveSheet1Data(data) {
 // 시트1 데이터 불러오기
 async function loadSheet1Data() {
   try {
+    // db가 초기화되었는지 확인
+    if (!db) {
+      console.warn('⚠️ Firebase db가 초기화되지 않았습니다. localStorage에서 불러옵니다.');
+      // localStorage에서 폴백
+      const localDataStr = localStorage.getItem('sheet1Data');
+      if (localDataStr) {
+        try {
+          return JSON.parse(localDataStr);
+        } catch (e) {
+          console.error('localStorage 파싱 오류:', e);
+          return [];
+        }
+      }
+      return [];
+    }
+    
+    console.log('🔄 Firebase에서 금지 데이터 불러오기 시도 중...');
+    
     // Firebase에서 먼저 불러오기 (최신 데이터)
     const sheet1Ref = doc(db, 'sheet1', 'current');
     const sheet1Doc = await getDoc(sheet1Ref);
@@ -437,6 +462,7 @@ async function loadSheet1Data() {
       const data = sheet1Doc.data().data || [];
       // localStorage에도 저장
       localStorage.setItem('sheet1Data', JSON.stringify(data));
+      console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', data.length, '개 항목');
       return data;
     }
     
