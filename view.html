@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SNAC</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="styles.css?v=28">
+  <link rel="stylesheet" href="styles.css?v=39">
 </head>
 <body class="view-page">
   <div class="view-hero">
@@ -16,8 +16,13 @@
     </div>
   </div>
   
-  <div class="container view-container">
+  <!-- 금지 버튼 - 테이블 컨테이너 밖 상단 -->
+  <div class="view-ban-wrapper">
     <button class="btn btn-info view-ban-button" onclick="showSheet1Modal()">금지</button>
+  </div>
+  
+  <!-- 테이블 컨테이너 -->
+  <div class="container view-container">
     <div id="resultCount"></div>
     <div class="view-table-wrapper">
       <table id="viewTable">
@@ -38,13 +43,13 @@
     </div>
   </div>
 
-  <!-- 시트1 팝업 모달 -->
-  <div id="sheet1Modal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span class="close" onclick="closeSheet1Modal()">&times;</span>
-      <h2>금지</h2>
-      <div id="sheet1TableContainer">
-        <table id="sheet1Table">
+  <!-- 금지 팝업 모달 -->
+  <div id="sheet1Modal" class="modal redesigned-modal" style="display: none;">
+    <div class="modal-content redesigned-modal-content">
+      <button class="modal-close-btn" onclick="closeSheet1Modal()">✕</button>
+      <h2 class="modal-title">금지 목록</h2>
+      <div id="sheet1TableContainer" class="table-container">
+        <table id="sheet1Table" class="neo-table">
           <thead>
             <tr>
               <th>번호</th>

@@ -283,6 +283,8 @@
         document.getElementById('sheet1').style.display = 'block';
         document.getElementById('sheet1').classList.add('active');
         document.querySelector('.sheet-tab[data-sheet="sheet1"]').classList.add('active');
+        // Firebase에서 금지 탭 데이터 불러오기
+        loadSheet1Data();
       }
     }
     
@@ -346,17 +348,141 @@
       });
       
       try {
-        const { saveSheet1Data } = await import('../app.js');
-        const result = await saveSheet1Data(sheet1Data);
-        if (result && result.success) {
-          alert(`시트1 데이터가 저장되었습니다. (${result.count}개 항목)`);
+        // window.saveSheet1Data를 사용 (전역 함수로 이미 등록됨)
+        if (typeof window.saveSheet1Data === 'function') {
+          const result = await window.saveSheet1Data(sheet1Data);
+          if (result && result.success) {
+            alert(`금지 데이터가 Firebase에 저장되었습니다. (${result.count}개 항목)`);
+            console.log('✅ Firebase 저장 성공:', result.count, '개 항목');
+          } else {
+            alert('금지 데이터가 저장되었습니다.');
+          }
         } else {
-          alert('시트1 데이터가 저장되었습니다.');
+          // window.saveSheet1Data가 아직 로드되지 않은 경우 대기 후 재시도
+          console.warn('⚠️ window.saveSheet1Data가 로드되지 않았습니다. 대기 중...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          if (typeof window.saveSheet1Data === 'function') {
+            const result = await window.saveSheet1Data(sheet1Data);
+            if (result && result.success) {
+              alert(`금지 데이터가 Firebase에 저장되었습니다. (${result.count}개 항목)`);
+            } else {
+              alert('금지 데이터가 저장되었습니다.');
+            }
+          } else {
+            // import 사용 (폴백)
+            const { saveSheet1Data } = await import('../app.js');
+            const result = await saveSheet1Data(sheet1Data);
+            if (result && result.success) {
+              alert(`금지 데이터가 Firebase에 저장되었습니다. (${result.count}개 항목)`);
+            } else {
+              alert('금지 데이터가 저장되었습니다.');
+            }
+          }
         }
       } catch (error) {
-        console.error('시트1 저장 실패:', error);
+        console.error('❌ 금지 데이터 저장 실패:', error);
         console.error('에러 상세:', error.message, error.code);
-        alert(`시트1 데이터 저장에 실패했습니다.\n오류: ${error.message || '알 수 없는 오류'}`);
+        alert(`금지 데이터 저장에 실패했습니다.\n오류: ${error.message || '알 수 없는 오류'}`);
+      }
+    }
+    
+    // 시트1 데이터 불러오기 함수
+    async function loadSheet1Data() {
+      const tbody = document.getElementById('sheet1_tbody');
+      if (!tbody) return;
+      
+      try {
+        // window.loadSheet1Data를 사용 (전역 함수로 이미 등록됨)
+        if (typeof window.loadSheet1Data === 'function') {
+          const sheet1Data = await window.loadSheet1Data();
+          console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data.length, '개 항목');
+          
+          // 테이블에 데이터 표시
+          tbody.innerHTML = '';
+          
+          if (!sheet1Data || sheet1Data.length === 0) {
+            console.log('ℹ️ 저장된 금지 데이터가 없습니다.');
+            return;
+          }
+          
+          sheet1Data.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${index + 1}</td>
+              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.time || ''}"></td>
+              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.league || ''}"></td>
+              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.home || ''}"></td>
+              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.away || ''}"></td>
+              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.content || ''}"></td>
+              <td>
+                <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } else {
+          // window.loadSheet1Data가 아직 로드되지 않은 경우 대기 후 재시도
+          console.warn('⚠️ window.loadSheet1Data가 로드되지 않았습니다. 대기 중...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          if (typeof window.loadSheet1Data === 'function') {
+            const sheet1Data = await window.loadSheet1Data();
+            console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data.length, '개 항목');
+            
+            tbody.innerHTML = '';
+            
+            if (!sheet1Data || sheet1Data.length === 0) {
+              return;
+            }
+            
+            sheet1Data.forEach((item, index) => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.time || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.league || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.home || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.away || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.content || ''}"></td>
+                <td>
+                  <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } else {
+            // import 사용 (폴백)
+            const { loadSheet1Data } = await import('../app.js');
+            const sheet1Data = await loadSheet1Data();
+            console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data.length, '개 항목');
+            
+            tbody.innerHTML = '';
+            
+            if (!sheet1Data || sheet1Data.length === 0) {
+              return;
+            }
+            
+            sheet1Data.forEach((item, index) => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.time || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.league || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.home || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.away || ''}"></td>
+                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.content || ''}"></td>
+                <td>
+                  <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        }
+      } catch (error) {
+        console.error('❌ 금지 데이터 불러오기 실패:', error);
+        console.error('에러 상세:', error.message, error.code);
       }
     }
     

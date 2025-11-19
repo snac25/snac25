@@ -229,6 +229,29 @@ input[type="number"], input[type="text"] {
   background: transparent;
 }
 
+/* 금지 탭 테이블의 모든 요소 글자 크기 16px로 강제 적용 */
+.new-sheet-table,
+.new-sheet-table * {
+  font-size: 16px !important;
+}
+
+.new-sheet-table th,
+.new-sheet-table td {
+  font-size: 16px !important;
+}
+
+.new-sheet-table input[type="number"],
+.new-sheet-table input[type="text"],
+.new-sheet-table input {
+  font-size: 16px !important;
+  font-weight: normal !important;
+}
+
+.new-sheet-table button,
+.new-sheet-table .btn {
+  font-size: 16px !important;
+}
+
 /* A열 (번호) - 16px, 굵고 찐하게, 헤더와 동일한 배경색 */
 /* 행 선택 시 테두리 - 붉은색 - 최우선 적용 */
 #inputTable tbody tr.row-selected {
@@ -756,11 +779,17 @@ input.selected.cell-selected {
   border: 1px solid #000;
   padding: 8px;
   text-align: center;
+  font-size: 16px !important; /* 16px로 통일 */
 }
 
 .new-sheet-table th {
   background-color: #f0f0f0;
   font-weight: bold;
+  font-size: 16px !important; /* 16px로 통일 */
+}
+
+.new-sheet-table td {
+  font-size: 16px !important; /* 16px로 통일 */
 }
 
 .new-sheet-table input {
@@ -768,6 +797,11 @@ input.selected.cell-selected {
   border: none;
   padding: 5px;
   text-align: center;
+  font-size: 16px !important; /* 16px로 통일 */
+}
+
+.new-sheet-table button {
+  font-size: 16px !important; /* 16px로 통일 */
 }
 
 /* 금지 탭 열 너비 비율: 0.5:1:1.5:1.5:1.5:3:1 */
@@ -1149,7 +1183,7 @@ html > #sheet1Modal {
 .view-page #viewTable thead th {
   color: #ffffff;
   font-weight: bold;
-  font-size: 1.3rem;
+  font-size: 1.95rem; /* 1.5배: 1.3rem → 1.95rem */
   padding: 20px 15px;
   text-align: center;
   border-bottom: 4px solid rgba(255, 255, 255, 0.8);
@@ -1157,6 +1191,18 @@ html > #sheet1Modal {
   letter-spacing: 1px;
   background: rgba(45, 45, 45, 0.95);
   border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 1열과 2열 사이, 4열과 5열 사이 경계선 굵게 */
+.view-page #viewTable thead th:nth-child(1),
+.view-page #viewTable thead th:nth-child(4) {
+  border-right: 3px solid rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 5열, 6열 헤더 바탕색 진한 검정색 */
+.view-page #viewTable thead th:nth-child(5),
+.view-page #viewTable thead th:nth-child(6) {
+  background: rgba(0, 0, 0, 1) !important; /* 진한 검정색 */
 }
 
 .view-page #viewTable thead th:last-child {
@@ -1184,9 +1230,15 @@ html > #sheet1Modal {
 
 .view-page #viewTable tbody td {
   color: #e0e0e0;
-  padding: 12px 15px;
+  padding: 15.6px 19.5px; /* 행 높이 1.3배: 12px → 15.6px, 15px → 19.5px */
   text-align: center;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 1열과 2열 사이, 4열과 5열 사이 경계선 굵게 */
+.view-page #viewTable tbody td:nth-child(1),
+.view-page #viewTable tbody td:nth-child(4) {
+  border-right: 3px solid rgba(0, 0, 0, 0.8) !important;
 }
 
 /* 1,2,3,4열 (시간, 리그, 홈팀, 원정팀) 바디 부분 검은색 */
@@ -1197,6 +1249,11 @@ html > #sheet1Modal {
   color: #000000;
   font-weight: 700 !important; /* 더 굵게 */
   font-size: 1.1em !important; /* 더 크게 */
+}
+
+/* 1열 바디 글자 크기 1.5배 */
+.view-page #viewTable tbody td:nth-child(1) {
+  font-size: 1.65em !important; /* 1.5배: 1.1em → 1.65em */
 }
 
 .view-page #viewTable tbody td:last-child {
@@ -1967,6 +2024,17 @@ body.login-page {
   gap: 0; /* 모든 요소 간 간격 제거 */
 }
 
+/* 금지 버튼 래퍼 - 테이블 컨테이너 밖 상단 */
+.view-ban-wrapper {
+  width: 95%;
+  max-width: 95%;
+  margin: 400px auto 15px auto;
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 10;
+}
+
 /* 조회 결과 컨테이너를 화면 가운데 정렬 - 강제 적용 */
 .view-page .view-container,
 .view-container {
@@ -1974,7 +2042,7 @@ body.login-page {
   top: auto !important;
   left: auto !important;
   transform: none !important;
-  margin: 400px auto 40px auto !important;
+  margin: 0 auto 40px auto !important;
   width: 95% !important;
   max-width: 95% !important;
   border-radius: 16px !important;
@@ -2027,15 +2095,11 @@ body.login-page {
   margin-bottom: 6px;
 }
 
-/* 금지 버튼 - 컨테이너 내부 오른쪽 상단 */
-/* 금지 버튼 - 컨테이너 내부 오른쪽 상단 - 강제 적용 */
-.view-page .view-container .view-ban-button,
-.view-page .view-container .btn-info.view-ban-button,
-.view-container .view-ban-button {
-  position: absolute !important;
-  top: 20px !important;
-  right: 20px !important;
-  left: auto !important;
+/* 금지 버튼 - 테이블 컨테이너 밖 상단 오른쪽 */
+.view-ban-wrapper .view-ban-button,
+.view-ban-wrapper .btn-info.view-ban-button,
+.view-page .view-ban-wrapper .btn-info {
+  position: relative !important;
   background-color: #dc3545 !important;
   color: white !important;
   font-size: 1.1rem !important;
@@ -2047,11 +2111,12 @@ body.login-page {
   visibility: visible !important;
   opacity: 1 !important;
   margin: 0 !important;
+  border: none !important;
 }
 
-.view-page .view-container .view-ban-button:hover,
-.view-page .view-container .btn-info.view-ban-button:hover,
-.view-container .view-ban-button:hover {
+.view-ban-wrapper .view-ban-button:hover,
+.view-ban-wrapper .btn-info.view-ban-button:hover,
+.view-page .view-ban-wrapper .btn-info:hover {
   background-color: #c82333 !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 16px rgba(220, 53, 69, 0.6) !important;
@@ -2063,7 +2128,7 @@ body.login-page {
   font-size: 1.235rem; /* 1.3배: 0.95rem * 1.3 = 1.235rem */
   font-weight: 500;
   background: rgba(22, 101, 52, 0.45);
-  padding: 4px 10px;
+  padding: 4px 20px; /* 가로 길이 증가: 10px → 20px */
   border-radius: 999px;
   border: 1px solid rgba(74, 222, 128, 0.6);
   display: block;
@@ -2098,11 +2163,24 @@ body.login-page {
 .view-page #viewTable thead th {
   color: #e5e7eb;
   font-weight: 600;
-  font-size: 1rem;
-  padding: 14px 10px;
+  font-size: 1.5rem; /* 1.5배: 1rem → 1.5rem */
+  padding: 18.2px 13px; /* 헤더도 1.3배: 14px → 18.2px, 10px → 13px */
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   text-shadow: none;
+}
+
+/* 1열과 2열 사이, 4열과 5열 사이 경계선 굵게 */
+.view-page #viewTable thead th:nth-child(1),
+.view-page #viewTable thead th:nth-child(4) {
+  border-right: 3px solid rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 5열, 6열 헤더 바탕색 진한 검정색 */
+.view-page #viewTable thead th:nth-child(5),
+.view-page #viewTable thead th:nth-child(6) {
+  background: rgba(0, 0, 0, 1) !important; /* 진한 검정색 */
 }
 
 /* 바디 – 반투명 밝은 배경 */
@@ -2123,8 +2201,211 @@ body.login-page {
 /* 셀 기본 */
 .view-page #viewTable tbody td {
   color: #f9fafb;
-  padding: 12px 10px;
+  padding: 15.6px 13px; /* 행 높이 1.3배: 12px → 15.6px, 10px → 13px */
   font-size: 0.95rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* 1열과 2열 사이, 4열과 5열 사이 경계선 굵게 */
+.view-page #viewTable tbody td:nth-child(1),
+.view-page #viewTable tbody td:nth-child(4) {
+  border-right: 3px solid rgba(0, 0, 0, 0.8) !important;
+}
+
+/* ===================================== 금지 팝업 UI 리디자인 (1800px + 네온 강한 테이블 스타일) ===================================== */
+
+/* ===== 전체 모달 영역 ===== */
+.redesigned-modal {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0,0,0,0.80) !important;
+  backdrop-filter: blur(12px) !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  animation: fadeIn 0.3s ease-out !important;
+}
+
+/* 모달이 표시될 때만 flex로 변경 */
+.redesigned-modal[style*="display: flex"],
+.redesigned-modal.show {
+  display: flex !important;
+}
+
+/* ===== 모달 박스 ===== */
+.redesigned-modal-content {
+  width: 1800px !important;
+  height: 85vh !important;
+  background: rgba(15, 15, 30, 0.90) !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(0,255,140,0.15) !important;
+  position: relative !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1) !important;
+  margin: 0 !important;
+  max-width: 95vw !important;
+}
+
+/* ===== 닫기 버튼 ===== */
+.modal-close-btn {
+  position: absolute !important;
+  right: 25px !important;
+  top: 22px !important;
+  font-size: 28px !important;
+  background: rgba(255,255,255,0.15) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 45px !important;
+  height: 45px !important;
+  cursor: pointer !important;
+  backdrop-filter: blur(6px) !important;
+  transition: 0.2s !important;
+  z-index: 10 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255,255,255,0.3) !important;
+  transform: scale(1.1) !important;
+}
+
+/* ===== 제목 ===== */
+.modal-title {
+  font-size: 2.2rem !important;
+  font-weight: 900 !important;
+  color: #dc3545 !important; /* 빨강색 */
+  padding: 28px 40px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+  letter-spacing: 2px !important;
+  text-shadow: 0 0 10px rgba(220, 53, 69, 0.65) !important;
+  margin: 0 !important;
+}
+
+/* ===== 테이블 컨테이너 ===== */
+.table-container {
+  padding: 20px 40px !important;
+  overflow-y: auto !important;
+  height: calc(100% - 110px) !important;
+  flex: 1 !important;
+}
+
+/* 스크롤바 꾸밈 */
+.table-container::-webkit-scrollbar {
+  width: 12px !important;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(0,255,140,0.35) !important;
+  border-radius: 10px !important;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,255,140,0.55) !important;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2) !important;
+}
+
+/* ===== 테이블 ===== */
+.neo-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: rgba(255,255,255,0.04) !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 0 20px rgba(0,255,140,0.15) !important;
+  table-layout: fixed !important;
+}
+
+.neo-table thead th {
+  color: #ffffff !important; /* 흰색 */
+  font-size: 1.3rem !important;
+  padding: 22px !important;
+  background: rgba(0,0,0,0.55) !important;
+  border-bottom: 2px solid rgba(255,255,255,0.2) !important;
+  letter-spacing: 1px !important;
+  text-shadow: none !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+}
+
+.neo-table tbody tr {
+  background: rgba(255,255,255,0.05) !important;
+  transition: 0.2s !important;
+}
+
+.neo-table tbody tr:hover {
+  background: rgba(0,255,140,0.20) !important;
+  box-shadow: inset 0 0 20px rgba(0,255,160,0.25) !important;
+}
+
+.neo-table tbody tr:nth-child(even) {
+  background: rgba(255,255,255,0.03) !important;
+}
+
+.neo-table tbody tr:nth-child(even):hover {
+  background: rgba(0,255,140,0.18) !important;
+}
+
+.neo-table td {
+  padding: 20px !important;
+  color: #000000 !important; /* 검은색 */
+  font-size: 1.3rem !important; /* 글자 크기 증가: 1.15rem → 1.3rem */
+  font-weight: 600 !important;
+  text-align: center !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+/* 번호 컬럼 강조 */
+.neo-table td:first-child {
+  font-size: 1.4rem !important; /* 글자 크기 증가 */
+  font-weight: 900 !important;
+  color: #000000 !important; /* 검은색 */
+  text-shadow: none !important;
+}
+
+/* 내용 컬럼 (마지막 컬럼) - 진한 빨강 */
+.neo-table td:last-child {
+  color: #8b0000 !important; /* 진한 빨강 */
+  font-weight: 600 !important;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 

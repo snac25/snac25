@@ -662,6 +662,8 @@ window.showAlert = showAlert;
 window.saveAccounts = saveAccounts;
 window.loadAccounts = loadAccounts;
 window.deleteAccount = deleteAccount;
+window.saveSheet1Data = saveSheet1Data;
+window.loadSheet1Data = loadSheet1Data;
 
 
 

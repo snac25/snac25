@@ -3,6 +3,12 @@ import { loadOptions, calculatePColumn, calculateQColumn, showAlert } from './ap
 
 // 페이지 로드 시 로그인 체크
 window.addEventListener('DOMContentLoaded', async () => {
+  // 모달 초기화 - 확실히 숨김
+  const modal = document.getElementById('sheet1Modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  
   // 로그인 체크
   const isLoggedIn = sessionStorage.getItem('isLoggedIn');
   if (isLoggedIn !== 'true') {
@@ -226,15 +232,6 @@ async function showSheet1Modal() {
     <col style="width: 32%;">
   `;
   
-  // 모달 크기 강제 설정 (1.5배: 2100px)
-  const modalContent = modal.querySelector('.modal-content');
-  if (modalContent) {
-    modalContent.style.width = '2100px';
-    modalContent.style.maxWidth = '2100px';
-    modalContent.style.minWidth = '2100px';
-    modalContent.style.height = '85vh';
-  }
-  
   // 모달을 html의 직접 자식으로 이동 (body 밖으로)
   if (modal.parentElement !== document.documentElement) {
     document.documentElement.appendChild(modal);
@@ -243,8 +240,9 @@ async function showSheet1Modal() {
   // body의 overflow를 조정하여 모달이 보이도록
   document.body.style.overflow = 'hidden';
   
-  // 모달 표시
-  modal.style.display = 'block';
+  // 모달 표시 (새 디자인: flex 사용)
+  modal.style.display = 'flex';
+  modal.classList.add('show');
   
   // 시트1 데이터 불러오기
   try {
@@ -258,7 +256,7 @@ async function showSheet1Modal() {
       const row = document.createElement('tr');
       const cell = document.createElement('td');
       cell.colSpan = 6;
-      cell.textContent = '시트1에 입력된 데이터가 없습니다.';
+      cell.textContent = '금지된 경기가 없습니다.';
       cell.style.textAlign = 'center';
       cell.style.padding = '30px';
       cell.style.color = '#999';
@@ -304,7 +302,7 @@ async function showSheet1Modal() {
       tbody.appendChild(row);
     });
     
-    // 열 너비 및 행 높이 강제 적용 (JavaScript로)
+    // 열 너비 강제 적용 (JavaScript로) - 새 디자인에 맞게 조정
     setTimeout(() => {
       const ths = table.querySelectorAll('thead th');
       const widths = ['7%', '13%', '16%', '16%', '16%', '32%'];
@@ -312,17 +310,9 @@ async function showSheet1Modal() {
         th.style.width = widths[index];
         th.style.minWidth = widths[index];
         th.style.maxWidth = widths[index];
-        // 행 높이 1.5배 강제 적용
-        th.style.setProperty('padding', '27px 30px', 'important');
       });
       
-      // tbody td에도 행 높이 1.5배 강제 적용
-      const tds = table.querySelectorAll('tbody td');
-      tds.forEach(td => {
-        td.style.setProperty('padding', '24px 30px', 'important');
-      });
-      
-      console.log('✅ 열 너비 및 행 높이(1.5배) 강제 적용 완료');
+      console.log('✅ 열 너비 강제 적용 완료');
     }, 0);
   } catch (error) {
     console.error('시트1 데이터 불러오기 오류:', error);
@@ -335,6 +325,7 @@ function closeSheet1Modal() {
   const modal = document.getElementById('sheet1Modal');
   if (modal) {
     modal.style.display = 'none';
+    modal.classList.remove('show');
     // body의 overflow 복원
     document.body.style.overflow = '';
   }
