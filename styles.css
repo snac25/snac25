@@ -688,6 +688,16 @@ input.selected.cell-selected {
   transition: background-color 0.2s;
 }
 
+/* 축구 버튼 길이 2.5배 */
+.sheet-tab[data-sheet="main"] {
+  padding: 8px 50px; /* 20px * 2.5 */
+}
+
+/* 금지 버튼 길이 1.5배 */
+.sheet-tab[data-sheet="sheet1"] {
+  padding: 8px 30px; /* 20px * 1.5 */
+}
+
 .sheet-tab:hover {
   background-color: #c0c0c0;
 }
@@ -698,6 +708,16 @@ input.selected.cell-selected {
   z-index: 1;
   top: 0;
   padding-top: 10px;
+}
+
+/* 활성화된 축구 버튼 길이 2.5배 */
+.sheet-tab.active[data-sheet="main"] {
+  padding: 10px 50px 8px 50px; /* 상단 10px, 좌우 50px, 하단 8px */
+}
+
+/* 활성화된 금지 버튼 길이 1.5배 */
+.sheet-tab.active[data-sheet="sheet1"] {
+  padding: 10px 30px 8px 30px; /* 상단 10px, 좌우 30px, 하단 8px */
 }
 
 .sheet-new-btn {
@@ -1817,5 +1837,49 @@ body.login-page {
   color: #999;
   padding: 40px 20px;
   font-size: 1.1rem;
+}
+
+/* 모달 기본 스타일 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: rgba(26, 26, 46, 0.98);
+  margin: 5% auto;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.modal .close {
+  color: rgba(255, 255, 255, 0.8);
+  float: right;
+  font-size: 28px;
+  font-weight: 300;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal .close:hover,
+.modal .close:focus {
+  color: #ffffff;
+  transform: scale(1.2);
 }
 
