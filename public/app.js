@@ -517,6 +517,11 @@ async function saveAccounts(accounts) {
 // Firebase에서 계정 정보 불러오기
 async function loadAccounts() {
   try {
+    // db가 초기화되었는지 확인
+    if (!db) {
+      throw new Error('Firebase db가 초기화되지 않았습니다.');
+    }
+    
     const accountsRef = doc(db, 'settings', 'accounts');
     const accountsSnap = await getDoc(accountsRef);
     
@@ -556,6 +561,11 @@ async function loadAccounts() {
     }
   } catch (error) {
     console.error('❌ Firebase 계정 불러오기 실패:', error);
+    console.error('❌ 에러 상세:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
     // Firebase 실패 시 localStorage 폴백
     try {
       const localAccounts = localStorage.getItem('viewPageAccounts');
@@ -572,7 +582,72 @@ async function loadAccounts() {
   }
 }
 
-export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, deleteAllData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener, saveSheet1Data, loadSheet1Data, saveAccounts, loadAccounts };
+// Firebase에서 계정 삭제
+async function deleteAccount(userId) {
+  try {
+    // db가 초기화되었는지 확인
+    if (!db) {
+      throw new Error('Firebase db가 초기화되지 않았습니다.');
+    }
+    
+    console.log('🗑️ Firebase에서 계정 삭제 시도 중...', userId);
+    
+    // 현재 계정 목록 불러오기
+    const accounts = await loadAccounts();
+    
+    // 해당 userId를 가진 계정 찾아서 제거
+    const filteredAccounts = accounts.filter(acc => acc.userId !== userId);
+    
+    if (filteredAccounts.length === accounts.length) {
+      console.warn('⚠️ 삭제할 계정을 찾을 수 없습니다:', userId);
+      return { success: false, message: '삭제할 계정을 찾을 수 없습니다.' };
+    }
+    
+    // Firebase에 업데이트된 계정 목록 저장
+    const accountsRef = doc(db, 'settings', 'accounts');
+    await setDoc(accountsRef, { 
+      accounts: filteredAccounts,
+      lastUpdated: new Date().toISOString()
+    });
+    
+    console.log('✅ 계정이 Firebase에서 삭제되었습니다.');
+    
+    // localStorage에도 동기화
+    try {
+      localStorage.setItem('viewPageAccounts', JSON.stringify(filteredAccounts));
+      console.log('📦 localStorage에도 동기화 완료');
+    } catch (e) {
+      console.warn('⚠️ localStorage 동기화 실패:', e);
+    }
+    
+    return { success: true, message: '계정이 삭제되었습니다.' };
+  } catch (error) {
+    console.error('❌ Firebase 계정 삭제 실패:', error);
+    console.error('❌ 에러 상세:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    
+    // Firebase 실패 시 localStorage에서 직접 삭제 시도
+    try {
+      const localAccounts = localStorage.getItem('viewPageAccounts');
+      if (localAccounts) {
+        const accounts = JSON.parse(localAccounts);
+        const filteredAccounts = accounts.filter(acc => acc.userId !== userId);
+        localStorage.setItem('viewPageAccounts', JSON.stringify(filteredAccounts));
+        console.log('📦 localStorage에서 계정 삭제 완료 (폴백)');
+        return { success: true, message: '계정이 삭제되었습니다. (로컬 저장)' };
+      }
+    } catch (e) {
+      console.error('❌ localStorage 폴백도 실패:', e);
+    }
+    
+    return { success: false, message: '계정 삭제에 실패했습니다.' };
+  }
+}
+
+export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, deleteAllData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener, saveSheet1Data, loadSheet1Data, saveAccounts, loadAccounts, deleteAccount };
 
 // 전역으로 함수들을 export (기존 코드와의 호환성을 위해)
 window.loadOptions = loadOptions;
@@ -586,6 +661,7 @@ window.calculateQColumn = calculateQColumn;
 window.showAlert = showAlert;
 window.saveAccounts = saveAccounts;
 window.loadAccounts = loadAccounts;
+window.deleteAccount = deleteAccount;
 
 
 

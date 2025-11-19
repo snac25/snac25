@@ -1714,6 +1714,29 @@ async function waitForLoadAccounts(maxWaitTime = 5000) {
   return true;
 }
 
+// window.deleteAccount가 로드될 때까지 기다리는 함수
+async function waitForDeleteAccount(maxWaitTime = 5000) {
+  const startTime = Date.now();
+  console.log('⏳ waitForDeleteAccount 시작, window.deleteAccount 타입:', typeof window.deleteAccount);
+  
+  while (typeof window.deleteAccount !== 'function') {
+    const elapsed = Date.now() - startTime;
+    if (elapsed > maxWaitTime) {
+      console.warn('⚠️ window.deleteAccount 로드 시간 초과 (5초)');
+      return false;
+    }
+    
+    if (elapsed % 1000 === 0) {
+      console.log(`⏳ deleteAccount 대기 중... ${elapsed}ms 경과`);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  console.log('✅ window.deleteAccount 로드 완료');
+  return true;
+}
+
 // 모든 계정 가져오기 (Firebase)
 async function getAllAccounts() {
   console.log('🔍 getAllAccounts 함수 시작');
@@ -1778,14 +1801,64 @@ async function refreshAccountList() {
           </div>
         </div>
         <div class="account-actions">
-          <!-- 계정 삭제 기능 제거: 생성된 계정 정보는 삭제할 수 없습니다 -->
+          <button class="btn btn-danger btn-sm" onclick="deleteAccountConfirm('${account.userId}')">삭제</button>
         </div>
       </div>
     `;
   }).join('');
 }
 
-// 계정 삭제 기능 제거됨 - 생성된 계정 정보는 삭제할 수 없습니다
+// 계정 삭제 확인 및 실행
+async function deleteAccountConfirm(userId) {
+  if (!confirm(`정말로 계정 "${userId}"를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+    return;
+  }
+  
+  try {
+    console.log('🗑️ 계정 삭제 시작:', userId);
+    
+    // window.deleteAccount가 로드될 때까지 기다림
+    const isLoaded = await waitForDeleteAccount();
+    
+    if (isLoaded && typeof window.deleteAccount === 'function') {
+      const result = await window.deleteAccount(userId);
+      
+      if (result && result.success) {
+        alert('✅ ' + result.message);
+        console.log('✅ 계정 삭제 완료:', userId);
+        
+        // 계정 목록 새로고침
+        await refreshAccountList();
+      } else {
+        alert('❌ ' + (result?.message || '계정 삭제에 실패했습니다.'));
+        console.error('❌ 계정 삭제 실패:', result);
+      }
+    } else {
+      // window.deleteAccount가 로드되지 않은 경우 localStorage에서 직접 삭제
+      console.warn('⚠️ window.deleteAccount가 로드되지 않았습니다. localStorage에서 직접 삭제합니다.');
+      try {
+        const localAccounts = localStorage.getItem('viewPageAccounts');
+        if (localAccounts) {
+          const accounts = JSON.parse(localAccounts);
+          const filteredAccounts = accounts.filter(acc => acc.userId !== userId);
+          localStorage.setItem('viewPageAccounts', JSON.stringify(filteredAccounts));
+          alert('✅ 계정이 삭제되었습니다. (로컬 저장)');
+          await refreshAccountList();
+        } else {
+          alert('❌ 삭제할 계정을 찾을 수 없습니다.');
+        }
+      } catch (e) {
+        console.error('❌ localStorage 삭제 실패:', e);
+        alert('❌ 계정 삭제에 실패했습니다.');
+      }
+    }
+  } catch (error) {
+    console.error('❌ 계정 삭제 중 에러 발생:', error);
+    alert('❌ 계정 삭제 중 오류가 발생했습니다.');
+  }
+}
+
+// 계정 삭제 기능 (더 이상 사용하지 않음 - deleteAccountConfirm 사용)
 // function deleteAccount(userId) {
 //   // 계정 삭제 기능이 비활성화되었습니다.
 //   alert('계정 정보는 삭제할 수 없습니다.');
@@ -2019,5 +2092,5 @@ window.openAccountManageModal = openAccountManageModal;
 window.closeAccountModal = closeAccountModal;
 window.closeAccountManageModal = closeAccountManageModal;
 window.saveAccount = saveAccount;
-// window.deleteAccount = deleteAccount; // 계정 삭제 기능 제거됨
+window.deleteAccountConfirm = deleteAccountConfirm;
 window.deleteAllRows = deleteAllRows;
