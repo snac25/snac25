@@ -467,7 +467,81 @@ async function loadSheet1Data() {
   }
 }
 
-export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, deleteAllData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener, saveSheet1Data, loadSheet1Data };
+// Firebase에 계정 정보 저장
+async function saveAccounts(accounts) {
+  try {
+    const accountsRef = doc(db, 'settings', 'accounts');
+    await setDoc(accountsRef, { 
+      accounts: accounts,
+      lastUpdated: new Date().toISOString()
+    });
+    console.log('✅ 계정 정보가 Firebase에 저장되었습니다.');
+    return true;
+  } catch (error) {
+    console.error('❌ Firebase 계정 저장 실패:', error);
+    // localStorage에 백업 저장
+    try {
+      localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+      console.log('📦 localStorage에 백업 저장 완료');
+    } catch (e) {
+      console.error('localStorage 백업 저장도 실패:', e);
+    }
+    return false;
+  }
+}
+
+// Firebase에서 계정 정보 불러오기
+async function loadAccounts() {
+  try {
+    const accountsRef = doc(db, 'settings', 'accounts');
+    const accountsSnap = await getDoc(accountsRef);
+    
+    if (accountsSnap.exists()) {
+      const data = accountsSnap.data();
+      console.log('✅ Firebase에서 계정 정보 불러오기 성공');
+      
+      // localStorage에도 동기화 (오프라인 백업용)
+      try {
+        localStorage.setItem('viewPageAccounts', JSON.stringify(data.accounts));
+      } catch (e) {
+        console.warn('localStorage 동기화 실패:', e);
+      }
+      
+      return data.accounts || [];
+    } else {
+      // Firebase에 데이터가 없으면 localStorage에서 불러오기 (마이그레이션)
+      console.log('⚠️ Firebase에 계정 정보가 없습니다. localStorage 확인 중...');
+      try {
+        const localAccounts = localStorage.getItem('viewPageAccounts');
+        if (localAccounts) {
+          const accounts = JSON.parse(localAccounts);
+          console.log('📦 localStorage에서 계정 정보를 찾았습니다. Firebase로 마이그레이션 중...');
+          await saveAccounts(accounts);
+          return accounts;
+        }
+      } catch (e) {
+        console.warn('localStorage 불러오기 실패:', e);
+      }
+      
+      return [];
+    }
+  } catch (error) {
+    console.error('❌ Firebase 계정 불러오기 실패:', error);
+    // Firebase 실패 시 localStorage 폴백
+    try {
+      const localAccounts = localStorage.getItem('viewPageAccounts');
+      if (localAccounts) {
+        console.log('📦 localStorage에서 계정 정보 불러오기 (폴백)');
+        return JSON.parse(localAccounts);
+      }
+    } catch (e) {
+      console.error('localStorage 폴백도 실패:', e);
+    }
+    return [];
+  }
+}
+
+export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, deleteAllData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener, saveSheet1Data, loadSheet1Data, saveAccounts, loadAccounts };
 
 // 전역으로 함수들을 export (기존 코드와의 호환성을 위해)
 window.loadOptions = loadOptions;
@@ -479,6 +553,8 @@ window.deleteData = deleteData;
 window.calculatePColumn = calculatePColumn;
 window.calculateQColumn = calculateQColumn;
 window.showAlert = showAlert;
+window.saveAccounts = saveAccounts;
+window.loadAccounts = loadAccounts;
 
 
 

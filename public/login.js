@@ -1,5 +1,5 @@
 // 로그인 처리
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
   
   const userId = document.getElementById('userId').value.trim();
@@ -15,23 +15,13 @@ function handleLogin(event) {
     return;
   }
   
-  // localStorage에서 저장된 계정 정보 확인
+  // Firebase에서 계정 정보 불러오기
   let accounts = [];
   
   try {
-    const accountsStr = localStorage.getItem('viewPageAccounts');
-    if (accountsStr) {
-      accounts = JSON.parse(accountsStr);
-    } else {
-      // 기존 단일 계정 형식 호환성 처리
-      const oldAccountStr = localStorage.getItem('viewPageAccount');
-      if (oldAccountStr) {
-        const oldAccount = JSON.parse(oldAccountStr);
-        accounts = [oldAccount];
-      }
-    }
+    accounts = await window.loadAccounts();
   } catch (error) {
-    console.warn('계정 불러오기 실패:', error);
+    console.error('계정 불러오기 실패:', error);
   }
   
   if (accounts.length === 0) {

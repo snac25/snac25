@@ -1690,37 +1690,21 @@ function closeAccountManageModal() {
   modal.style.display = 'none';
 }
 
-// 모든 계정 가져오기
-function getAllAccounts() {
+// 모든 계정 가져오기 (Firebase)
+async function getAllAccounts() {
   try {
-    const accountsStr = localStorage.getItem('viewPageAccounts');
-    if (accountsStr) {
-      return JSON.parse(accountsStr);
-    }
-    // 기존 단일 계정 형식 호환성 처리
-    const oldAccountStr = localStorage.getItem('viewPageAccount');
-    if (oldAccountStr) {
-      const oldAccount = JSON.parse(oldAccountStr);
-      const accounts = [{
-        userId: oldAccount.userId,
-        password: oldAccount.password,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }];
-      localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
-      localStorage.removeItem('viewPageAccount');
-      return accounts;
-    }
+    const accounts = await window.loadAccounts();
+    return accounts;
   } catch (error) {
-    console.warn('계정 불러오기 실패:', error);
+    console.error('계정 불러오기 실패:', error);
   }
   return [];
 }
 
 // 계정 목록 새로고침
-function refreshAccountList() {
+async function refreshAccountList() {
   const accountList = document.getElementById('accountList');
-  const accounts = getAllAccounts();
+  const accounts = await getAllAccounts();
   
   if (accounts.length === 0) {
     accountList.innerHTML = '<p class="no-accounts">등록된 계정이 없습니다.</p>';
@@ -1762,7 +1746,7 @@ function closeAccountModal() {
 }
 
 // 계정 저장
-function saveAccount(event) {
+async function saveAccount(event) {
   event.preventDefault();
   
   const userId = document.getElementById('accountId').value.trim();
@@ -1786,7 +1770,7 @@ function saveAccount(event) {
   }
   
   // 계정 목록 가져오기
-  let accounts = getAllAccounts();
+  let accounts = await getAllAccounts();
   
   // 중복 체크
   const existingIndex = accounts.findIndex(acc => acc.userId === userId);
@@ -1804,10 +1788,15 @@ function saveAccount(event) {
     });
   }
   
-  // localStorage에 저장
-  localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+  // Firebase에 저장
+  const success = await window.saveAccounts(accounts);
   
-  alert('계정이 생성되었습니다!');
+  if (success) {
+    alert('계정이 Firebase에 저장되었습니다!');
+  } else {
+    alert('계정이 로컬에 저장되었습니다. (Firebase 연결 실패)');
+  }
+  
   closeAccountModal();
 }
 
