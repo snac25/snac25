@@ -1,3 +1,18 @@
+// window.loadAccounts가 로드될 때까지 기다리는 함수
+async function waitForLoadAccounts(maxWaitTime = 5000) {
+  const startTime = Date.now();
+  
+  while (typeof window.loadAccounts !== 'function') {
+    if (Date.now() - startTime > maxWaitTime) {
+      console.warn('window.loadAccounts 로드 시간 초과');
+      return false;
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  return true;
+}
+
 // 로그인 처리
 async function handleLogin(event) {
   event.preventDefault();
@@ -19,9 +34,42 @@ async function handleLogin(event) {
   let accounts = [];
   
   try {
-    accounts = await window.loadAccounts();
+    // window.loadAccounts가 로드될 때까지 기다림
+    const isLoaded = await waitForLoadAccounts();
+    
+    if (isLoaded && typeof window.loadAccounts === 'function') {
+      // Firebase에서 계정 정보 불러오기 (우선순위 1)
+      accounts = await window.loadAccounts();
+      console.log('✅ Firebase에서 계정 정보 불러오기 성공:', accounts.length, '개');
+    } else {
+      // window.loadAccounts가 로드되지 않은 경우 localStorage에서 불러오기 (폴백)
+      console.warn('⚠️ window.loadAccounts가 로드되지 않았습니다. localStorage에서 불러옵니다.');
+      const localAccounts = localStorage.getItem('viewPageAccounts');
+      if (localAccounts) {
+        accounts = JSON.parse(localAccounts);
+        console.log('📦 localStorage에서 계정 정보 불러오기:', accounts.length, '개');
+    } else {
+      // 기존 단일 계정 형식 호환성 처리
+      const oldAccountStr = localStorage.getItem('viewPageAccount');
+      if (oldAccountStr) {
+        const oldAccount = JSON.parse(oldAccountStr);
+        accounts = [oldAccount];
+          console.log('📦 기존 단일 계정 형식에서 불러오기');
+        }
+      }
+    }
   } catch (error) {
-    console.error('계정 불러오기 실패:', error);
+    console.error('❌ 계정 불러오기 실패:', error);
+    // 에러 발생 시 localStorage 폴백
+    try {
+      const localAccounts = localStorage.getItem('viewPageAccounts');
+      if (localAccounts) {
+        accounts = JSON.parse(localAccounts);
+        console.log('📦 에러 발생, localStorage 폴백으로 불러오기:', accounts.length, '개');
+      }
+    } catch (e) {
+      console.error('❌ localStorage 폴백도 실패:', e);
+    }
   }
   
   if (accounts.length === 0) {

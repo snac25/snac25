@@ -203,8 +203,37 @@ window.handleLogout = handleLogout;
 async function showSheet1Modal() {
   const modal = document.getElementById('sheet1Modal');
   const tbody = document.getElementById('sheet1TableBody');
+  const table = document.getElementById('sheet1Table');
   
-  if (!modal || !tbody) return;
+  if (!modal || !tbody || !table) return;
+  
+  // 테이블에 table-layout: fixed 강제 적용
+  table.style.tableLayout = 'fixed';
+  table.style.width = '100%';
+  
+  // colgroup으로 열 너비 강제 설정 (0.7:1.3:1.6:1.6:1.6:3.2)
+  let colgroup = table.querySelector('colgroup');
+  if (!colgroup) {
+    colgroup = document.createElement('colgroup');
+    table.insertBefore(colgroup, table.firstChild);
+  }
+  colgroup.innerHTML = `
+    <col style="width: 7%;">
+    <col style="width: 13%;">
+    <col style="width: 16%;">
+    <col style="width: 16%;">
+    <col style="width: 16%;">
+    <col style="width: 32%;">
+  `;
+  
+  // 모달 크기 강제 설정 (1.5배: 2100px)
+  const modalContent = modal.querySelector('.modal-content');
+  if (modalContent) {
+    modalContent.style.width = '2100px';
+    modalContent.style.maxWidth = '2100px';
+    modalContent.style.minWidth = '2100px';
+    modalContent.style.height = '85vh';
+  }
   
   // 모달을 html의 직접 자식으로 이동 (body 밖으로)
   if (modal.parentElement !== document.documentElement) {
@@ -274,6 +303,27 @@ async function showSheet1Modal() {
       
       tbody.appendChild(row);
     });
+    
+    // 열 너비 및 행 높이 강제 적용 (JavaScript로)
+    setTimeout(() => {
+      const ths = table.querySelectorAll('thead th');
+      const widths = ['7%', '13%', '16%', '16%', '16%', '32%'];
+      ths.forEach((th, index) => {
+        th.style.width = widths[index];
+        th.style.minWidth = widths[index];
+        th.style.maxWidth = widths[index];
+        // 행 높이 1.5배 강제 적용
+        th.style.setProperty('padding', '27px 30px', 'important');
+      });
+      
+      // tbody td에도 행 높이 1.5배 강제 적용
+      const tds = table.querySelectorAll('tbody td');
+      tds.forEach(td => {
+        td.style.setProperty('padding', '24px 30px', 'important');
+      });
+      
+      console.log('✅ 열 너비 및 행 높이(1.5배) 강제 적용 완료');
+    }, 0);
   } catch (error) {
     console.error('시트1 데이터 불러오기 오류:', error);
     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #ff6b6b;">데이터를 불러올 수 없습니다.</td></tr>';

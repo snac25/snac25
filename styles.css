@@ -1528,24 +1528,43 @@ body.login-page {
 
 .view-page #sheet1Modal .modal-content {
   background: linear-gradient(145deg, rgba(15, 15, 30, 0.98) 0%, rgba(25, 25, 45, 0.98) 50%, rgba(20, 20, 35, 0.98) 100%) !important;
-  margin: 2% auto !important;
+  margin: 2vh auto !important;
   padding: 0 !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 24px !important;
-  width: 92% !important;
-  max-width: 1400px !important;
+  
+  /* 크기 1.5배로 증가 (원래 1400px → 2100px) */
+  width: 2100px !important;
+  max-width: 2100px !important;
+  min-width: 2100px !important;
+  height: 85vh !important;
+  
+  /* 중앙 정렬 */
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  
   box-shadow: 
     0 25px 80px rgba(0, 0, 0, 0.8),
     0 0 60px rgba(76, 175, 80, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-  position: relative !important;
   z-index: 1000000 !important;
-  top: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
   pointer-events: auto !important;
   overflow: hidden !important;
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* 폰트 크기도 확대 */
+.view-page #sheet1Modal #sheet1Table th,
+.view-page #sheet1Modal #sheet1Table td {
+  font-size: 1.2rem !important;
+  padding: 30px 38px !important; /* 1.5배: 20px→30px, 25px→38px */
+}
+
+.view-page #sheet1Modal #sheet1TableContainer {
+  max-height: calc(90vh - 120px) !important;
+  height: 100% !important;
 }
 
 .view-page #sheet1Modal .modal-content::before {
@@ -1624,6 +1643,7 @@ body.login-page {
 
 .view-page #sheet1Modal #sheet1Table {
   width: 100% !important;
+  table-layout: fixed !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
   background: rgba(10, 10, 20, 0.4) !important;
@@ -1648,7 +1668,7 @@ body.login-page {
   border: none !important;
   border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-bottom: 2px solid rgba(76, 175, 80, 0.4) !important;
-  padding: 18px 20px !important;
+  padding: 27px 30px !important; /* 1.5배: 18px→27px, 20px→30px */
   background: transparent !important;
   color: #ffffff !important;
   font-weight: 700 !important;
@@ -1707,7 +1727,7 @@ body.login-page {
 .view-page #sheet1Modal #sheet1Table tbody td {
   border: none !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-  padding: 16px 20px !important;
+  padding: 24px 30px !important; /* 1.5배: 16px→24px, 20px→30px */
   text-align: center !important;
   color: #e8e8e8 !important;
   font-size: 0.95rem !important;
@@ -1723,6 +1743,49 @@ body.login-page {
 
 .view-page #sheet1Modal #sheet1Table tbody td:last-child {
   border-right: none !important;
+}
+
+/* 금지 팝업 열 너비 비율: 0.7:1.3:1.6:1.6:1.6:3.2 */
+.view-page #sheet1Modal #sheet1Table thead th:nth-child(1),
+.view-page #sheet1Modal #sheet1Table tbody td:nth-child(1) {
+  width: 7% !important;
+  min-width: 7% !important;
+  max-width: 7% !important;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th:nth-child(2),
+.view-page #sheet1Modal #sheet1Table tbody td:nth-child(2) {
+  width: 13% !important;
+  min-width: 13% !important;
+  max-width: 13% !important;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th:nth-child(3),
+.view-page #sheet1Modal #sheet1Table tbody td:nth-child(3) {
+  width: 16% !important;
+  min-width: 16% !important;
+  max-width: 16% !important;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th:nth-child(4),
+.view-page #sheet1Modal #sheet1Table tbody td:nth-child(4) {
+  width: 16% !important;
+  min-width: 16% !important;
+  max-width: 16% !important;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th:nth-child(5),
+.view-page #sheet1Modal #sheet1Table tbody td:nth-child(5) {
+  width: 16% !important;
+  min-width: 16% !important;
+  max-width: 16% !important;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th:nth-child(6),
+.view-page #sheet1Modal #sheet1Table tbody td:nth-child(6) {
+  width: 32% !important;
+  min-width: 32% !important;
+  max-width: 32% !important;
 }
 
 .view-page #sheet1Modal .close {

@@ -470,21 +470,45 @@ async function loadSheet1Data() {
 // Firebase에 계정 정보 저장
 async function saveAccounts(accounts) {
   try {
+    // db가 초기화되었는지 확인
+    if (!db) {
+      throw new Error('Firebase db가 초기화되지 않았습니다.');
+    }
+    
+    console.log('🔄 Firebase에 계정 저장 시도 중...', accounts.length, '개 계정');
+    console.log('📝 저장할 계정 데이터:', accounts);
+    
     const accountsRef = doc(db, 'settings', 'accounts');
     await setDoc(accountsRef, { 
       accounts: accounts,
       lastUpdated: new Date().toISOString()
     });
+    
     console.log('✅ 계정 정보가 Firebase에 저장되었습니다.');
+    
+    // Firebase 저장 성공 시에도 localStorage에 동기화 (오프라인 백업용)
+    try {
+      localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+      console.log('📦 localStorage에도 동기화 완료');
+    } catch (e) {
+      console.warn('⚠️ localStorage 동기화 실패:', e);
+    }
+    
     return true;
   } catch (error) {
     console.error('❌ Firebase 계정 저장 실패:', error);
+    console.error('❌ 에러 상세:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    
     // localStorage에 백업 저장
     try {
       localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
       console.log('📦 localStorage에 백업 저장 완료');
     } catch (e) {
-      console.error('localStorage 백업 저장도 실패:', e);
+      console.error('❌ localStorage 백업 저장도 실패:', e);
     }
     return false;
   }
@@ -498,16 +522,18 @@ async function loadAccounts() {
     
     if (accountsSnap.exists()) {
       const data = accountsSnap.data();
-      console.log('✅ Firebase에서 계정 정보 불러오기 성공');
+      const accounts = data.accounts || [];
+      console.log('✅ Firebase에서 계정 정보 불러오기 성공:', accounts.length, '개');
       
       // localStorage에도 동기화 (오프라인 백업용)
       try {
-        localStorage.setItem('viewPageAccounts', JSON.stringify(data.accounts));
+        localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+        console.log('📦 localStorage에도 동기화 완료');
       } catch (e) {
-        console.warn('localStorage 동기화 실패:', e);
+        console.warn('⚠️ localStorage 동기화 실패:', e);
       }
       
-      return data.accounts || [];
+      return accounts;
     } else {
       // Firebase에 데이터가 없으면 localStorage에서 불러오기 (마이그레이션)
       console.log('⚠️ Firebase에 계정 정보가 없습니다. localStorage 확인 중...');
@@ -515,14 +541,17 @@ async function loadAccounts() {
         const localAccounts = localStorage.getItem('viewPageAccounts');
         if (localAccounts) {
           const accounts = JSON.parse(localAccounts);
-          console.log('📦 localStorage에서 계정 정보를 찾았습니다. Firebase로 마이그레이션 중...');
-          await saveAccounts(accounts);
-          return accounts;
+          if (accounts.length > 0) {
+            console.log('📦 localStorage에서 계정 정보를 찾았습니다. Firebase로 마이그레이션 중...', accounts.length, '개');
+            await saveAccounts(accounts);
+            return accounts;
+          }
         }
       } catch (e) {
-        console.warn('localStorage 불러오기 실패:', e);
+        console.warn('⚠️ localStorage 불러오기 실패:', e);
       }
       
+      console.log('⚠️ Firebase와 localStorage 모두에 계정 정보가 없습니다.');
       return [];
     }
   } catch (error) {
@@ -531,12 +560,14 @@ async function loadAccounts() {
     try {
       const localAccounts = localStorage.getItem('viewPageAccounts');
       if (localAccounts) {
-        console.log('📦 localStorage에서 계정 정보 불러오기 (폴백)');
-        return JSON.parse(localAccounts);
+        const accounts = JSON.parse(localAccounts);
+        console.log('📦 localStorage에서 계정 정보 불러오기 (폴백):', accounts.length, '개');
+        return accounts;
       }
     } catch (e) {
-      console.error('localStorage 폴백도 실패:', e);
+      console.error('❌ localStorage 폴백도 실패:', e);
     }
+    console.log('⚠️ 모든 소스에서 계정 정보를 불러올 수 없습니다.');
     return [];
   }
 }

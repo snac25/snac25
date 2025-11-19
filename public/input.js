@@ -1690,13 +1690,67 @@ function closeAccountManageModal() {
   modal.style.display = 'none';
 }
 
+// window.loadAccounts가 로드될 때까지 기다리는 함수
+async function waitForLoadAccounts(maxWaitTime = 5000) {
+  const startTime = Date.now();
+  console.log('⏳ waitForLoadAccounts 시작, window.loadAccounts 타입:', typeof window.loadAccounts);
+  console.log('⏳ window.saveAccounts 타입:', typeof window.saveAccounts);
+  
+  while (typeof window.loadAccounts !== 'function') {
+    const elapsed = Date.now() - startTime;
+    if (elapsed > maxWaitTime) {
+      console.warn('⚠️ window.loadAccounts 로드 시간 초과 (5초)');
+      return false;
+    }
+    
+    if (elapsed % 1000 === 0) {
+      console.log(`⏳ 대기 중... ${elapsed}ms 경과`);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  console.log('✅ window.loadAccounts 로드 완료');
+  return true;
+}
+
 // 모든 계정 가져오기 (Firebase)
 async function getAllAccounts() {
+  console.log('🔍 getAllAccounts 함수 시작');
   try {
-    const accounts = await window.loadAccounts();
-    return accounts;
+    // window.loadAccounts가 로드될 때까지 기다림
+    console.log('⏳ waitForLoadAccounts 호출...');
+    const isLoaded = await waitForLoadAccounts();
+    console.log('✅ waitForLoadAccounts 완료, 결과:', isLoaded);
+    
+    if (isLoaded && typeof window.loadAccounts === 'function') {
+      // Firebase에서 계정 정보 불러오기 (우선순위 1)
+      const accounts = await window.loadAccounts();
+      console.log('✅ Firebase에서 계정 정보 불러오기 성공:', accounts.length, '개');
+      return accounts;
+    } else {
+      // window.loadAccounts가 로드되지 않은 경우 localStorage에서 불러오기 (폴백)
+      console.warn('⚠️ window.loadAccounts가 로드되지 않았습니다. localStorage에서 불러옵니다.');
+      const localAccounts = localStorage.getItem('viewPageAccounts');
+      if (localAccounts) {
+        const accounts = JSON.parse(localAccounts);
+        console.log('📦 localStorage에서 계정 정보 불러오기:', accounts.length, '개');
+      return accounts;
+      }
+    }
   } catch (error) {
-    console.error('계정 불러오기 실패:', error);
+    console.error('❌ 계정 불러오기 실패:', error);
+    // 에러 발생 시 localStorage 폴백
+    try {
+      const localAccounts = localStorage.getItem('viewPageAccounts');
+      if (localAccounts) {
+        const accounts = JSON.parse(localAccounts);
+        console.log('📦 에러 발생, localStorage 폴백으로 불러오기:', accounts.length, '개');
+        return accounts;
+      }
+    } catch (e) {
+      console.error('❌ localStorage 폴백도 실패:', e);
+    }
   }
   return [];
 }
@@ -1748,38 +1802,53 @@ function closeAccountModal() {
 // 계정 저장
 async function saveAccount(event) {
   event.preventDefault();
+  alert('saveAccount 함수 호출됨!');
+  console.log('🚀 saveAccount 함수 시작');
+  console.log('Event:', event);
+  console.log('Form:', document.getElementById('accountForm'));
   
   const userId = document.getElementById('accountId').value.trim();
   const password = document.getElementById('accountPassword').value;
   const passwordConfirm = document.getElementById('accountPasswordConfirm').value;
   
+  console.log('📝 입력된 아이디:', userId);
+  
   if (!userId) {
+    console.warn('⚠️ 아이디가 비어있음');
     alert('아이디를 입력해주세요.');
     return;
   }
   
   if (!password) {
+    console.warn('⚠️ 비밀번호가 비어있음');
     alert('비밀번호를 입력해주세요.');
     return;
   }
   
   if (password !== passwordConfirm) {
+    console.warn('⚠️ 비밀번호가 일치하지 않음');
     alert('비밀번호가 일치하지 않습니다.');
     document.getElementById('accountPasswordConfirm').focus();
     return;
   }
   
+  console.log('✅ 입력 검증 완료');
+  
   // 계정 목록 가져오기
+  console.log('🔍 기존 계정 목록 가져오는 중...');
   let accounts = await getAllAccounts();
+  console.log('📋 기존 계정 목록:', accounts);
   
   // 중복 체크
   const existingIndex = accounts.findIndex(acc => acc.userId === userId);
   if (existingIndex !== -1) {
     // 기존 계정 업데이트
+    console.log('🔄 기존 계정 업데이트:', userId);
     accounts[existingIndex].password = password;
     accounts[existingIndex].updatedAt = new Date().toISOString();
   } else {
     // 새 계정 추가
+    console.log('➕ 새 계정 추가:', userId);
     accounts.push({
       userId: userId,
       password: password,
@@ -1788,14 +1857,47 @@ async function saveAccount(event) {
     });
   }
   
-  // Firebase에 저장
-  const success = await window.saveAccounts(accounts);
+  console.log('✅ 계정 배열 준비 완료:', accounts);
   
-  if (success) {
-    alert('계정이 Firebase에 저장되었습니다!');
-  } else {
-    alert('계정이 로컬에 저장되었습니다. (Firebase 연결 실패)');
+  // Firebase에 저장
+  console.log('💾 Firebase 저장 시작');
+  try {
+    // window.saveAccounts가 로드될 때까지 기다림
+    console.log('⏳ window.saveAccounts 로드 대기 중...');
+    const isLoaded = await waitForLoadAccounts();
+    console.log('✅ window.saveAccounts 로드 완료:', isLoaded);
+    
+    if (isLoaded && typeof window.saveAccounts === 'function') {
+      console.log('🔄 Firebase에 계정 저장 시도 중...', accounts.length, '개');
+      const success = await window.saveAccounts(accounts);
+      
+      if (success) {
+        alert('계정이 Firebase에 저장되었습니다!');
+        console.log('✅ 계정 저장 완료');
+      } else {
+        alert('계정이 로컬에 저장되었습니다. (Firebase 연결 실패)');
+        console.warn('⚠️ Firebase 저장 실패, localStorage에만 저장됨');
+      }
+    } else {
+      // window.saveAccounts가 로드되지 않은 경우 localStorage에 저장
+      console.warn('⚠️ window.saveAccounts가 로드되지 않았습니다. localStorage에 저장합니다.');
+  localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+      alert('계정이 생성되었습니다! (Firebase 연결 대기 중)');
+    }
+  } catch (error) {
+    console.error('❌ 계정 저장 중 에러 발생:', error);
+    // 에러 발생 시 localStorage에 저장
+    try {
+      localStorage.setItem('viewPageAccounts', JSON.stringify(accounts));
+      alert('계정이 로컬에 저장되었습니다. (에러 발생)');
+    } catch (e) {
+      console.error('❌ localStorage 저장도 실패:', e);
+      alert('계정 저장에 실패했습니다. 콘솔을 확인해주세요.');
+    }
   }
+  
+  // 계정 목록 새로고침
+  await refreshAccountList();
   
   closeAccountModal();
 }

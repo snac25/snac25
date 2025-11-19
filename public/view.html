@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SNAC</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="styles.css?v=26">
 </head>
 <body class="view-page">
   <div class="view-hero">
@@ -18,7 +19,7 @@
   <div class="container view-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; position: relative; z-index: 10;">
       <h2 style="margin: 0;">조회 결과</h2>
-      <button class="btn btn-info" onclick="showSheet1Modal()" style="margin-left: auto; flex-shrink: 0; position: relative; z-index: 10; display: block !important; visibility: visible !important;">시트1</button>
+      <button class="btn btn-info" onclick="showSheet1Modal()" style="margin-left: auto; flex-shrink: 0; position: relative; z-index: 10; display: block !important; visibility: visible !important;">금지</button>
     </div>
     <div id="resultCount"></div>
     <table id="viewTable">
@@ -42,7 +43,7 @@
   <div id="sheet1Modal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close" onclick="closeSheet1Modal()">&times;</span>
-      <h2>시트1</h2>
+      <h2>금지</h2>
       <div id="sheet1TableContainer">
         <table id="sheet1Table">
           <thead>
