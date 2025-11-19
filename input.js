@@ -69,8 +69,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
   
-  // 실시간 리스너 설정
-  setupRealtimeListener();
+  // 실시간 리스너 설정 (초기 로드 완료 후 지연)
+  // 초기 로드가 완료된 후에만 실시간 리스너 활성화
+  setTimeout(() => {
+    setupRealtimeListener();
+  }, 2000);
   
   setupKeyboardShortcuts();
   setupPasteHandler();
@@ -1384,14 +1387,31 @@ function setupRealtimeListener() {
 function loadDataFromArray(data) {
   const tbody = document.getElementById('tableBody');
   
-  // 디버깅: L열과 M열 데이터 확인
+  // 디버깅: 모든 행의 모든 열 데이터 확인
   console.log('🔄 loadDataFromArray 호출:', data ? data.length : 0, '행');
   if (data && data.length > 0) {
-    const firstRowWithL = data.find(row => row.L !== undefined && row.L !== null && row.L !== '');
-    const firstRowWithM = data.find(row => row.M !== undefined && row.M !== null && row.M !== '');
-    console.log('📋 L열 데이터 샘플:', firstRowWithL ? { L: firstRowWithL.L, L_time: firstRowWithL.L_time } : '없음');
-    console.log('📋 M열 데이터 샘플:', firstRowWithM ? { M: firstRowWithM.M, M_time: firstRowWithM.M_time } : '없음');
-    console.log('📋 첫 번째 행 전체 데이터:', data[0]);
+    console.log('📋 전체 데이터 구조 확인:');
+    // 처음 3개 행의 모든 열 확인
+    data.slice(0, 3).forEach((row, idx) => {
+      console.log(`📋 행 ${idx + 1} 전체 데이터:`, {
+        B: row.B, C: row.C, D: row.D, E: row.E,
+        F: row.F, G: row.G, H: row.H, I: row.I,
+        J: row.J, K: row.K, L: row.L, M: row.M,
+        L_time: row.L_time, M_time: row.M_time
+      });
+    });
+    
+    // L열과 M열이 있는 행 찾기
+    const rowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
+    const rowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
+    console.log(`📋 L열 데이터가 있는 행: ${rowsWithL.length}개`);
+    console.log(`📋 M열 데이터가 있는 행: ${rowsWithM.length}개`);
+    if (rowsWithL.length > 0) {
+      console.log('📋 L열 데이터 샘플:', rowsWithL.slice(0, 3).map(r => ({ L: r.L, L_time: r.L_time })));
+    }
+    if (rowsWithM.length > 0) {
+      console.log('📋 M열 데이터 샘플:', rowsWithM.slice(0, 3).map(r => ({ M: r.M, M_time: r.M_time })));
+    }
   }
   
   // 현재 포커스된 셀 저장 (정렬 후에도 찾을 수 있도록 고유 식별자 사용)
@@ -1467,9 +1487,9 @@ function loadDataFromArray(data) {
       row.refs.L.value = getItemValue(item, 'L', focusedColKey, focusedValue, isFocusedCell);
       row.refs.M.value = getItemValue(item, 'M', focusedColKey, focusedValue, isFocusedCell);
       
-      // 디버깅: 첫 번째 행의 모든 데이터 확인
-      if (index === 0) {
-        console.log('✅ 첫 번째 행 로드:', {
+      // 디버깅: 처음 3개 행의 모든 데이터 확인
+      if (index < 3) {
+        console.log(`✅ 행 ${index + 1} 로드:`, {
           B: row.refs.B.value,
           C: row.refs.C.value,
           D: row.refs.D.value,
@@ -1596,15 +1616,15 @@ function saveToLocalStorage() {
         M_time: getTimeFromCell(row.refs.M)
       };
       
-      // 빈 행이 아닌 경우만 저장
-      const hasData = ['B', 'C', 'D', 'E', 'G', 'H', 'I', 'J', 'K', 'L', 'M'].some(k => rowData[k]);
-      if (hasData) {
-        tempData.push(rowData);
-      }
     }
   });
   
   try {
+    // 디버깅: 저장 전 전체 데이터 확인
+    const rowsWithL = tempData.filter(row => row.L && row.L !== '');
+    const rowsWithM = tempData.filter(row => row.M && row.M !== '');
+    console.log(`💾 저장 중: 총 ${tempData.length}행, L열 데이터 ${rowsWithL.length}행, M열 데이터 ${rowsWithM.length}행`);
+    
     localStorage.setItem('inputSheetTemp', JSON.stringify(tempData));
     
     // Firebase에 실시간 저장 (Firebase에서 업데이트 중이 아닐 때만)
@@ -1614,7 +1634,14 @@ function saveToLocalStorage() {
         clearTimeout(saveTimeout);
       }
       saveTimeout = setTimeout(() => {
-        saveInputSheetData(tempData).catch(err => {
+        console.log('💾 Firebase 저장 시작:', tempData.length, '행');
+        saveInputSheetData(tempData).then(() => {
+          console.log('✅ Firebase 저장 완료:', tempData.length, '행');
+          // 저장 후 L/M 열 데이터 확인
+          const savedRowsWithL = tempData.filter(row => row.L && row.L !== '');
+          const savedRowsWithM = tempData.filter(row => row.M && row.M !== '');
+          console.log(`✅ 저장 완료: L열 데이터 ${savedRowsWithL.length}행, M열 데이터 ${savedRowsWithM.length}행`);
+        }).catch(err => {
           console.warn('Firebase 저장 실패:', err);
           // 내부 오류인 경우 사용자에게 알림
           if (err.message && err.message.includes('INTERNAL ASSERTION')) {
