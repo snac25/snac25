@@ -1514,6 +1514,11 @@ function loadDataFromArray(data) {
       
       // 디버깅: 처음 3개 행의 모든 데이터 확인
       if (index < 3) {
+        const loadedL = row.refs.L.value;
+        const loadedM = row.refs.M.value;
+        const itemL = item.L;
+        const itemM = item.M;
+        
         console.log(`✅ 행 ${index + 1} 로드:`, {
           B: row.refs.B.value,
           C: row.refs.C.value,
@@ -1525,12 +1530,20 @@ function loadDataFromArray(data) {
           I: row.refs.I.value,
           J: row.refs.J.value,
           K: row.refs.K.value,
-          L: row.refs.L.value,
-          M: row.refs.M.value,
-          item_L: item.L,
-          item_M: item.M,
+          L: loadedL,
+          M: loadedM,
+          'item.L (Firebase에서)': itemL,
+          'item.M (Firebase에서)': itemM,
           isFocused: isFocusedCell
         });
+        
+        // L, M 열 데이터가 없으면 경고
+        if (itemL !== undefined && itemL !== null && itemL !== '' && loadedL === '') {
+          console.warn(`⚠️ 행 ${index + 1}: Firebase에 L값(${itemL})이 있지만 테이블에 로드되지 않았습니다!`);
+        }
+        if (itemM !== undefined && itemM !== null && itemM !== '' && loadedM === '') {
+          console.warn(`⚠️ 행 ${index + 1}: Firebase에 M값(${itemM})이 있지만 테이블에 로드되지 않았습니다!`);
+        }
       }
       
       // 시간 체크는 주기적 체크(setInterval)에서만 수행
