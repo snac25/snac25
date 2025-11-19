@@ -246,10 +246,29 @@
               window.dispatchEvent(event);
               
               // Firebase 함수가 로드될 때까지 대기 후 금지 탭 데이터 불러오기
-              setTimeout(() => {
+              setTimeout(async () => {
                 console.log('🔄 페이지 로드 시 금지 탭 데이터 자동 불러오기 시도');
-                loadSheet1Data();
-              }, 1500);
+                
+                // window.loadSheet1Data가 로드될 때까지 최대 5초 대기
+                let retryCount = 0;
+                const maxRetries = 25; // 5초 (200ms * 25)
+                
+                const checkAndLoad = setInterval(() => {
+                  retryCount++;
+                  if (typeof window.loadSheet1Data === 'function') {
+                    console.log('✅ window.loadSheet1Data 로드 완료 - 데이터 불러오기 시작');
+                    clearInterval(checkAndLoad);
+                    loadSheet1Data().then(() => {
+                      console.log('✅ 페이지 로드 시 데이터 불러오기 완료');
+                    }).catch(err => {
+                      console.error('❌ 페이지 로드 시 데이터 불러오기 실패:', err);
+                    });
+                  } else if (retryCount >= maxRetries) {
+                    console.warn('⚠️ window.loadSheet1Data 로드 실패 - 수동으로 불러와야 합니다');
+                    clearInterval(checkAndLoad);
+                  }
+                }, 200);
+              }, 1000);
             }, 200);
           })
           .catch(err => console.error('스크립트 로드 실패:', err));
@@ -269,7 +288,7 @@
       });
     });
     
-    // 금지 탭 데이터를 전역 변수에 저장
+    // 금지 탭 데이터를 전역 변수에 저장 (최상단에 선언)
     let cachedSheet1Data = null;
     
     // 시트 전환 함수
@@ -292,20 +311,31 @@
         document.getElementById('sheet1').style.display = 'block';
         document.getElementById('sheet1').classList.add('active');
         document.querySelector('.sheet-tab[data-sheet="sheet1"]').classList.add('active');
-        // 캐시된 데이터가 있으면 먼저 표시
-        if (cachedSheet1Data && cachedSheet1Data.length > 0) {
+        
+        // 금지 탭으로 전환할 때 항상 데이터를 불러오기
+        console.log('🔄 금지 탭으로 전환 - 데이터 불러오기 시작');
+        
+        // 금지 탭이 표시된 후에 데이터를 불러오기 (약간의 지연)
+        setTimeout(async () => {
           const tbody = document.getElementById('sheet1_tbody');
-          if (tbody) {
-            renderSheet1Data(cachedSheet1Data, tbody);
+          if (!tbody) {
+            console.error('❌ sheet1_tbody를 찾을 수 없습니다.');
+            return;
           }
-        }
-        // 항상 Firebase에서 최신 데이터 확인 (백그라운드)
-        loadSheet1Data();
+          
+          // 캐시된 데이터가 있으면 먼저 표시
+          if (cachedSheet1Data && cachedSheet1Data.length > 0) {
+            console.log('📋 캐시된 데이터 있음:', cachedSheet1Data.length, '개 - 즉시 표시');
+            renderSheet1Data(cachedSheet1Data, tbody);
+          } else {
+            console.log('📋 캐시된 데이터 없음 - Firebase에서 불러오기');
+          }
+          
+          // 항상 Firebase에서 최신 데이터 확인
+          await loadSheet1Data();
+        }, 200);
       }
     }
-    
-    // 금지 탭 데이터를 전역 변수에 저장
-    let cachedSheet1Data = null;
     
     // 시트1 행 추가 함수
     function addSheet1Row() {
@@ -408,6 +438,8 @@
     
     // 시트1 데이터 불러오기 함수
     async function loadSheet1Data() {
+      console.log('🔄 loadSheet1Data 함수 호출됨');
+      
       // sheet1_tbody를 찾기 (탭이 숨겨져 있어도 DOM에 존재함)
       let tbody = document.getElementById('sheet1_tbody');
       
@@ -417,24 +449,32 @@
         await new Promise(resolve => setTimeout(resolve, 500));
         tbody = document.getElementById('sheet1_tbody');
         if (!tbody) {
-          console.error('❌ sheet1_tbody를 찾을 수 없습니다.');
+          console.error('❌ sheet1_tbody를 찾을 수 없습니다. DOM에 존재하지 않습니다.');
+          console.log('🔍 현재 DOM 상태:', document.getElementById('sheet1'));
           return;
         }
       }
       
+      console.log('✅ sheet1_tbody 찾음');
+      
       try {
-        console.log('🔄 금지 탭 데이터 불러오기 시작...');
+        console.log('🔄 Firebase에서 금지 데이터 불러오기 시작...');
+        console.log('🔍 window.loadSheet1Data 타입:', typeof window.loadSheet1Data);
         
         // window.loadSheet1Data를 사용 (전역 함수로 이미 등록됨)
         if (typeof window.loadSheet1Data === 'function') {
+          console.log('✅ window.loadSheet1Data 함수 사용');
           const sheet1Data = await window.loadSheet1Data();
           console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data ? sheet1Data.length : 0, '개 항목');
+          console.log('📋 불러온 데이터:', sheet1Data);
           
           // 데이터를 캐시에 저장
           cachedSheet1Data = sheet1Data;
           
           // 테이블에 데이터 표시
+          console.log('🔄 테이블에 데이터 렌더링 시작...');
           renderSheet1Data(sheet1Data, tbody);
+          console.log('✅ 데이터 렌더링 완료');
         } else {
           // window.loadSheet1Data가 아직 로드되지 않은 경우 대기 후 재시도
           console.warn('⚠️ window.loadSheet1Data가 로드되지 않았습니다. 대기 중...');
