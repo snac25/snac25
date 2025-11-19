@@ -244,6 +244,29 @@
               // input.js의 DOMContentLoaded 이벤트를 수동으로 트리거
               const event = new Event('DOMContentLoaded');
               window.dispatchEvent(event);
+              
+              // Firebase 함수가 로드될 때까지 대기 후 금지 탭 데이터 불러오기
+              setTimeout(() => {
+                if (typeof window.loadSheet1Data === 'function') {
+                  console.log('🔄 페이지 로드 시 금지 탭 데이터 자동 불러오기');
+                  loadSheet1Data();
+                } else {
+                  // window.loadSheet1Data가 아직 로드되지 않은 경우 재시도
+                  let retryCount = 0;
+                  const maxRetries = 10;
+                  const checkInterval = setInterval(() => {
+                    retryCount++;
+                    if (typeof window.loadSheet1Data === 'function') {
+                      console.log('🔄 페이지 로드 시 금지 탭 데이터 자동 불러오기 (재시도 성공)');
+                      loadSheet1Data();
+                      clearInterval(checkInterval);
+                    } else if (retryCount >= maxRetries) {
+                      console.warn('⚠️ window.loadSheet1Data 로드 실패, 수동으로 불러와야 합니다.');
+                      clearInterval(checkInterval);
+                    }
+                  }, 500);
+                }
+              }, 1000);
             }, 200);
           })
           .catch(err => console.error('스크립트 로드 실패:', err));
