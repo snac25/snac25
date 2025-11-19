@@ -269,6 +269,9 @@
       });
     });
     
+    // 금지 탭 데이터를 전역 변수에 저장
+    let cachedSheet1Data = null;
+    
     // 시트 전환 함수
     function switchSheet(sheetName) {
       // 모든 시트 내용 숨기기
@@ -289,7 +292,14 @@
         document.getElementById('sheet1').style.display = 'block';
         document.getElementById('sheet1').classList.add('active');
         document.querySelector('.sheet-tab[data-sheet="sheet1"]').classList.add('active');
-        // Firebase에서 금지 탭 데이터 불러오기
+        // 캐시된 데이터가 있으면 먼저 표시
+        if (cachedSheet1Data && cachedSheet1Data.length > 0) {
+          const tbody = document.getElementById('sheet1_tbody');
+          if (tbody) {
+            renderSheet1Data(cachedSheet1Data, tbody);
+          }
+        }
+        // 항상 Firebase에서 최신 데이터 확인 (백그라운드)
         loadSheet1Data();
       }
     }
@@ -395,109 +405,18 @@
     
     // 시트1 데이터 불러오기 함수
     async function loadSheet1Data() {
-      const tbody = document.getElementById('sheet1_tbody');
-      if (!tbody) return;
+      // sheet1_tbody를 찾기 (탭이 숨겨져 있어도 DOM에 존재함)
+      let tbody = document.getElementById('sheet1_tbody');
       
-      try {
-        // window.loadSheet1Data를 사용 (전역 함수로 이미 등록됨)
-        if (typeof window.loadSheet1Data === 'function') {
-          const sheet1Data = await window.loadSheet1Data();
-          console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data.length, '개 항목');
-          
-          // 테이블에 데이터 표시
-          tbody.innerHTML = '';
-          
-          if (!sheet1Data || sheet1Data.length === 0) {
-            console.log('ℹ️ 저장된 금지 데이터가 없습니다.');
-            return;
-          }
-          
-          sheet1Data.forEach((item, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${index + 1}</td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.time || ''}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.league || ''}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.home || ''}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.away || ''}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.content || ''}"></td>
-              <td>
-                <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-        } else {
-          // window.loadSheet1Data가 아직 로드되지 않은 경우 대기 후 재시도
-          console.warn('⚠️ window.loadSheet1Data가 로드되지 않았습니다. 대기 중...');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          if (typeof window.loadSheet1Data === 'function') {
-            const sheet1Data = await window.loadSheet1Data();
-            console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data.length, '개 항목');
-            
-            tbody.innerHTML = '';
-            
-            if (!sheet1Data || sheet1Data.length === 0) {
-              return;
-            }
-            
-            sheet1Data.forEach((item, index) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.time || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.league || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.home || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.away || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.content || ''}"></td>
-                <td>
-                  <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
-                </td>
-              `;
-              tbody.appendChild(tr);
-            });
-          } else {
-            // import 사용 (폴백)
-            const { loadSheet1Data } = await import('../app.js');
-            const sheet1Data = await loadSheet1Data();
-            console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data.length, '개 항목');
-            
-            tbody.innerHTML = '';
-            
-            if (!sheet1Data || sheet1Data.length === 0) {
-              return;
-            }
-            
-            sheet1Data.forEach((item, index) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.time || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.league || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.home || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.away || ''}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${item.content || ''}"></td>
-                <td>
-                  <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
-                </td>
-              `;
-              tbody.appendChild(tr);
-            });
-          }
-        }
-      } catch (error) {
-        console.error('❌ 금지 데이터 불러오기 실패:', error);
-        console.error('에러 상세:', error.message, error.code);
-      }
-    }
-    
-    // 시트1 데이터 불러오기 함수
-    async function loadSheet1Data() {
-      const tbody = document.getElementById('sheet1_tbody');
+      // tbody가 없으면 잠시 대기 후 재시도 (DOM이 아직 로드되지 않았을 수 있음)
       if (!tbody) {
-        console.warn('⚠️ sheet1_tbody를 찾을 수 없습니다.');
-        return;
+        console.warn('⚠️ sheet1_tbody를 찾을 수 없습니다. DOM 로드 대기 중...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        tbody = document.getElementById('sheet1_tbody');
+        if (!tbody) {
+          console.error('❌ sheet1_tbody를 찾을 수 없습니다.');
+          return;
+        }
       }
       
       try {
@@ -508,31 +427,11 @@
           const sheet1Data = await window.loadSheet1Data();
           console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data ? sheet1Data.length : 0, '개 항목');
           
+          // 데이터를 캐시에 저장
+          cachedSheet1Data = sheet1Data;
+          
           // 테이블에 데이터 표시
-          tbody.innerHTML = '';
-          
-          if (!sheet1Data || sheet1Data.length === 0) {
-            console.log('ℹ️ 저장된 금지 데이터가 없습니다.');
-            return;
-          }
-          
-          sheet1Data.forEach((item, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${index + 1}</td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.time || '').replace(/"/g, '&quot;')}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.league || '').replace(/"/g, '&quot;')}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.home || '').replace(/"/g, '&quot;')}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.away || '').replace(/"/g, '&quot;')}"></td>
-              <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.content || '').replace(/"/g, '&quot;')}"></td>
-              <td>
-                <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-          
-          console.log('✅ 금지 탭 데이터 표시 완료');
+          renderSheet1Data(sheet1Data, tbody);
         } else {
           // window.loadSheet1Data가 아직 로드되지 않은 경우 대기 후 재시도
           console.warn('⚠️ window.loadSheet1Data가 로드되지 않았습니다. 대기 중...');
@@ -542,27 +441,10 @@
             const sheet1Data = await window.loadSheet1Data();
             console.log('✅ Firebase에서 금지 데이터 불러오기 성공 (재시도):', sheet1Data ? sheet1Data.length : 0, '개 항목');
             
-            tbody.innerHTML = '';
+            // 데이터를 캐시에 저장
+            cachedSheet1Data = sheet1Data;
             
-            if (!sheet1Data || sheet1Data.length === 0) {
-              return;
-            }
-            
-            sheet1Data.forEach((item, index) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.time || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.league || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.home || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.away || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.content || '').replace(/"/g, '&quot;')}"></td>
-                <td>
-                  <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
-                </td>
-              `;
-              tbody.appendChild(tr);
-            });
+            renderSheet1Data(sheet1Data, tbody);
           } else {
             // import 사용 (폴백)
             console.warn('⚠️ window.loadSheet1Data를 사용할 수 없습니다. import로 시도합니다...');
@@ -570,33 +452,52 @@
             const sheet1Data = await loadSheet1Data();
             console.log('✅ Firebase에서 금지 데이터 불러오기 성공 (import):', sheet1Data ? sheet1Data.length : 0, '개 항목');
             
-            tbody.innerHTML = '';
+            // 데이터를 캐시에 저장
+            cachedSheet1Data = sheet1Data;
             
-            if (!sheet1Data || sheet1Data.length === 0) {
-              return;
-            }
-            
-            sheet1Data.forEach((item, index) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.time || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.league || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.home || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.away || '').replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.content || '').replace(/"/g, '&quot;')}"></td>
-                <td>
-                  <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
-                </td>
-              `;
-              tbody.appendChild(tr);
-            });
+            renderSheet1Data(sheet1Data, tbody);
           }
         }
       } catch (error) {
         console.error('❌ 금지 데이터 불러오기 실패:', error);
         console.error('에러 상세:', error.message, error.code);
       }
+    }
+    
+    // 금지 탭 데이터를 테이블에 렌더링하는 함수
+    function renderSheet1Data(sheet1Data, tbody) {
+      if (!tbody) {
+        tbody = document.getElementById('sheet1_tbody');
+        if (!tbody) {
+          console.error('❌ sheet1_tbody를 찾을 수 없습니다.');
+          return;
+        }
+      }
+      
+      tbody.innerHTML = '';
+      
+      if (!sheet1Data || sheet1Data.length === 0) {
+        console.log('ℹ️ 저장된 금지 데이터가 없습니다.');
+        return;
+      }
+      
+      sheet1Data.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.time || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.league || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.home || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.away || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.content || '').replace(/"/g, '&quot;')}"></td>
+          <td>
+            <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      console.log('✅ 금지 탭 데이터 표시 완료');
     }
     
   </script>
