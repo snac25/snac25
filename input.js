@@ -1384,6 +1384,16 @@ function setupRealtimeListener() {
 function loadDataFromArray(data) {
   const tbody = document.getElementById('tableBody');
   
+  // 디버깅: L열과 M열 데이터 확인
+  console.log('🔄 loadDataFromArray 호출:', data ? data.length : 0, '행');
+  if (data && data.length > 0) {
+    const firstRowWithL = data.find(row => row.L !== undefined && row.L !== null && row.L !== '');
+    const firstRowWithM = data.find(row => row.M !== undefined && row.M !== null && row.M !== '');
+    console.log('📋 L열 데이터 샘플:', firstRowWithL ? { L: firstRowWithL.L, L_time: firstRowWithL.L_time } : '없음');
+    console.log('📋 M열 데이터 샘플:', firstRowWithM ? { M: firstRowWithM.M, M_time: firstRowWithM.M_time } : '없음');
+    console.log('📋 첫 번째 행 전체 데이터:', data[0]);
+  }
+  
   // 현재 포커스된 셀 저장
   const activeElement = document.activeElement;
   const isFocusedInTable = activeElement && activeElement.closest('#tableBody');
@@ -1434,8 +1444,16 @@ function loadDataFromArray(data) {
       row.refs.I.value = (isFocusedCell && focusedColKey === 'I') ? focusedValue : (item.I || '');
       row.refs.J.value = (isFocusedCell && focusedColKey === 'J') ? focusedValue : (item.J || '');
       row.refs.K.value = (isFocusedCell && focusedColKey === 'K') ? focusedValue : (item.K || '');
-      row.refs.L.value = (isFocusedCell && focusedColKey === 'L') ? focusedValue : (item.L || '');
-      row.refs.M.value = (isFocusedCell && focusedColKey === 'M') ? focusedValue : (item.M || '');
+      // L열과 M열 데이터 로드 (디버깅 로그 추가)
+      const lValue = (isFocusedCell && focusedColKey === 'L') ? focusedValue : (item.L !== undefined && item.L !== null ? item.L : '');
+      const mValue = (isFocusedCell && focusedColKey === 'M') ? focusedValue : (item.M !== undefined && item.M !== null ? item.M : '');
+      
+      if (index === 0 && (lValue || mValue)) {
+        console.log('✅ 첫 번째 행 L/M 열 로드:', { L: lValue, M: mValue, item_L: item.L, item_M: item.M });
+      }
+      
+      row.refs.L.value = lValue;
+      row.refs.M.value = mValue;
       
       // 시간 체크는 주기적 체크(setInterval)에서만 수행
       // 실시간 리스너에서는 시간 체크하지 않음
@@ -1459,8 +1477,23 @@ function loadDataFromArray(data) {
       if (item.I_time) restoreTime(row.refs.I, item.I_time);
       if (item.J_time) restoreTime(row.refs.J, item.J_time);
       if (item.K_time) restoreTime(row.refs.K, item.K_time);
-      if (item.L_time) restoreTime(row.refs.L, item.L_time);
-      if (item.M_time) restoreTime(row.refs.M, item.M_time);
+      if (item.L_time) {
+        restoreTime(row.refs.L, item.L_time);
+        if (index === 0) console.log('✅ 첫 번째 행 L열 시간 복원:', item.L_time);
+      }
+      if (item.M_time) {
+        restoreTime(row.refs.M, item.M_time);
+        if (index === 0) console.log('✅ 첫 번째 행 M열 시간 복원:', item.M_time);
+      }
+      
+      if (index === 0 && row.refs.L && row.refs.M) {
+        console.log('✅ 첫 번째 행 로드 완료:', { 
+          L_value: row.refs.L.value, 
+          M_value: row.refs.M.value,
+          L_time: item.L_time || '없음',
+          M_time: item.M_time || '없음'
+        });
+      }
     }
     updateRow(row);
   });
