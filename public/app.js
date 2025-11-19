@@ -250,12 +250,12 @@ function showAlert(message, type = 'success') {
 // 실시간 입력 시트 데이터 저장
 async function saveInputSheetData(data) {
   try {
-    // 데이터 크기 제한 (Firestore 문서 최대 크기: 1MB)
-    // 각 행이 약 1KB라고 가정하면 최대 1000행까지 가능
-    if (data.length > 1000) {
-      console.warn('데이터가 너무 큽니다. 처음 1000행만 저장합니다.');
-      data = data.slice(0, 1000);
-    }
+    console.log(`💾 저장 시작: 총 ${data.length}행`);
+    
+    // L, M 열 데이터 확인
+    const rowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
+    const rowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
+    console.log(`💾 저장 전 확인: L열 ${rowsWithL.length}행, M열 ${rowsWithM.length}행`);
     
     // 데이터 정리: undefined, null, 순환 참조 제거 (빈 문자열도 유지)
     const cleanedData = data.map((row, index) => {
@@ -281,34 +281,54 @@ async function saveInputSheetData(data) {
         }
       }
       
-      // 디버깅: 첫 번째 행의 모든 데이터 확인
-      if (index === 0) {
-        console.log('🔥 Firebase 저장 첫 번째 행:', cleanedRow);
+      // 디버깅: 처음 3개 행의 모든 데이터 확인
+      if (index < 3) {
+        console.log(`🔥 Firebase 저장 행 ${index + 1}:`, cleanedRow);
       }
       
       return cleanedRow;
     });
     
+    // 정리 후 L, M 열 데이터 확인
+    const cleanedRowsWithL = cleanedData.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
+    const cleanedRowsWithM = cleanedData.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
+    console.log(`💾 정리 후 확인: L열 ${cleanedRowsWithL.length}행, M열 ${cleanedRowsWithM.length}행`);
+    
+    // 데이터 크기 계산 (JSON 문자열로 변환하여 크기 측정)
+    const dataSize = JSON.stringify(cleanedData).length;
+    const maxSize = 900000; // 900KB (1MB 제한에 여유를 두기 위해)
+    console.log(`💾 데이터 크기: ${(dataSize / 1024).toFixed(2)}KB`);
+    
     const inputSheetRef = doc(db, 'inputSheet', 'current');
     
-    // 배치 크기 제한 (한 번에 저장할 수 있는 데이터 크기 제한)
-    const batchSize = 500;
-    if (cleanedData.length <= batchSize) {
+    // 데이터 크기가 제한을 초과하면 경고하고 일부만 저장
+    if (dataSize > maxSize) {
+      // 크기를 줄이기 위해 행 수를 줄임
+      const maxRows = Math.floor((maxSize / dataSize) * cleanedData.length * 0.9); // 90% 여유
+      console.warn(`⚠️ 데이터가 너무 큽니다 (${(dataSize / 1024).toFixed(2)}KB). 처음 ${maxRows}행만 저장합니다.`);
+      
+      const truncatedData = cleanedData.slice(0, maxRows);
+      const truncatedRowsWithL = truncatedData.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
+      const truncatedRowsWithM = truncatedData.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
+      console.warn(`⚠️ 잘린 데이터: L열 ${truncatedRowsWithL.length}행, M열 ${truncatedRowsWithM.length}행`);
+      
+      await setDoc(inputSheetRef, {
+        data: truncatedData,
+        updatedAt: new Date().toISOString(),
+        rowCount: cleanedData.length,
+        truncated: true,
+        originalSize: dataSize
+      });
+      console.log('입력 시트 저장 성공 (일부만 저장):', truncatedData.length, '행 / 원본:', cleanedData.length, '행');
+    } else {
+      // 모든 데이터 저장
       await setDoc(inputSheetRef, {
         data: cleanedData,
         updatedAt: new Date().toISOString(),
         rowCount: cleanedData.length
       });
-      console.log('입력 시트 저장 성공:', cleanedData.length, '행');
-    } else {
-      // 데이터가 너무 크면 분할 저장
-      console.warn('데이터가 너무 큽니다. 처음', batchSize, '행만 저장합니다.');
-      await setDoc(inputSheetRef, {
-        data: cleanedData.slice(0, batchSize),
-        updatedAt: new Date().toISOString(),
-        rowCount: cleanedData.length,
-        truncated: true
-      });
+      console.log('✅ 입력 시트 저장 성공:', cleanedData.length, '행');
+      console.log(`✅ 저장 완료: L열 ${cleanedRowsWithL.length}행, M열 ${cleanedRowsWithM.length}행`);
     }
     
     return { success: true };
@@ -321,6 +341,10 @@ async function saveInputSheetData(data) {
       console.error('⚠️ Firestore 내부 오류 발생');
       console.error('데이터 구조를 확인하거나 Firebase SDK를 업데이트해주세요.');
       showAlert('데이터 저장 중 오류가 발생했습니다. 페이지를 새로고침하고 다시 시도해주세요.', 'error');
+    } else if (error.message && error.message.includes('Payload size')) {
+      console.error('⚠️ Firestore 페이로드 크기 초과!');
+      console.error('데이터가 너무 큽니다. 행 수를 줄이거나 데이터를 분할해야 합니다.');
+      showAlert('데이터가 너무 커서 저장할 수 없습니다. 일부 행을 삭제하고 다시 시도해주세요.', 'error');
     }
     throw error;
   }
