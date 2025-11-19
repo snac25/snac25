@@ -1394,20 +1394,25 @@ function loadDataFromArray(data) {
     console.log('📋 첫 번째 행 전체 데이터:', data[0]);
   }
   
-  // 현재 포커스된 셀 저장
+  // 현재 포커스된 셀 저장 (정렬 후에도 찾을 수 있도록 고유 식별자 사용)
   const activeElement = document.activeElement;
   const isFocusedInTable = activeElement && activeElement.closest('#tableBody');
   
-  // 포커스된 셀의 위치와 현재 값 저장
-  let focusedRowIndex = -1;
+  // 포커스된 셀의 고유 식별자와 현재 값 저장
+  let focusedRowKey = null; // B, C, D, E 값 조합으로 행 식별
   let focusedColKey = null;
   let focusedValue = null;
   if (isFocusedInTable && activeElement.tagName === 'INPUT') {
     const focusedRow = activeElement.closest('tr');
-    if (focusedRow) {
-      focusedRowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(focusedRow);
-      focusedColKey = activeElement.dataset.k;
-      focusedValue = activeElement.value; // 현재 입력 중인 값 저장
+    if (focusedRow && focusedRow.refs) {
+      // 행의 고유 식별자 생성 (B, C, D, E 값 조합)
+      const rowKey = `${focusedRow.refs.B?.value || ''}_${focusedRow.refs.C?.value || ''}_${focusedRow.refs.D?.value || ''}_${focusedRow.refs.E?.value || ''}`;
+      if (rowKey !== '___') { // 빈 행이 아닌 경우만
+        focusedRowKey = rowKey;
+        focusedColKey = activeElement.dataset.k;
+        focusedValue = activeElement.value; // 현재 입력 중인 값 저장
+        console.log('📍 포커스된 셀 저장:', { rowKey: focusedRowKey, colKey: focusedColKey, value: focusedValue });
+      }
     }
   }
   
@@ -1432,7 +1437,9 @@ function loadDataFromArray(data) {
     const row = addRow(index + 1);
     if (row.refs) {
       // 포커스된 필드가 현재 행이고 해당 열이면 저장된 값을 사용, 아니면 로드된 값 사용
-      const isFocusedCell = (index === focusedRowIndex);
+      // 정렬 후에도 찾을 수 있도록 행의 고유 식별자 사용
+      const currentRowKey = `${item.B || ''}_${item.C || ''}_${item.D || ''}_${item.E || ''}`;
+      const isFocusedCell = (focusedRowKey && currentRowKey === focusedRowKey && focusedColKey);
       
       row.refs.B.value = (isFocusedCell && focusedColKey === 'B') ? focusedValue : (item.B || '');
       row.refs.C.value = (isFocusedCell && focusedColKey === 'C') ? focusedValue : (item.C || '');
@@ -1444,12 +1451,12 @@ function loadDataFromArray(data) {
       row.refs.I.value = (isFocusedCell && focusedColKey === 'I') ? focusedValue : (item.I || '');
       row.refs.J.value = (isFocusedCell && focusedColKey === 'J') ? focusedValue : (item.J || '');
       row.refs.K.value = (isFocusedCell && focusedColKey === 'K') ? focusedValue : (item.K || '');
-      // L열과 M열 데이터 로드 (디버깅 로그 추가)
+      // L열과 M열 데이터 로드 (항상 Firebase에서 로드한 값 사용)
       const lValue = (isFocusedCell && focusedColKey === 'L') ? focusedValue : (item.L !== undefined && item.L !== null ? item.L : '');
       const mValue = (isFocusedCell && focusedColKey === 'M') ? focusedValue : (item.M !== undefined && item.M !== null ? item.M : '');
       
       if (index === 0 && (lValue || mValue)) {
-        console.log('✅ 첫 번째 행 L/M 열 로드:', { L: lValue, M: mValue, item_L: item.L, item_M: item.M });
+        console.log('✅ 첫 번째 행 L/M 열 로드:', { L: lValue, M: mValue, item_L: item.L, item_M: item.M, isFocused: isFocusedCell });
       }
       
       row.refs.L.value = lValue;
@@ -1504,20 +1511,31 @@ function loadDataFromArray(data) {
     addRow(i + 1);
   }
   
-  // 포커스 복원 (사용자가 입력 중이었다면)
-  if (focusedRowIndex >= 0 && focusedColKey) {
-    const rows = tbody.querySelectorAll('tr');
-    if (rows[focusedRowIndex] && rows[focusedRowIndex].refs && rows[focusedRowIndex].refs[focusedColKey]) {
-      const input = rows[focusedRowIndex].refs[focusedColKey];
+  // 포커스 복원 (사용자가 입력 중이었다면) - 고유 식별자로 행 찾기
+  if (focusedRowKey && focusedColKey) {
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const targetRow = rows.find(row => {
+      if (row.refs) {
+        const rowKey = `${row.refs.B?.value || ''}_${row.refs.C?.value || ''}_${row.refs.D?.value || ''}_${row.refs.E?.value || ''}`;
+        return rowKey === focusedRowKey;
+      }
+      return false;
+    });
+    
+    if (targetRow && targetRow.refs && targetRow.refs[focusedColKey]) {
+      const input = targetRow.refs[focusedColKey];
       // 저장된 값으로 복원 (소수점이 포함된 경우를 위해)
       if (focusedValue !== null) {
         input.value = focusedValue;
       }
       // 커서를 끝으로 이동
       input.focus();
-      if (input.setSelectionRange) {
+      if (input.setSelectionRange && focusedValue !== null) {
         input.setSelectionRange(focusedValue.length, focusedValue.length);
       }
+      console.log('✅ 포커스 복원 완료:', { rowKey: focusedRowKey, colKey: focusedColKey, value: focusedValue });
+    } else {
+      console.warn('⚠️ 포커스된 셀을 찾을 수 없습니다:', { rowKey: focusedRowKey, colKey: focusedColKey });
     }
   }
 }
