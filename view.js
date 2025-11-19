@@ -199,5 +199,108 @@ function handleLogout() {
 // 전역으로 함수 export
 window.handleLogout = handleLogout;
 
+// 시트1 모달 표시 함수
+async function showSheet1Modal() {
+  const modal = document.getElementById('sheet1Modal');
+  const tbody = document.getElementById('sheet1TableBody');
+  
+  if (!modal || !tbody) return;
+  
+  // 모달을 html의 직접 자식으로 이동 (body 밖으로)
+  if (modal.parentElement !== document.documentElement) {
+    document.documentElement.appendChild(modal);
+  }
+  
+  // body의 overflow를 조정하여 모달이 보이도록
+  document.body.style.overflow = 'hidden';
+  
+  // 모달 표시
+  modal.style.display = 'block';
+  
+  // 시트1 데이터 불러오기
+  try {
+    const { loadSheet1Data } = await import('./app.js');
+    const sheet1Data = await loadSheet1Data();
+    
+    // 테이블에 데이터 표시
+    tbody.innerHTML = '';
+    
+    if (!sheet1Data || sheet1Data.length === 0) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 6;
+      cell.textContent = '시트1에 입력된 데이터가 없습니다.';
+      cell.style.textAlign = 'center';
+      cell.style.padding = '30px';
+      cell.style.color = '#999';
+      cell.style.fontSize = '1.1rem';
+      row.appendChild(cell);
+      tbody.appendChild(row);
+      return;
+    }
+    
+    sheet1Data.forEach((item, index) => {
+      const row = document.createElement('tr');
+      
+      // 번호
+      const cellNo = document.createElement('td');
+      cellNo.textContent = index + 1;
+      row.appendChild(cellNo);
+      
+      // 시간
+      const cellTime = document.createElement('td');
+      cellTime.textContent = item.time || '';
+      row.appendChild(cellTime);
+      
+      // 리그
+      const cellLeague = document.createElement('td');
+      cellLeague.textContent = item.league || '';
+      row.appendChild(cellLeague);
+      
+      // 홈팀
+      const cellHome = document.createElement('td');
+      cellHome.textContent = item.home || '';
+      row.appendChild(cellHome);
+      
+      // 원정팀
+      const cellAway = document.createElement('td');
+      cellAway.textContent = item.away || '';
+      row.appendChild(cellAway);
+      
+      // 내용
+      const cellContent = document.createElement('td');
+      cellContent.textContent = item.content || '';
+      row.appendChild(cellContent);
+      
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error('시트1 데이터 불러오기 오류:', error);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #ff6b6b;">데이터를 불러올 수 없습니다.</td></tr>';
+  }
+}
+
+// 시트1 모달 닫기 함수
+function closeSheet1Modal() {
+  const modal = document.getElementById('sheet1Modal');
+  if (modal) {
+    modal.style.display = 'none';
+    // body의 overflow 복원
+    document.body.style.overflow = '';
+  }
+}
+
+// 모달 외부 클릭 시 닫기
+window.onclick = function(event) {
+  const modal = document.getElementById('sheet1Modal');
+  if (event.target === modal) {
+    closeSheet1Modal();
+  }
+}
+
+// 전역으로 함수 export
+window.showSheet1Modal = showSheet1Modal;
+window.closeSheet1Modal = closeSheet1Modal;
+
 
 

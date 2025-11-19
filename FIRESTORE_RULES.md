@@ -1,20 +1,17 @@
-# Firestore 보안 규칙 설정 가이드
+# Firebase Firestore 보안 규칙
 
-## 문제
-실시간 동기화 기능을 사용하려면 Firestore 보안 규칙에서 `inputSheet` 컬렉션에 대한 읽기/쓰기 권한이 필요합니다.
+이 파일은 Firebase Console에서 Firestore 보안 규칙을 설정할 때 사용하는 규칙입니다.
 
-## 해결 방법
+## 설정 방법
 
-### 1. Firebase Console 접속
-1. [Firebase Console](https://console.firebase.google.com/)에 접속
-2. 프로젝트 `snac25-69db3` 선택
+1. Firebase Console (https://console.firebase.google.com) 접속
+2. 프로젝트 선택
+3. 왼쪽 메뉴에서 "Firestore Database" 클릭
+4. "규칙" 탭 클릭
+5. 아래 규칙을 복사하여 붙여넣기
+6. "게시" 버튼 클릭
 
-### 2. Firestore Database로 이동
-1. 왼쪽 메뉴에서 **Firestore Database** 클릭
-2. 상단 탭에서 **규칙** 클릭
-
-### 3. 보안 규칙 수정
-다음 규칙을 추가하거나 기존 규칙을 수정하세요:
+## 보안 규칙
 
 ```javascript
 rules_version = '2';
@@ -34,16 +31,17 @@ service cloud.firestore {
     match /inputSheet/{document=**} {
       allow read, write: if true;
     }
+    
+    // sheet1 컬렉션 (시트1 데이터)
+    match /sheet1/{document=**} {
+      allow read, write: if true;
+    }
   }
 }
 ```
 
-### 4. 규칙 게시
-1. **게시** 버튼 클릭
-2. 규칙이 적용되는데 몇 초 정도 걸릴 수 있습니다
+## 중요 사항
 
-## 주의사항
-- 현재 규칙은 모든 사용자에게 읽기/쓰기 권한을 허용합니다
-- 프로덕션 환경에서는 인증을 추가하여 보안을 강화하는 것을 권장합니다
-- 예: `allow read, write: if request.auth != null;` (인증된 사용자만)
-
+- 이 규칙은 모든 사용자에게 읽기/쓰기 권한을 허용합니다.
+- 프로덕션 환경에서는 인증된 사용자만 접근할 수 있도록 수정하는 것을 권장합니다.
+- 규칙을 변경한 후 반드시 "게시" 버튼을 클릭해야 적용됩니다.

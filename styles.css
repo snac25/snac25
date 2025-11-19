@@ -656,6 +656,100 @@ input.selected.cell-selected {
   margin: 0;
 }
 
+/* 시트 탭 컨테이너 */
+.sheet-tabs-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 5px 0;
+  border-bottom: 2px solid #000;
+}
+
+.sheet-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.sheet-tab {
+  padding: 8px 20px;
+  background-color: #d0d0d0;
+  border: 1px solid #808080;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  user-select: none;
+  position: relative;
+  top: 2px;
+  transition: background-color 0.2s;
+}
+
+.sheet-tab:hover {
+  background-color: #c0c0c0;
+}
+
+.sheet-tab.active {
+  background-color: #fff;
+  border-bottom: 2px solid #fff;
+  z-index: 1;
+  top: 0;
+  padding-top: 10px;
+}
+
+.sheet-new-btn {
+  padding: 8px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: 1px solid #45a049;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  margin-left: 5px;
+  transition: background-color 0.2s;
+}
+
+.sheet-new-btn:hover {
+  background-color: #45a049;
+}
+
+.sheet-content {
+  display: none;
+}
+
+.sheet-content.active {
+  display: block;
+}
+
+.new-sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.new-sheet-table th,
+.new-sheet-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+}
+
+.new-sheet-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.new-sheet-table input {
+  width: 100%;
+  border: none;
+  padding: 5px;
+  text-align: center;
+}
+
 .sheet-buttons {
   display: flex;
   gap: 15px;
@@ -788,8 +882,23 @@ body.view-page {
   background-attachment: fixed;
   background-repeat: no-repeat;
   min-height: 100vh;
+  height: 100vh;
   padding: 0;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+html {
+  overflow: visible !important;
+}
+
+html > #sheet1Modal {
+  position: fixed !important;
+  z-index: 999999 !important;
 }
 
 body.view-page::after {
@@ -820,7 +929,10 @@ body.view-page::before {
 }
 
 .view-hero {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   display: flex;
   align-items: center;
@@ -830,6 +942,11 @@ body.view-page::before {
   background: transparent;
   padding-bottom: 0;
   margin-top: 100px;
+  pointer-events: none;
+}
+
+.view-hero * {
+  pointer-events: auto;
 }
 
 .view-hero::before {
@@ -948,23 +1065,32 @@ body.view-page::before {
 }
 
 .view-container {
-  position: relative;
+  position: absolute;
+  top: calc(100px + 40px + 12rem * 0.85 + 38px + 6px + 50px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 95%;
   z-index: 2;
   background: rgba(26, 26, 46, 0.85);
   color: #e0e0e0;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   margin-top: 0;
-  padding-top: 20px;
+  padding: 20px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  max-height: calc(100vh - 100px - 40px - 12rem * 0.85 - 38px - 6px - 50px - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  contain: layout style paint;
 }
 
 .view-page h2 {
   color: #ffffff;
   font-size: 2rem;
   font-weight: bold;
-  margin: 20px 0 15px 0;
+  margin: 0 0 15px 0;
   text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8), 0 0 15px rgba(76, 175, 80, 0.4);
   letter-spacing: 0.5px;
 }
@@ -986,7 +1112,7 @@ body.view-page::before {
   border-collapse: collapse;
   background: rgba(30, 30, 50, 0.8);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
@@ -1296,47 +1422,282 @@ body.login-page {
   color: white;
 }
 
-/* 모달 스타일 */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
+.view-page .btn-info {
+  background-color: #17a2b8 !important;
+  color: white !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 100 !important;
+  position: relative !important;
 }
 
-.modal-content {
-  background-color: rgba(26, 26, 46, 0.98);
-  margin: 10% auto;
-  padding: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+/* 모달 스타일 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.view-page #sheet1Modal {
+  display: none;
+  position: fixed !important;
+  z-index: 999999 !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: auto !important;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(20, 20, 40, 0.9) 100%) !important;
+  backdrop-filter: blur(10px) saturate(180%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+  animation: fadeIn 0.3s ease-out !important;
+}
+
+.view-page #sheet1Modal .modal-content {
+  background: linear-gradient(145deg, rgba(15, 15, 30, 0.98) 0%, rgba(25, 25, 45, 0.98) 50%, rgba(20, 20, 35, 0.98) 100%) !important;
+  margin: 2% auto !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 24px !important;
+  width: 92% !important;
+  max-width: 1400px !important;
+  box-shadow: 
+    0 25px 80px rgba(0, 0, 0, 0.8),
+    0 0 60px rgba(76, 175, 80, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  position: relative !important;
+  z-index: 1000000 !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.view-page #sheet1Modal .modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    rgba(76, 175, 80, 0.8) 0%,
+    rgba(76, 175, 80, 1) 25%,
+    rgba(76, 175, 80, 1) 75%,
+    rgba(76, 175, 80, 0.8) 100%);
+  z-index: 1;
+}
+
+.view-page #sheet1Modal .modal-content h2 {
+  background: linear-gradient(135deg, 
+    rgba(76, 175, 80, 0.25) 0%, 
+    rgba(76, 175, 80, 0.15) 50%,
+    rgba(76, 175, 80, 0.1) 100%);
+  color: #ffffff !important;
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  padding: 30px 40px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  text-shadow: 
+    0 2px 15px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(76, 175, 80, 0.3) !important;
+  letter-spacing: 2px !important;
   position: relative;
 }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+.view-page #sheet1Modal .modal-content h2::after {
+  content: '';
   position: absolute;
-  right: 20px;
-  top: 15px;
-  cursor: pointer;
-  transition: color 0.3s ease;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(76, 175, 80, 0.5) 20%,
+    rgba(76, 175, 80, 0.8) 50%,
+    rgba(76, 175, 80, 0.5) 80%,
+    transparent 100%);
 }
 
-.close:hover,
-.close:focus {
+.view-page #sheet1Modal #sheet1TableContainer {
+  padding: 35px 40px !important;
+  max-height: calc(90vh - 180px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.view-page #sheet1Modal #sheet1TableContainer::-webkit-scrollbar {
+  width: 10px;
+}
+
+.view-page #sheet1Modal #sheet1TableContainer::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.view-page #sheet1Modal #sheet1TableContainer::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(76, 175, 80, 0.6), rgba(76, 175, 80, 0.3));
+  border-radius: 10px;
+  border: 2px solid rgba(15, 15, 30, 0.5);
+}
+
+.view-page #sheet1Modal #sheet1TableContainer::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.5));
+}
+
+.view-page #sheet1Modal #sheet1Table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: rgba(10, 10, 20, 0.4) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 
+    inset 0 2px 10px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.view-page #sheet1Modal #sheet1Table thead {
+  background: linear-gradient(135deg, 
+    rgba(76, 175, 80, 0.25) 0%, 
+    rgba(76, 175, 80, 0.2) 50%,
+    rgba(76, 175, 80, 0.15) 100%) !important;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th {
+  border: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom: 2px solid rgba(76, 175, 80, 0.4) !important;
+  padding: 18px 20px !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  text-align: center !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  position: relative;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th:last-child {
+  border-right: none !important;
+}
+
+.view-page #sheet1Modal #sheet1Table thead th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(76, 175, 80, 0.6) 20%,
+    rgba(76, 175, 80, 1) 50%,
+    rgba(76, 175, 80, 0.6) 80%,
+    transparent 100%);
+}
+
+.view-page #sheet1Modal #sheet1Table tbody tr {
+  transition: all 0.2s ease !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.view-page #sheet1Modal #sheet1Table tbody tr:hover {
+  background: linear-gradient(90deg, 
+    rgba(76, 175, 80, 0.1) 0%,
+    rgba(76, 175, 80, 0.15) 50%,
+    rgba(76, 175, 80, 0.1) 100%) !important;
+  transform: scale(1.01) !important;
+  box-shadow: 0 2px 15px rgba(76, 175, 80, 0.2) !important;
+}
+
+.view-page #sheet1Modal #sheet1Table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+.view-page #sheet1Modal #sheet1Table tbody tr:nth-child(even):hover {
+  background: linear-gradient(90deg, 
+    rgba(76, 175, 80, 0.12) 0%,
+    rgba(76, 175, 80, 0.17) 50%,
+    rgba(76, 175, 80, 0.12) 100%) !important;
+}
+
+.view-page #sheet1Modal #sheet1Table tbody td {
+  border: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 16px 20px !important;
+  text-align: center !important;
+  color: #e8e8e8 !important;
+  font-size: 0.95rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.view-page #sheet1Modal #sheet1Table tbody td:first-child {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.view-page #sheet1Modal #sheet1Table tbody td:last-child {
+  border-right: none !important;
+}
+
+.view-page #sheet1Modal .close {
+  color: rgba(255, 255, 255, 0.8);
+  float: right;
+  font-size: 28px;
+  font-weight: 300;
+  position: absolute;
+  right: 30px;
+  top: 28px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 100;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.view-page #sheet1Modal .close:hover,
+.view-page #sheet1Modal .close:focus {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg) scale(1.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .modal-content h2 {

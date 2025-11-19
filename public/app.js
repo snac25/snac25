@@ -379,7 +379,95 @@ match /inputSheet/{document=**} {
   }
 }
 
-export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, deleteAllData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener };
+// 시트1 데이터 저장
+async function saveSheet1Data(data) {
+  try {
+    // 데이터 크기 제한
+    if (data.length > 1000) {
+      console.warn('데이터가 너무 큽니다. 처음 1000행만 저장합니다.');
+      data = data.slice(0, 1000);
+    }
+    
+    // 데이터 정리
+    const cleanedData = data.map(row => {
+      const cleanedRow = {};
+      for (const key in row) {
+        if (row[key] !== undefined && row[key] !== null) {
+          if (typeof row[key] === 'string' || typeof row[key] === 'number' || typeof row[key] === 'boolean') {
+            cleanedRow[key] = row[key];
+          }
+        }
+      }
+      return cleanedRow;
+    });
+    
+    const sheet1Ref = doc(db, 'sheet1', 'current');
+    const dataToSave = {
+      data: cleanedData,
+      updatedAt: new Date().toISOString(),
+      rowCount: cleanedData.length
+    };
+    
+    // 데이터 검증
+    if (!dataToSave.data || !Array.isArray(dataToSave.data)) {
+      throw new Error('유효하지 않은 데이터 형식입니다.');
+    }
+    
+    await setDoc(sheet1Ref, dataToSave, { merge: false });
+    
+    // localStorage에도 저장
+    localStorage.setItem('sheet1Data', JSON.stringify(cleanedData));
+    
+    console.log('시트1 저장 성공:', cleanedData.length, '행');
+    return { success: true, count: cleanedData.length };
+  } catch (error) {
+    console.error('시트1 저장 실패:', error);
+    throw error;
+  }
+}
+
+// 시트1 데이터 불러오기
+async function loadSheet1Data() {
+  try {
+    // Firebase에서 먼저 불러오기 (최신 데이터)
+    const sheet1Ref = doc(db, 'sheet1', 'current');
+    const sheet1Doc = await getDoc(sheet1Ref);
+    
+    if (sheet1Doc.exists()) {
+      const data = sheet1Doc.data().data || [];
+      // localStorage에도 저장
+      localStorage.setItem('sheet1Data', JSON.stringify(data));
+      return data;
+    }
+    
+    // Firebase에 없으면 localStorage에서 확인
+    const localDataStr = localStorage.getItem('sheet1Data');
+    if (localDataStr) {
+      try {
+        return JSON.parse(localDataStr);
+      } catch (e) {
+        console.error('localStorage 파싱 오류:', e);
+        return [];
+      }
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('시트1 불러오기 실패:', error);
+    // 오류 발생 시 localStorage에서 시도
+    try {
+      const localDataStr = localStorage.getItem('sheet1Data');
+      if (localDataStr) {
+        return JSON.parse(localDataStr);
+      }
+    } catch (e) {
+      console.error('localStorage 폴백 실패:', e);
+    }
+    return [];
+  }
+}
+
+export { loadOptions, saveOptions, saveData, loadData, loadFilteredData, deleteData, deleteAllData, calculatePColumn, calculateQColumn, showAlert, saveInputSheetData, loadInputSheetData, setupInputSheetListener, saveSheet1Data, loadSheet1Data };
 
 // 전역으로 함수들을 export (기존 코드와의 호환성을 위해)
 window.loadOptions = loadOptions;

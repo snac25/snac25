@@ -79,12 +79,21 @@
       </div>
     </div>
 
-    <h2>입력 시트</h2>
-    <div class="sheet-buttons">
-      <button class="btn btn-secondary btn-large" onclick="saveAll()">저장하기</button>
-      <button class="btn btn-large" onclick="addMultipleRows()">행 추가</button>
+    <div class="sheet-tabs-container">
+      <div class="sheet-tabs">
+        <div class="sheet-tab active" data-sheet="main">축구</div>
+        <div class="sheet-tab" data-sheet="sheet1">금지</div>
+      </div>
     </div>
-    <table id="inputTable">
+    
+    <!-- 메인 입력 시트 -->
+    <div id="mainSheet" class="sheet-content active">
+      <h2>축구</h2>
+      <div class="sheet-buttons">
+        <button class="btn btn-secondary btn-large" onclick="saveAll()">저장하기</button>
+        <button class="btn btn-large" onclick="addMultipleRows()">행 추가</button>
+      </div>
+      <table id="inputTable">
       <colgroup>
         <col style="width: 2.63%;">  <!-- 1. 번호 (2.8/106.3) -->
         <col style="width: 3.95%;">  <!-- 2. 시간 (4.2/106.3) -->
@@ -138,6 +147,32 @@
         <!-- 행이 동적으로 추가됩니다 -->
       </tbody>
     </table>
+    </div>
+    
+    <!-- 시트1 (시간/리그/홈팀/원정팀/내용) -->
+    <div id="sheet1" class="sheet-content">
+      <h2>금지</h2>
+      <div class="sheet-buttons">
+        <button class="btn btn-secondary btn-large" onclick="saveSheet1()">저장하기</button>
+        <button class="btn btn-large" onclick="addSheet1Row()">행 추가</button>
+      </div>
+      <table class="new-sheet-table">
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>시간</th>
+            <th>리그</th>
+            <th>홈팀</th>
+            <th>원정팀</th>
+            <th>내용</th>
+            <th>기능</th>
+          </tr>
+        </thead>
+        <tbody id="sheet1_tbody">
+          <!-- 행이 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
@@ -219,6 +254,112 @@
     
     // 초기 로드 시 코드 화면 표시 중이므로 overflow hidden 추가
     document.body.classList.add('code-screen-active');
+    
+    // 시트 탭 클릭 이벤트
+    document.querySelectorAll('.sheet-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        const sheetName = this.getAttribute('data-sheet');
+        switchSheet(sheetName);
+      });
+    });
+    
+    // 시트 전환 함수
+    function switchSheet(sheetName) {
+      // 모든 시트 내용 숨기기
+      document.querySelectorAll('.sheet-content').forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+      });
+      
+      // 모든 탭에서 active 클래스 제거
+      document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+      
+      // 선택한 시트 표시
+      if (sheetName === 'main') {
+        document.getElementById('mainSheet').style.display = 'block';
+        document.getElementById('mainSheet').classList.add('active');
+        document.querySelector('.sheet-tab[data-sheet="main"]').classList.add('active');
+      } else if (sheetName === 'sheet1') {
+        document.getElementById('sheet1').style.display = 'block';
+        document.getElementById('sheet1').classList.add('active');
+        document.querySelector('.sheet-tab[data-sheet="sheet1"]').classList.add('active');
+      }
+    }
+    
+    // 시트1 행 추가 함수
+    function addSheet1Row() {
+      const tbody = document.getElementById('sheet1_tbody');
+      if (!tbody) return;
+      
+      const rowCount = tbody.querySelectorAll('tr').length;
+      const tr = document.createElement('tr');
+      
+      tr.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td>
+          <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
+        </td>
+      `;
+      
+      tbody.appendChild(tr);
+    }
+    
+    // 시트1 행 삭제 함수
+    function deleteSheet1Row(btn) {
+      if (confirm('삭제하겠습니까?')) {
+        btn.closest('tr').remove();
+        // 번호 재정렬
+        const tbody = document.getElementById('sheet1_tbody');
+        tbody.querySelectorAll('tr').forEach((row, index) => {
+          row.cells[0].textContent = index + 1;
+        });
+      }
+    }
+    
+    // 시트1 데이터 저장 함수
+    async function saveSheet1() {
+      const tbody = document.getElementById('sheet1_tbody');
+      if (!tbody) return;
+      
+      const rows = tbody.querySelectorAll('tr');
+      const sheet1Data = [];
+      
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 6) {
+          const inputs = row.querySelectorAll('input');
+          if (inputs.length >= 5) {
+            sheet1Data.push({
+              time: inputs[0].value || '',
+              league: inputs[1].value || '',
+              home: inputs[2].value || '',
+              away: inputs[3].value || '',
+              content: inputs[4].value || ''
+            });
+          }
+        }
+      });
+      
+      try {
+        const { saveSheet1Data } = await import('../app.js');
+        const result = await saveSheet1Data(sheet1Data);
+        if (result && result.success) {
+          alert(`시트1 데이터가 저장되었습니다. (${result.count}개 항목)`);
+        } else {
+          alert('시트1 데이터가 저장되었습니다.');
+        }
+      } catch (error) {
+        console.error('시트1 저장 실패:', error);
+        console.error('에러 상세:', error.message, error.code);
+        alert(`시트1 데이터 저장에 실패했습니다.\n오류: ${error.message || '알 수 없는 오류'}`);
+      }
+    }
+    
   </script>
 </body>
 </html>

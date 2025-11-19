@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SNAC</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body class="view-page">
   <div class="view-hero">
@@ -16,7 +16,10 @@
   </div>
   
   <div class="container view-container">
-    <h2>조회 결과</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; position: relative; z-index: 10;">
+      <h2 style="margin: 0;">조회 결과</h2>
+      <button class="btn btn-info" onclick="showSheet1Modal()" style="margin-left: auto; flex-shrink: 0; position: relative; z-index: 10; display: block !important; visibility: visible !important;">시트1</button>
+    </div>
     <div id="resultCount"></div>
     <table id="viewTable">
       <thead>
@@ -35,11 +38,34 @@
     </table>
   </div>
 
+  <!-- 시트1 팝업 모달 -->
+  <div id="sheet1Modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 90%; width: 1000px;">
+      <span class="close" onclick="closeSheet1Modal()">&times;</span>
+      <h2>시트1</h2>
+      <div id="sheet1TableContainer">
+        <table id="sheet1Table" style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+          <thead>
+            <tr>
+              <th style="border: 1px solid #000; padding: 8px; background-color: #f0f0f0;">번호</th>
+              <th style="border: 1px solid #000; padding: 8px; background-color: #f0f0f0;">시간</th>
+              <th style="border: 1px solid #000; padding: 8px; background-color: #f0f0f0;">리그</th>
+              <th style="border: 1px solid #000; padding: 8px; background-color: #f0f0f0;">홈팀</th>
+              <th style="border: 1px solid #000; padding: 8px; background-color: #f0f0f0;">원정팀</th>
+              <th style="border: 1px solid #000; padding: 8px; background-color: #f0f0f0;">내용</th>
+            </tr>
+          </thead>
+          <tbody id="sheet1TableBody">
+            <!-- 시트1 데이터가 여기에 표시됩니다 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="app.js"></script>
   <script type="module" src="view.js"></script>
 </body>
 </html>
-
-
 
