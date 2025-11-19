@@ -1634,6 +1634,11 @@ function saveToLocalStorage() {
   });
   
   try {
+    // 디버깅: 저장 전 전체 데이터 확인
+    const rowsWithL = tempData.filter(row => row.L && row.L !== '');
+    const rowsWithM = tempData.filter(row => row.M && row.M !== '');
+    console.log(`💾 저장 중: 총 ${tempData.length}행, L열 데이터 ${rowsWithL.length}행, M열 데이터 ${rowsWithM.length}행`);
+    
     localStorage.setItem('inputSheetTemp', JSON.stringify(tempData));
     
     // Firebase에 실시간 저장 (Firebase에서 업데이트 중이 아닐 때만)
@@ -1643,7 +1648,14 @@ function saveToLocalStorage() {
         clearTimeout(saveTimeout);
       }
       saveTimeout = setTimeout(() => {
-        saveInputSheetData(tempData).catch(err => {
+        console.log('💾 Firebase 저장 시작:', tempData.length, '행');
+        saveInputSheetData(tempData).then(() => {
+          console.log('✅ Firebase 저장 완료:', tempData.length, '행');
+          // 저장 후 L/M 열 데이터 확인
+          const savedRowsWithL = tempData.filter(row => row.L && row.L !== '');
+          const savedRowsWithM = tempData.filter(row => row.M && row.M !== '');
+          console.log(`✅ 저장 완료: L열 데이터 ${savedRowsWithL.length}행, M열 데이터 ${savedRowsWithM.length}행`);
+        }).catch(err => {
           console.warn('Firebase 저장 실패:', err);
           // 내부 오류인 경우 사용자에게 알림
           if (err.message && err.message.includes('INTERNAL ASSERTION')) {
