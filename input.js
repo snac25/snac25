@@ -1456,6 +1456,11 @@ function loadDataFromArray(data) {
   tableData = [];
   
   // 데이터를 시간 순서로 정렬 (12:00~24:00가 당일 먼저, 00:00~12:00가 다음날)
+  // 정렬 전 데이터 확인
+  const preSortRowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
+  const preSortRowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
+  console.log(`📊 정렬 전: L열 ${preSortRowsWithL.length}행, M열 ${preSortRowsWithM.length}행`);
+  
   const sortedData = [...data].sort((a, b) => {
     const timeA = parseTimeForSort(a.B || '');
     const timeB = parseTimeForSort(b.B || '');
@@ -1466,6 +1471,11 @@ function loadDataFromArray(data) {
     
     return timeA - timeB; // 시간 순서대로 정렬
   });
+  
+  // 정렬 후 데이터 확인
+  const postSortRowsWithL = sortedData.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
+  const postSortRowsWithM = sortedData.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
+  console.log(`📊 정렬 후: L열 ${postSortRowsWithL.length}행, M열 ${postSortRowsWithM.length}행`);
   
   // 데이터 로드 - 모든 값을 명시적으로 처리
   const getItemValue = (item, key, focusedColKey, focusedValue, isFocusedCell) => {
