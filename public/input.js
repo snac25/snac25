@@ -2352,14 +2352,20 @@ function addMultipleRows() {
 window.addRow = addRow;
 // 조회 페이지로 이동 (로그인 우회)
 function handleViewClick(event) {
-  event.preventDefault();
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
   // 여러 번 설정하여 확실하게 저장
   sessionStorage.setItem('isLoggedIn', 'true');
   sessionStorage.setItem('isLoggedIn', 'true'); // 중복 설정으로 확실하게
+  
+  // 명시적으로 절대 경로로 이동
+  const viewUrl = window.location.href.replace(/input\.html.*$/, 'view.html');
   // 약간의 지연을 주어 sessionStorage가 확실히 저장되도록 함
   setTimeout(() => {
-    window.location.href = 'view.html';
+    window.location.replace(viewUrl);
   }, 100);
 }
 
