@@ -2333,6 +2333,14 @@ function addMultipleRows() {
 
 // 전역으로 함수들을 export (HTML의 onclick 속성에서 사용하기 위해)
 window.addRow = addRow;
+// 조회 페이지로 이동 (로그인 우회)
+function handleViewClick(event) {
+  event.preventDefault();
+  // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
+  sessionStorage.setItem('isLoggedIn', 'true');
+  window.location.href = 'view.html';
+}
+
 window.addMultipleRows = addMultipleRows;
 window.openOptions = openOptions;
 window.saveAll = saveAll;
@@ -2343,3 +2351,4 @@ window.closeAccountManageModal = closeAccountManageModal;
 window.saveAccount = saveAccount;
 window.deleteAccountConfirm = deleteAccountConfirm;
 window.deleteAllRows = deleteAllRows;
+window.handleViewClick = handleViewClick;
