@@ -2344,18 +2344,15 @@ function handleViewClick(event) {
     // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
     sessionStorage.setItem('isLoggedIn', 'true');
     
-    // 현재 URL의 경로를 기준으로 view.html 경로 생성
-    const currentUrl = window.location.href;
-    let viewUrl;
+    // 현재 URL에서 프로토콜, 호스트, 포트 추출
+    const urlObj = new URL(window.location.href);
     
-    if (currentUrl.includes('input.html')) {
-      viewUrl = currentUrl.replace('input.html', 'view.html');
-    } else {
-      const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-      viewUrl = baseUrl + 'view.html';
-    }
+    // 루트 경로의 view.html로 이동 (절대 경로)
+    // bjb/ 폴더에서도 루트의 view.html로 이동
+    const viewUrl = `${urlObj.origin}/view.html`;
     
-    console.log('현재 URL:', currentUrl);
+    console.log('현재 URL:', window.location.href);
+    console.log('Origin:', urlObj.origin);
     console.log('이동할 URL:', viewUrl);
     
     // 즉시 이동
@@ -2364,6 +2361,9 @@ function handleViewClick(event) {
     return false;
   } catch (error) {
     console.error('handleViewClick 오류:', error);
+    // 오류 발생 시에도 절대 경로로 시도
+    const origin = window.location.origin || window.location.protocol + '//' + window.location.host;
+    window.location.href = origin + '/view.html';
     return false;
   }
 }
