@@ -589,22 +589,14 @@
         // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
         sessionStorage.setItem('isLoggedIn', 'true');
         
-        // 현재 URL 추출
-        const currentUrl = window.location.href;
-        let viewUrl;
+        // 현재 URL에서 프로토콜, 호스트, 포트 추출
+        const urlObj = new URL(window.location.href);
         
-        // bjb 폴더에서 루트의 view.html로 이동
-        if (currentUrl.includes('/bjb/')) {
-          // 프로토콜과 호스트 추출
-          const urlObj = new URL(currentUrl);
-          viewUrl = `${urlObj.protocol}//${urlObj.host}/view.html`;
-        } else {
-          // 다른 위치에서도 안전하게 처리
-          const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-          viewUrl = baseUrl.replace(/\/[^\/]+\/?$/, '/view.html');
-        }
+        // 루트 경로의 view.html로 이동 (절대 경로)
+        const viewUrl = `${urlObj.origin}/view.html`;
         
-        console.log('현재 URL:', currentUrl);
+        console.log('현재 URL:', window.location.href);
+        console.log('Origin:', urlObj.origin);
         console.log('이동할 URL:', viewUrl);
         
         // 즉시 이동
@@ -613,6 +605,9 @@
         return false;
       } catch (error) {
         console.error('handleViewClick 오류:', error);
+        // 오류 발생 시에도 절대 경로로 시도
+        const origin = window.location.origin || window.location.protocol + '//' + window.location.host;
+        window.location.href = origin + '/view.html';
         return false;
       }
     }
