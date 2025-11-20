@@ -2337,8 +2337,13 @@ window.addRow = addRow;
 function handleViewClick(event) {
   event.preventDefault();
   // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
+  // 여러 번 설정하여 확실하게 저장
   sessionStorage.setItem('isLoggedIn', 'true');
-  window.location.href = 'view.html';
+  sessionStorage.setItem('isLoggedIn', 'true'); // 중복 설정으로 확실하게
+  // 약간의 지연을 주어 sessionStorage가 확실히 저장되도록 함
+  setTimeout(() => {
+    window.location.href = 'view.html';
+  }, 100);
 }
 
 window.addMultipleRows = addMultipleRows;

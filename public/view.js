@@ -9,7 +9,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     modal.style.display = 'none';
   }
   
-  // 로그인 체크
+  // 로그인 체크 - 약간의 지연을 주어 sessionStorage가 완전히 로드되도록 함
+  await new Promise(resolve => setTimeout(resolve, 50));
+  
   const isLoggedIn = sessionStorage.getItem('isLoggedIn');
   if (isLoggedIn !== 'true') {
     window.location.href = 'login.html';
