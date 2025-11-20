@@ -52,42 +52,46 @@ function removeHiddenRowId(id) {
 window.addEventListener('DOMContentLoaded', async () => {
   await loadOptionsData();
   
-  // Firebase에서 실시간 데이터 불러오기
+  // 1. Firebase에서 데이터 불러오기 (우선순위 1)
   const firebaseData = await loadInputSheetData();
   if (firebaseData && firebaseData.length > 0) {
+    console.log('✅ Firebase에서 데이터 로드:', firebaseData.length, '행');
     loadDataFromArray(firebaseData);
   } else {
-    // Firebase에 데이터가 없으면 localStorage에서 복원 시도
+    // 2. Firebase에 데이터가 없으면 localStorage에서 복원 시도 (우선순위 2)
     const localData = loadFromLocalStorage();
     if (!localData) {
-      // 임시 데이터가 없으면 빈 행 생성
+      // 3. localStorage에도 데이터가 없으면 빈 행 30개 생성
+      console.log('⚠️ 저장된 데이터가 없습니다. 빈 행을 생성합니다.');
       for (let i = 1; i <= 30; i++) {
         addRow(i);
       }
-      // 빈 행도 Firebase에 저장
-      setTimeout(() => {
-        saveToLocalStorage();
-      }, 1000);
     }
   }
   
-  // 실시간 리스너 설정 (초기 로드 완료 후 지연 및 조건부 활성화)
-  // 초기 로드가 완료된 후에만 실시간 리스너 활성화
-  // 하지만 첫 번째 로드 시에는 비활성화하여 데이터 손실 방지
-  let initialLoadComplete = false;
+  // 최소 30개 행 유지 (데이터가 적은 경우)
+  const tbody = document.getElementById('tableBody');
+  const currentRowCount = tbody.querySelectorAll('tr').length;
+  if (currentRowCount < 30) {
+    for (let i = currentRowCount; i < 30; i++) {
+      addRow(i + 1);
+    }
+  }
+  
+  // 초기 로드 완료 후 실시간 리스너 설정 (2초 후)
   setTimeout(() => {
-    initialLoadComplete = true;
     console.log('✅ 초기 로드 완료, 실시간 리스너 활성화');
     setupRealtimeListener();
-  }, 3000);
+  }, 2000);
   
+  // UI 이벤트 핸들러 설정
   setupKeyboardShortcuts();
   setupPasteHandler();
   setupDragSelection();
-  setupRowSelection(); // 행 선택 기능 설정
+  setupRowSelection();
   
-  // 시간 체크를 주기적으로 실행 (1분마다만)
-  setInterval(checkAllRowsTime, 60000); // 60000ms = 1분
+  // 시간 체크를 주기적으로 실행 (1분마다)
+  setInterval(checkAllRowsTime, 60000);
   
 });
 
@@ -1512,28 +1516,13 @@ function setupRealtimeListener() {
     // 자신이 저장한 변경사항은 무시 (무한 루프 방지)
     // 사용자가 입력 중이면 실시간 업데이트를 무시 (데이터 손실 방지)
     if (!isUpdatingFromFirebase && !isUserTyping) {
-      // 디버깅: 실시간 업데이트 받은 데이터 확인
-      const rowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
-      const rowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
-      console.log('🔄 Firebase 실시간 업데이트:', {
-        totalRows: data.length,
-        rowsWithL: rowsWithL.length,
-        rowsWithM: rowsWithM.length,
-        sampleL: rowsWithL.length > 0 ? rowsWithL[0].L : '없음',
-        sampleM: rowsWithM.length > 0 ? rowsWithM[0].M : '없음'
-      });
-      
       isUpdatingFromFirebase = true;
-      console.log('Firebase에서 데이터 업데이트 받음:', data.length, '행');
+      console.log('🔄 Firebase 실시간 업데이트:', data.length, '행');
       loadDataFromArray(data);
       // 약간의 지연 후 플래그 해제
       setTimeout(() => {
         isUpdatingFromFirebase = false;
       }, 500);
-    } else {
-      if (isUserTyping) {
-        console.log('⏸️ 사용자가 입력 중이므로 실시간 업데이트 무시');
-      }
     }
   });
 }
@@ -1556,32 +1545,12 @@ function markUserTyping() {
 function loadDataFromArray(data) {
   const tbody = document.getElementById('tableBody');
   
-  // 디버깅: 모든 행의 모든 열 데이터 확인
-  console.log('🔄 loadDataFromArray 호출:', data ? data.length : 0, '행');
-  if (data && data.length > 0) {
-    console.log('📋 전체 데이터 구조 확인:');
-    // 처음 3개 행의 모든 열 확인
-    data.slice(0, 3).forEach((row, idx) => {
-      console.log(`📋 행 ${idx + 1} 전체 데이터:`, {
-        B: row.B, C: row.C, D: row.D, E: row.E,
-        F: row.F, G: row.G, H: row.H, I: row.I,
-        J: row.J, K: row.K, L: row.L, M: row.M,
-        L_time: row.L_time, M_time: row.M_time
-      });
-    });
-    
-    // L열과 M열이 있는 행 찾기
-    const rowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
-    const rowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
-    console.log(`📋 L열 데이터가 있는 행: ${rowsWithL.length}개`);
-    console.log(`📋 M열 데이터가 있는 행: ${rowsWithM.length}개`);
-    if (rowsWithL.length > 0) {
-      console.log('📋 L열 데이터 샘플:', rowsWithL.slice(0, 3).map(r => ({ L: r.L, L_time: r.L_time })));
-    }
-    if (rowsWithM.length > 0) {
-      console.log('📋 M열 데이터 샘플:', rowsWithM.slice(0, 3).map(r => ({ M: r.M, M_time: r.M_time })));
-    }
+  if (!data || data.length === 0) {
+    console.log('⚠️ 로드할 데이터가 없습니다.');
+    return;
   }
+  
+  console.log('🔄 데이터 로드 시작:', data.length, '행');
   
   // 현재 포커스된 셀 저장 (정렬 후에도 찾을 수 있도록 고유 식별자 사용)
   const activeElement = document.activeElement;
@@ -1610,11 +1579,6 @@ function loadDataFromArray(data) {
   tableData = [];
   
   // 데이터를 시간 순서로 정렬 (12:00~24:00가 당일 먼저, 00:00~12:00가 다음날)
-  // 정렬 전 데이터 확인
-  const preSortRowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
-  const preSortRowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
-  console.log(`📊 정렬 전: L열 ${preSortRowsWithL.length}행, M열 ${preSortRowsWithM.length}행`);
-  
   const sortedData = [...data].sort((a, b) => {
     const timeA = parseTimeForSort(a.B || '');
     const timeB = parseTimeForSort(b.B || '');
@@ -1625,11 +1589,6 @@ function loadDataFromArray(data) {
     
     return timeA - timeB; // 시간 순서대로 정렬
   });
-  
-  // 정렬 후 데이터 확인
-  const postSortRowsWithL = sortedData.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
-  const postSortRowsWithM = sortedData.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
-  console.log(`📊 정렬 후: L열 ${postSortRowsWithL.length}행, M열 ${postSortRowsWithM.length}행`);
   
   // 데이터 로드 - 모든 값을 명시적으로 처리
   const getItemValue = (item, key, focusedColKey, focusedValue, isFocusedCell) => {
@@ -1666,43 +1625,6 @@ function loadDataFromArray(data) {
       row.refs.L.value = getItemValue(item, 'L', focusedColKey, focusedValue, isFocusedCell);
       row.refs.M.value = getItemValue(item, 'M', focusedColKey, focusedValue, isFocusedCell);
       
-      // 디버깅: 처음 3개 행의 모든 데이터 확인
-      if (index < 3) {
-        const loadedL = row.refs.L.value;
-        const loadedM = row.refs.M.value;
-        const itemL = item.L;
-        const itemM = item.M;
-        
-        console.log(`✅ 행 ${index + 1} 로드:`, {
-          B: row.refs.B.value,
-          C: row.refs.C.value,
-          D: row.refs.D.value,
-          E: row.refs.E.value,
-          F: row.refs.F.value,
-          G: row.refs.G.value,
-          H: row.refs.H.value,
-          I: row.refs.I.value,
-          J: row.refs.J.value,
-          K: row.refs.K.value,
-          L: loadedL,
-          M: loadedM,
-          'item.L (Firebase에서)': itemL,
-          'item.M (Firebase에서)': itemM,
-          isFocused: isFocusedCell
-        });
-        
-        // L, M 열 데이터가 없으면 경고
-        if (itemL !== undefined && itemL !== null && itemL !== '' && loadedL === '') {
-          console.warn(`⚠️ 행 ${index + 1}: Firebase에 L값(${itemL})이 있지만 테이블에 로드되지 않았습니다!`);
-        }
-        if (itemM !== undefined && itemM !== null && itemM !== '' && loadedM === '') {
-          console.warn(`⚠️ 행 ${index + 1}: Firebase에 M값(${itemM})이 있지만 테이블에 로드되지 않았습니다!`);
-        }
-      }
-      
-      // 시간 체크는 주기적 체크(setInterval)에서만 수행
-      // 실시간 리스너에서는 시간 체크하지 않음
-      
       // 시간 정보 복원
       const restoreTime = (ref, timeStr) => {
         if (ref && timeStr) {
@@ -1722,14 +1644,8 @@ function loadDataFromArray(data) {
       if (item.I_time) restoreTime(row.refs.I, item.I_time);
       if (item.J_time) restoreTime(row.refs.J, item.J_time);
       if (item.K_time) restoreTime(row.refs.K, item.K_time);
-      if (item.L_time) {
-        restoreTime(row.refs.L, item.L_time);
-        if (index === 0) console.log('✅ 첫 번째 행 L열 시간 복원:', item.L_time);
-      }
-      if (item.M_time) {
-        restoreTime(row.refs.M, item.M_time);
-        if (index === 0) console.log('✅ 첫 번째 행 M열 시간 복원:', item.M_time);
-      }
+      if (item.L_time) restoreTime(row.refs.L, item.L_time);
+      if (item.M_time) restoreTime(row.refs.M, item.M_time);
       
     }
     updateRow(row);
@@ -1763,11 +1679,10 @@ function loadDataFromArray(data) {
       if (input.setSelectionRange && focusedValue !== null) {
         input.setSelectionRange(focusedValue.length, focusedValue.length);
       }
-      console.log('✅ 포커스 복원 완료:', { rowKey: focusedRowKey, colKey: focusedColKey, value: focusedValue });
-    } else {
-      console.warn('⚠️ 포커스된 셀을 찾을 수 없습니다:', { rowKey: focusedRowKey, colKey: focusedColKey });
     }
   }
+  
+  console.log('✅ 데이터 로드 완료:', sortedData.length, '행');
 }
 
 // localStorage에 임시 저장 및 Firebase에 실시간 저장
@@ -1808,15 +1723,13 @@ function saveToLocalStorage() {
         M_time: getTimeFromCell(row.refs.M)
       };
       
+      // 배열에 데이터 추가
+      tempData.push(rowData);
     }
   });
   
   try {
-    // 디버깅: 저장 전 전체 데이터 확인
-    const rowsWithL = tempData.filter(row => row.L && row.L !== '');
-    const rowsWithM = tempData.filter(row => row.M && row.M !== '');
-    console.log(`💾 저장 중: 총 ${tempData.length}행, L열 데이터 ${rowsWithL.length}행, M열 데이터 ${rowsWithM.length}행`);
-    
+    // localStorage에 저장
     localStorage.setItem('inputSheetTemp', JSON.stringify(tempData));
     
     // Firebase에 실시간 저장 (Firebase에서 업데이트 중이 아닐 때만)
@@ -1826,19 +1739,13 @@ function saveToLocalStorage() {
         clearTimeout(saveTimeout);
       }
       saveTimeout = setTimeout(() => {
-        console.log('💾 Firebase 저장 시작:', tempData.length, '행');
         saveInputSheetData(tempData).then(() => {
           console.log('✅ Firebase 저장 완료:', tempData.length, '행');
-          // 저장 후 L/M 열 데이터 확인
-          const savedRowsWithL = tempData.filter(row => row.L && row.L !== '');
-          const savedRowsWithM = tempData.filter(row => row.M && row.M !== '');
-          console.log(`✅ 저장 완료: L열 데이터 ${savedRowsWithL.length}행, M열 데이터 ${savedRowsWithM.length}행`);
         }).catch(err => {
           console.warn('Firebase 저장 실패:', err);
-          // 내부 오류인 경우 사용자에게 알림
+          // 내부 오류인 경우 재시도
           if (err.message && err.message.includes('INTERNAL ASSERTION')) {
             console.error('Firestore 내부 오류. 데이터를 다시 시도합니다...');
-            // 2초 후 재시도
             setTimeout(() => {
               saveInputSheetData(tempData).catch(retryErr => {
                 console.error('재시도도 실패:', retryErr);
