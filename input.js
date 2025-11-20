@@ -1150,15 +1150,22 @@ function setupRowSelection() {
     const tr = td.closest('tr');
     if (!tr) return;
     
+    // 클릭한 행이 이미 선택되어 있는지 확인
+    const isAlreadySelected = tr.classList.contains('row-selected');
+    
     // 모든 행에서 선택 클래스 제거
     const allRows = tbody.querySelectorAll('tr');
     allRows.forEach(row => {
       row.classList.remove('row-selected');
     });
     
-    // 클릭한 행에 선택 클래스 추가
-    tr.classList.add('row-selected');
-    console.log('행 선택됨 (A열 클릭):', tr.cells[0]?.textContent || '알 수 없음');
+    // 같은 행을 다시 클릭한 경우가 아니면 선택 클래스 추가 (토글 기능)
+    if (!isAlreadySelected) {
+      tr.classList.add('row-selected');
+      console.log('행 선택됨 (A열 클릭):', tr.cells[0]?.textContent || '알 수 없음');
+    } else {
+      console.log('행 선택 해제됨 (A열 클릭):', tr.cells[0]?.textContent || '알 수 없음');
+    }
   });
   
   console.log('행 선택 기능이 설정되었습니다. (A열만 작동)');
