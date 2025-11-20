@@ -9,7 +9,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     modal.style.display = 'none';
   }
   
-  // 로그인 체크
+  // 로그인 체크 - 입력 페이지에서 온 경우 우회
+  const referrer = document.referrer;
+  const isFromInputPage = referrer.includes('input.html') || sessionStorage.getItem('fromInputPage') === 'true';
+  
+  if (isFromInputPage) {
+    // 입력 페이지에서 온 경우 로그인 상태 설정
+    sessionStorage.setItem('isLoggedIn', 'true');
+    sessionStorage.removeItem('fromInputPage'); // 플래그 제거
+  }
+  
   const isLoggedIn = sessionStorage.getItem('isLoggedIn');
   if (isLoggedIn !== 'true') {
     window.location.href = 'login.html';
