@@ -2336,13 +2336,9 @@ window.addRow = addRow;
 // 조회 페이지로 이동 (로그인 우회)
 function handleViewClick(event) {
   event.preventDefault();
-  // 입력 페이지에서 조회 페이지로 이동 시 플래그 설정 및 로그인 상태 설정
-  sessionStorage.setItem('fromInputPage', 'true');
+  // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
   sessionStorage.setItem('isLoggedIn', 'true');
-  // 약간의 지연 후 이동하여 sessionStorage가 확실히 설정되도록 함
-  setTimeout(() => {
-    window.location.href = 'view.html';
-  }, 50);
+  window.location.href = 'view.html';
 }
 
 window.addMultipleRows = addMultipleRows;
