@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // settings 컬렉션 (옵션 설정)
+    match /settings/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // data 컬렉션 (조회 데이터)
+    match /data/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // inputSheet 컬렉션 (실시간 입력 시트)
+    match /inputSheet/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // sheet1 컬렉션 (시트1 데이터) - 모든 문서와 하위 컬렉션 포함
+    match /sheet1/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // sheet1/current 문서에 대한 명시적 규칙
+    match /sheet1/current {
+      allow read, write: if true;
+    }
+  }
+}
+

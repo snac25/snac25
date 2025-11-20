@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNAC 관리자</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="input-page">
+  <!-- 코드 입력 화면 -->
+  <div id="codeScreen">
+    <div class="login-container">
+      <div class="login-box">
+      <h1>S N A C</h1>
+      <form id="codeForm" onsubmit="checkCode(event)">
+        <div class="form-group">
+          <label for="accessCode">접근 코드</label>
+          <input type="password" id="accessCode" name="accessCode" required autofocus placeholder="코드를 입력하세요">
+        </div>
+        <button type="submit" class="btn btn-primary">확인</button>
+        <div id="errorMessage" style="color: #ff4444; margin-top: 15px; text-align: center; display: none;">
+          잘못된 코드입니다.
+        </div>
+      </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 실제 입력 페이지 내용 -->
+  <div id="inputScreen" class="container" style="display: none;">
+    <h1>S N A C</h1>
+    
+    <div class="nav">
+      <a href="javascript:void(0)" onclick="handleViewClick(event); return false;">조회</a>
+    </div>
+
+    <div class="options-panel">
+      <button class="btn btn-secondary" onclick="openOptions()">옵션 설정</button>
+      <button class="btn btn-info" onclick="openAccountModal()">계정 생성</button>
+      <button class="btn btn-warning" onclick="openAccountManageModal()">계정 관리</button>
+      <button class="btn btn-danger" onclick="deleteAllRows()">시트 전체 삭제</button>
+    </div>
+
+    <!-- 조회 계정 설정 모달 -->
+    <div id="accountModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeAccountModal()">&times;</span>
+        <h2>계정 생성</h2>
+        <form id="accountForm" onsubmit="saveAccount(event)">
+          <div class="form-group">
+            <label for="accountId">아이디</label>
+            <input type="text" id="accountId" name="accountId" required placeholder="아이디를 입력하세요">
+          </div>
+          <div class="form-group">
+            <label for="accountPassword">비밀번호</label>
+            <input type="password" id="accountPassword" name="accountPassword" required placeholder="비밀번호를 입력하세요">
+          </div>
+          <div class="form-group">
+            <label for="accountPasswordConfirm">비밀번호 확인</label>
+            <input type="password" id="accountPasswordConfirm" name="accountPasswordConfirm" required placeholder="비밀번호를 다시 입력하세요">
+          </div>
+          <button type="submit" class="btn btn-primary">저장</button>
+          <button type="button" class="btn btn-secondary" onclick="closeAccountModal()">취소</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 계정 관리 모달 -->
+    <div id="accountManageModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeAccountManageModal()">&times;</span>
+        <h2>계정 관리</h2>
+        <div id="accountList" class="account-list">
+          <!-- 계정 목록이 동적으로 추가됩니다 -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAccountManageModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-tabs-container">
+      <div class="sheet-tabs">
+        <div class="sheet-tab active" data-sheet="main">축구</div>
+        <div class="sheet-tab" data-sheet="sheet1">금지</div>
+      </div>
+    </div>
+    
+    <!-- 메인 입력 시트 -->
+    <div id="mainSheet" class="sheet-content active">
+      <h2>축구</h2>
+      <div class="sheet-buttons">
+        <button class="btn btn-secondary btn-large" onclick="saveAll()">저장하기</button>
+        <button class="btn btn-large" onclick="addMultipleRows()">행 추가</button>
+      </div>
+      <table id="inputTable">
+      <colgroup>
+        <col style="width: 2.63%;">  <!-- 1. 번호 (2.8/106.3) -->
+        <col style="width: 3.95%;">  <!-- 2. 시간 (4.2/106.3) -->
+        <col style="width: 9.41%;">  <!-- 3. 리그 (10/106.3) -->
+        <col style="width: 9.41%;">  <!-- 4. 홈팀 (10/106.3) -->
+        <col style="width: 9.41%;">  <!-- 5. 원정팀 (10/106.3) -->
+        <col style="width: 3.77%;">  <!-- 6. 승정보 (4/106.3) -->
+        <col style="width: 4.24%;">  <!-- 7. 승-G열 (4.5/106.3) -->
+        <col style="width: 3.77%;">  <!-- 8. 오버정보 (4/106.3) -->
+        <col style="width: 4.24%;">  <!-- 9. 오버-I열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 10. 승-J열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 11. 오버-K열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 12. 승-L열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 13. 오버-M열 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 14. 승-하락수치 (4.5/106.3) -->
+        <col style="width: 4.24%;">  <!-- 15. 오버-하락수치 (4.5/106.3) -->
+        <col style="width: 7.53%;">  <!-- 16. 오버-등급 (8/106.3) -->
+        <col style="width: 4.71%;">  <!-- 17. 승-등급 (5/106.3) -->
+        <col style="width: 5.64%;">  <!-- 18. 기능 (6/106.3) -->
+      </colgroup>
+      <thead>
+        <tr>
+          <th rowspan="2">번호</th>
+          <th rowspan="2">시간</th>
+          <th rowspan="2">리그</th>
+          <th rowspan="2">홈팀</th>
+          <th rowspan="2">원정팀</th>
+          <th colspan="4">기준배당</th>
+          <th colspan="2">75</th>
+          <th colspan="2">현배당</th>
+          <th colspan="2">하락수치</th>
+          <th colspan="2">등급</th>
+          <th rowspan="2">기능</th>
+        </tr>
+        <tr>
+          <th>홈/원정</th>
+          <th>승</th>
+          <th>오버기준</th>
+          <th>오버</th>
+          <th>승</th>
+          <th>오버</th>
+          <th>승</th>
+          <th>오버</th>
+          <th>승</th>
+          <th>오버</th>
+          <th>오버</th>
+          <th>승</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- 행이 동적으로 추가됩니다 -->
+      </tbody>
+    </table>
+    </div>
+    
+    <!-- 시트1 (시간/리그/홈팀/원정팀/내용) -->
+    <div id="sheet1" class="sheet-content">
+      <h2>금지</h2>
+      <div class="sheet-buttons">
+        <button class="btn btn-secondary btn-large" onclick="saveSheet1()">저장하기</button>
+        <button class="btn btn-large" onclick="addSheet1Row()">행 추가</button>
+      </div>
+      <table class="new-sheet-table">
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>시간</th>
+            <th>리그</th>
+            <th>홈팀</th>
+            <th>원정팀</th>
+            <th>내용</th>
+            <th>기능</th>
+          </tr>
+        </thead>
+        <tbody id="sheet1_tbody">
+          <!-- 행이 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const ACCESS_CODE = 'bbjjbb';
+
+    // 페이지 로드 시 인증 상태 확인
+    window.addEventListener('DOMContentLoaded', () => {
+      const isAuthenticated = sessionStorage.getItem('bjb_authenticated');
+      if (isAuthenticated === 'true') {
+        showInputScreen();
+      } else {
+        showCodeScreen();
+      }
+    });
+
+    // 코드 확인 함수
+    function checkCode(event) {
+      event.preventDefault();
+      const codeInput = document.getElementById('accessCode');
+      const errorMessage = document.getElementById('errorMessage');
+      
+      if (codeInput.value === ACCESS_CODE) {
+        sessionStorage.setItem('bjb_authenticated', 'true');
+        showInputScreen();
+      } else {
+        errorMessage.style.display = 'block';
+        codeInput.value = '';
+        codeInput.focus();
+      }
+    }
+
+    // 코드 입력 화면 표시
+    function showCodeScreen() {
+      document.getElementById('codeScreen').style.display = 'flex';
+      document.getElementById('inputScreen').style.display = 'none';
+    }
+
+    // 입력 화면 표시
+    function showInputScreen() {
+      document.getElementById('codeScreen').style.display = 'none';
+      document.getElementById('inputScreen').style.display = 'block';
+      // overflow 제거
+      document.body.classList.remove('code-screen-active');
+      // 입력 페이지 스크립트 로드
+      loadInputScripts();
+    }
+
+    // 입력 페이지 스크립트 동적 로드
+    function loadInputScripts() {
+      if (!window.inputScriptsLoaded) {
+        // 스크립트를 순차적으로 로드
+        const loadScript = (src) => {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.appendChild(script);
+          });
+        };
+        
+        loadScript('../firebase-config.js')
+          .then(() => loadScript('../app.js'))
+          .then(() => loadScript('../input.js'))
+          .then(() => {
+            // 모든 스크립트 로드 완료 후 초기화
+            setTimeout(() => {
+              // input.js의 DOMContentLoaded 이벤트를 수동으로 트리거
+              const event = new Event('DOMContentLoaded');
+              window.dispatchEvent(event);
+              
+              // Firebase 함수가 로드될 때까지 대기 후 금지 탭 데이터 불러오기
+              setTimeout(async () => {
+                console.log('🔄 페이지 로드 시 금지 탭 데이터 자동 불러오기 시도');
+                
+                // window.loadSheet1Data가 로드될 때까지 최대 5초 대기
+                let retryCount = 0;
+                const maxRetries = 25; // 5초 (200ms * 25)
+                
+                const checkAndLoad = setInterval(() => {
+                  retryCount++;
+                  if (typeof window.loadSheet1Data === 'function') {
+                    console.log('✅ window.loadSheet1Data 로드 완료 - 데이터 불러오기 시작');
+                    clearInterval(checkAndLoad);
+                    loadSheet1Data().then(() => {
+                      console.log('✅ 페이지 로드 시 데이터 불러오기 완료');
+                    }).catch(err => {
+                      console.error('❌ 페이지 로드 시 데이터 불러오기 실패:', err);
+                    });
+                  } else if (retryCount >= maxRetries) {
+                    console.warn('⚠️ window.loadSheet1Data 로드 실패 - 수동으로 불러와야 합니다');
+                    clearInterval(checkAndLoad);
+                  }
+                }, 200);
+              }, 1000);
+            }, 200);
+          })
+          .catch(err => console.error('스크립트 로드 실패:', err));
+        
+        window.inputScriptsLoaded = true;
+      }
+    }
+    
+    // 초기 로드 시 코드 화면 표시 중이므로 overflow hidden 추가
+    document.body.classList.add('code-screen-active');
+    
+    // 시트 탭 클릭 이벤트
+    document.querySelectorAll('.sheet-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        const sheetName = this.getAttribute('data-sheet');
+        switchSheet(sheetName);
+      });
+    });
+    
+    // 금지 탭 데이터를 전역 변수에 저장
+    let cachedSheet1Data = null;
+    
+    // 시트 전환 함수
+    function switchSheet(sheetName) {
+      // 모든 시트 내용 숨기기
+      document.querySelectorAll('.sheet-content').forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+      });
+      
+      // 모든 탭에서 active 클래스 제거
+      document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+      
+      // 선택한 시트 표시
+      if (sheetName === 'main') {
+        document.getElementById('mainSheet').style.display = 'block';
+        document.getElementById('mainSheet').classList.add('active');
+        document.querySelector('.sheet-tab[data-sheet="main"]').classList.add('active');
+      } else if (sheetName === 'sheet1') {
+        document.getElementById('sheet1').style.display = 'block';
+        document.getElementById('sheet1').classList.add('active');
+        document.querySelector('.sheet-tab[data-sheet="sheet1"]').classList.add('active');
+        
+        // 금지 탭으로 전환할 때 항상 데이터를 불러오기
+        console.log('🔄 금지 탭으로 전환 - 데이터 불러오기 시작');
+        
+        // 금지 탭이 표시된 후에 데이터를 불러오기 (약간의 지연)
+        setTimeout(async () => {
+          const tbody = document.getElementById('sheet1_tbody');
+          if (!tbody) {
+            console.error('❌ sheet1_tbody를 찾을 수 없습니다.');
+            return;
+          }
+          
+          // 캐시된 데이터가 있으면 먼저 표시
+          if (cachedSheet1Data && cachedSheet1Data.length > 0) {
+            console.log('📋 캐시된 데이터 있음:', cachedSheet1Data.length, '개 - 즉시 표시');
+            renderSheet1Data(cachedSheet1Data, tbody);
+          } else {
+            console.log('📋 캐시된 데이터 없음 - Firebase에서 불러오기');
+            
+            // window.loadSheet1Data가 로드될 때까지 대기
+            let waitCount = 0;
+            const maxWait = 20; // 4초 (200ms * 20)
+            
+            const waitForFirebase = setInterval(async () => {
+              waitCount++;
+              
+              if (typeof window.loadSheet1Data === 'function') {
+                console.log('✅ window.loadSheet1Data 로드 완료 - 데이터 불러오기 시작');
+                clearInterval(waitForFirebase);
+                
+                try {
+                  const sheet1Data = await window.loadSheet1Data();
+                  console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data ? sheet1Data.length : 0, '개 항목');
+                  
+                  if (sheet1Data && sheet1Data.length > 0) {
+                    // 데이터를 캐시에 저장
+                    cachedSheet1Data = sheet1Data;
+                    // 테이블에 데이터 표시
+                    renderSheet1Data(sheet1Data, tbody);
+                    console.log('✅ 금지 탭 데이터 표시 완료');
+                  } else {
+                    console.log('ℹ️ Firebase에 저장된 금지 데이터가 없습니다.');
+                  }
+                } catch (error) {
+                  console.error('❌ Firebase에서 데이터 불러오기 실패:', error);
+                }
+              } else if (waitCount >= maxWait) {
+                console.warn('⚠️ window.loadSheet1Data 로드 시간 초과');
+                clearInterval(waitForFirebase);
+              }
+            }, 200);
+          }
+          
+          // 캐시된 데이터가 있어도 Firebase에서 최신 데이터 확인
+          loadSheet1Data().catch(err => {
+            console.error('❌ loadSheet1Data 실패:', err);
+          });
+        }, 200);
+      }
+    }
+    
+    // 시트1 행 추가 함수
+    function addSheet1Row() {
+      const tbody = document.getElementById('sheet1_tbody');
+      if (!tbody) return;
+      
+      const rowCount = tbody.querySelectorAll('tr').length;
+      const tr = document.createElement('tr');
+      
+      tr.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td><input type="text" style="width: 100%; border: none; padding: 5px;"></td>
+        <td>
+          <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
+        </td>
+      `;
+      
+      tbody.appendChild(tr);
+    }
+    
+    // 시트1 행 삭제 함수
+    function deleteSheet1Row(btn) {
+      if (confirm('삭제하겠습니까?')) {
+        btn.closest('tr').remove();
+        // 번호 재정렬
+        const tbody = document.getElementById('sheet1_tbody');
+        tbody.querySelectorAll('tr').forEach((row, index) => {
+          row.cells[0].textContent = index + 1;
+        });
+      }
+    }
+    
+    // 시트1 데이터 저장 함수
+    async function saveSheet1() {
+      const tbody = document.getElementById('sheet1_tbody');
+      if (!tbody) return;
+      
+      const rows = tbody.querySelectorAll('tr');
+      const sheet1Data = [];
+      
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 6) {
+          const inputs = row.querySelectorAll('input');
+          if (inputs.length >= 5) {
+            sheet1Data.push({
+              time: inputs[0].value || '',
+              league: inputs[1].value || '',
+              home: inputs[2].value || '',
+              away: inputs[3].value || '',
+              content: inputs[4].value || ''
+            });
+          }
+        }
+      });
+      
+      try {
+        // window.saveSheet1Data를 사용 (전역 함수로 이미 등록됨)
+        if (typeof window.saveSheet1Data === 'function') {
+          const result = await window.saveSheet1Data(sheet1Data);
+          if (result && result.success) {
+            alert(`금지 데이터가 Firebase에 저장되었습니다. (${result.count}개 항목)`);
+            console.log('✅ Firebase 저장 성공:', result.count, '개 항목');
+          } else {
+            alert('금지 데이터가 저장되었습니다.');
+          }
+        } else {
+          // window.saveSheet1Data가 아직 로드되지 않은 경우 대기 후 재시도
+          console.warn('⚠️ window.saveSheet1Data가 로드되지 않았습니다. 대기 중...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          if (typeof window.saveSheet1Data === 'function') {
+            const result = await window.saveSheet1Data(sheet1Data);
+            if (result && result.success) {
+              alert(`금지 데이터가 Firebase에 저장되었습니다. (${result.count}개 항목)`);
+            } else {
+              alert('금지 데이터가 저장되었습니다.');
+            }
+          } else {
+            // import 사용 (폴백)
+            const { saveSheet1Data } = await import('../app.js');
+            const result = await saveSheet1Data(sheet1Data);
+            if (result && result.success) {
+              alert(`금지 데이터가 Firebase에 저장되었습니다. (${result.count}개 항목)`);
+            } else {
+              alert('금지 데이터가 저장되었습니다.');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ 금지 데이터 저장 실패:', error);
+        console.error('에러 상세:', error.message, error.code);
+        alert(`금지 데이터 저장에 실패했습니다.\n오류: ${error.message || '알 수 없는 오류'}`);
+      }
+    }
+    
+    // 시트1 데이터 불러오기 함수
+    async function loadSheet1Data() {
+      console.log('🔄 loadSheet1Data 함수 호출됨');
+      
+      // sheet1_tbody를 찾기 (탭이 숨겨져 있어도 DOM에 존재함)
+      let tbody = document.getElementById('sheet1_tbody');
+      
+      // tbody가 없으면 잠시 대기 후 재시도 (DOM이 아직 로드되지 않았을 수 있음)
+      if (!tbody) {
+        console.warn('⚠️ sheet1_tbody를 찾을 수 없습니다. DOM 로드 대기 중...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        tbody = document.getElementById('sheet1_tbody');
+        if (!tbody) {
+          console.error('❌ sheet1_tbody를 찾을 수 없습니다. DOM에 존재하지 않습니다.');
+          console.log('🔍 현재 DOM 상태:', document.getElementById('sheet1'));
+          return;
+        }
+      }
+      
+      console.log('✅ sheet1_tbody 찾음');
+      
+      try {
+        console.log('🔄 Firebase에서 금지 데이터 불러오기 시작...');
+        console.log('🔍 window.loadSheet1Data 타입:', typeof window.loadSheet1Data);
+        
+        // window.loadSheet1Data를 사용 (전역 함수로 이미 등록됨)
+        if (typeof window.loadSheet1Data === 'function') {
+          console.log('✅ window.loadSheet1Data 함수 사용');
+          const sheet1Data = await window.loadSheet1Data();
+          console.log('✅ Firebase에서 금지 데이터 불러오기 성공:', sheet1Data ? sheet1Data.length : 0, '개 항목');
+          console.log('📋 불러온 데이터:', sheet1Data);
+          
+          // 데이터를 캐시에 저장
+          cachedSheet1Data = sheet1Data;
+          
+          // 테이블에 데이터 표시
+          console.log('🔄 테이블에 데이터 렌더링 시작...');
+          renderSheet1Data(sheet1Data, tbody);
+          console.log('✅ 데이터 렌더링 완료');
+        } else {
+          // window.loadSheet1Data가 아직 로드되지 않은 경우 대기 후 재시도
+          console.warn('⚠️ window.loadSheet1Data가 로드되지 않았습니다. 대기 중...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          if (typeof window.loadSheet1Data === 'function') {
+            const sheet1Data = await window.loadSheet1Data();
+            console.log('✅ Firebase에서 금지 데이터 불러오기 성공 (재시도):', sheet1Data ? sheet1Data.length : 0, '개 항목');
+            
+            // 데이터를 캐시에 저장
+            cachedSheet1Data = sheet1Data;
+            
+            renderSheet1Data(sheet1Data, tbody);
+          } else {
+            // import 사용 (폴백)
+            console.warn('⚠️ window.loadSheet1Data를 사용할 수 없습니다. import로 시도합니다...');
+            const { loadSheet1Data } = await import('../app.js');
+            const sheet1Data = await loadSheet1Data();
+            console.log('✅ Firebase에서 금지 데이터 불러오기 성공 (import):', sheet1Data ? sheet1Data.length : 0, '개 항목');
+            
+            // 데이터를 캐시에 저장
+            cachedSheet1Data = sheet1Data;
+            
+            renderSheet1Data(sheet1Data, tbody);
+          }
+        }
+      } catch (error) {
+        console.error('❌ 금지 데이터 불러오기 실패:', error);
+        console.error('에러 상세:', error.message, error.code);
+      }
+    }
+    
+    // 금지 탭 데이터를 테이블에 렌더링하는 함수
+    function renderSheet1Data(sheet1Data, tbody) {
+      if (!tbody) {
+        tbody = document.getElementById('sheet1_tbody');
+        if (!tbody) {
+          console.error('❌ sheet1_tbody를 찾을 수 없습니다.');
+          return;
+        }
+      }
+      
+      tbody.innerHTML = '';
+      
+      if (!sheet1Data || sheet1Data.length === 0) {
+        console.log('ℹ️ 저장된 금지 데이터가 없습니다.');
+        return;
+      }
+      
+      sheet1Data.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.time || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.league || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.home || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.away || '').replace(/"/g, '&quot;')}"></td>
+          <td><input type="text" style="width: 100%; border: none; padding: 5px;" value="${(item.content || '').replace(/"/g, '&quot;')}"></td>
+          <td>
+            <button class="btn btn-small" onclick="deleteSheet1Row(this)">삭제</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      console.log('✅ 금지 탭 데이터 표시 완료');
+    }
+    
+    // 조회 페이지로 이동 (로그인 우회)
+    function handleViewClick(event) {
+      try {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        
+        // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
+        sessionStorage.setItem('isLoggedIn', 'true');
+        
+        // 현재 URL에서 프로토콜, 호스트, 포트 추출
+        const urlObj = new URL(window.location.href);
+        
+        // 루트 경로의 view.html로 이동 (절대 경로)
+        const viewUrl = `${urlObj.origin}/view.html`;
+        
+        console.log('현재 URL:', window.location.href);
+        console.log('Origin:', urlObj.origin);
+        console.log('이동할 URL:', viewUrl);
+        
+        // 즉시 이동
+        window.location.href = viewUrl;
+        
+        return false;
+      } catch (error) {
+        console.error('handleViewClick 오류:', error);
+        // 오류 발생 시에도 절대 경로로 시도
+        const origin = window.location.origin || window.location.protocol + '//' + window.location.host;
+        window.location.href = origin + '/view.html';
+        return false;
+      }
+    }
+    
+    // 전역으로 노출
+    window.handleViewClick = handleViewClick;
+    
+  </script>
+</body>
+</html>

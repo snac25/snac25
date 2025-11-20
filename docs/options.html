@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>옵션 설정</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>옵션 설정</h1>
+    
+    <div class="nav">
+      <a href="bjb" class="back-btn">돌아가기</a>
+    </div>
+
+    <form id="optionsForm">
+      <!-- P열 설정 -->
+      <div class="options-panel">
+        <h2>P열 계산 옵션</h2>
+        
+        <div class="option-group">
+          <h3>결과값 매핑 (a, b, c, d)</h3>
+          <p>각 결과값에 대한 I-M 범위, G-L 범위, I>K>M 조건을 설정하세요.</p>
+          
+          <div class="result-mapping">
+            <div class="result-mapping-item">
+              <label>a:</label>
+              <div>
+                <label>I-M 범위:</label>
+                <input type="number" id="aIMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aIMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>G-L 범위:</label>
+                <input type="number" id="aGMinusLMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aGMinusLMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="aIKMCondition">
+                  I>K>M 조건을 만족해야 함
+                </label>
+              </div>
+            </div>
+            
+            <div class="result-mapping-item">
+              <label>b:</label>
+              <div>
+                <label>I-M 범위:</label>
+                <input type="number" id="bIMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bIMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>G-L 범위:</label>
+                <input type="number" id="bGMinusLMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bGMinusLMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="bIKMCondition">
+                  I>K>M 조건을 만족해야 함
+                </label>
+              </div>
+            </div>
+            
+            <div class="result-mapping-item">
+              <label>c:</label>
+              <div>
+                <label>I-M 범위:</label>
+                <input type="number" id="cIMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="cIMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>G-L 범위:</label>
+                <input type="number" id="cGMinusLMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="cGMinusLMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="cIKMCondition">
+                  I>K>M 조건을 만족해야 함
+                </label>
+              </div>
+            </div>
+            
+            <div class="result-mapping-item">
+              <label>d:</label>
+              <div>
+                <label>I-M 범위:</label>
+                <input type="number" id="dIMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="dIMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>G-L 범위:</label>
+                <input type="number" id="dGMinusLMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="dGMinusLMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="dIKMCondition">
+                  I>K>M 조건을 만족해야 함
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q열 설정 -->
+      <div class="options-panel">
+        <h2>Q열 계산 옵션</h2>
+        
+        <div class="option-group">
+          <label>G-L 범위:</label>
+          <div class="range-input">
+            <input type="number" id="qGMinusLMin" step="0.01" required>
+            <span>~</span>
+            <input type="number" id="qGMinusLMax" step="0.01" required>
+          </div>
+          
+          <label>
+            <input type="checkbox" id="qGJLCondition">
+            G>J>L 조건을 만족해야 함
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" class="btn btn-large" onclick="saveOptionsData()">옵션 저장</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
+

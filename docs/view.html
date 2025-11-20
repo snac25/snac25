@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNAC</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="styles.css?v=39">
+</head>
+<body class="view-page">
+  <div class="view-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <a href="#" onclick="handleLogout(); return false;" class="logout-btn">로그아웃</a>
+      <h1>S N A C</h1>
+    </div>
+  </div>
+  
+  <!-- 금지 버튼 - 테이블 컨테이너 밖 상단 -->
+  <div class="view-ban-wrapper">
+    <button class="btn btn-info view-ban-button" onclick="showSheet1Modal()">금지</button>
+  </div>
+  
+  <!-- 테이블 컨테이너 -->
+  <div class="container view-container">
+    <div id="resultCount"></div>
+    <div class="view-table-wrapper">
+      <table id="viewTable">
+        <thead>
+          <tr>
+            <th>시간</th>
+            <th>리그</th>
+            <th>홈팀</th>
+            <th>원정팀</th>
+            <th>등급</th>
+            <th>승여부</th>
+          </tr>
+        </thead>
+        <tbody id="viewTableBody">
+          <!-- 필터링된 데이터가 여기에 표시됩니다 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 금지 팝업 모달 -->
+  <div id="sheet1Modal" class="modal redesigned-modal" style="display: none;">
+    <div class="modal-content redesigned-modal-content">
+      <button class="modal-close-btn" onclick="closeSheet1Modal()">✕</button>
+      <h2 class="modal-title">금지 목록</h2>
+      <div id="sheet1TableContainer" class="table-container">
+        <table id="sheet1Table" class="neo-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>시간</th>
+              <th>리그</th>
+              <th>홈팀</th>
+              <th>원정팀</th>
+              <th>내용</th>
+            </tr>
+          </thead>
+          <tbody id="sheet1TableBody">
+            <!-- 시트1 데이터가 여기에 표시됩니다 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="view.js"></script>
+</body>
+</html>
+
