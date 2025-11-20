@@ -2359,15 +2359,20 @@ function handleViewClick(event) {
   // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
   // 여러 번 설정하여 확실하게 저장
   sessionStorage.setItem('isLoggedIn', 'true');
-  sessionStorage.setItem('isLoggedIn', 'true'); // 중복 설정으로 확실하게
   
-  // 명시적으로 절대 경로로 이동
-  const viewUrl = window.location.href.replace(/input\.html.*$/, 'view.html');
-  // 약간의 지연을 주어 sessionStorage가 확실히 저장되도록 함
-  setTimeout(() => {
-    window.location.replace(viewUrl);
-  }, 100);
+  // 현재 URL의 경로를 기준으로 view.html 경로 생성
+  const currentUrl = window.location.href;
+  const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+  const viewUrl = baseUrl + 'view.html';
+  
+  console.log('이동할 URL:', viewUrl);
+  
+  // 즉시 이동
+  window.location.href = viewUrl;
 }
+
+// 전역으로 노출
+window.handleViewClick = handleViewClick;
 
 window.addMultipleRows = addMultipleRows;
 window.openOptions = openOptions;
