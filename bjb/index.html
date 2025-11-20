@@ -589,17 +589,19 @@
         // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
         sessionStorage.setItem('isLoggedIn', 'true');
         
-        // 현재 URL이 bjb/ 또는 bjb/index.html인 경우 view.html로 이동
+        // 현재 URL 추출
         const currentUrl = window.location.href;
         let viewUrl;
         
-        if (currentUrl.includes('/bjb/') || currentUrl.includes('/bjb/index.html')) {
-          viewUrl = currentUrl.replace(/\/bjb\/.*$/, '/view.html');
-        } else if (currentUrl.includes('index.html')) {
-          viewUrl = currentUrl.replace('index.html', 'view.html');
+        // bjb 폴더에서 루트의 view.html로 이동
+        if (currentUrl.includes('/bjb/')) {
+          // 프로토콜과 호스트 추출
+          const urlObj = new URL(currentUrl);
+          viewUrl = `${urlObj.protocol}//${urlObj.host}/view.html`;
         } else {
+          // 다른 위치에서도 안전하게 처리
           const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-          viewUrl = baseUrl + '../view.html';
+          viewUrl = baseUrl.replace(/\/[^\/]+\/?$/, '/view.html');
         }
         
         console.log('현재 URL:', currentUrl);
