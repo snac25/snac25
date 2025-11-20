@@ -218,12 +218,13 @@ function addRow(rowNum) {
   tr.appendChild(fTd);
   tr.refs.F = fSelect;
   
-  // 승 (G)
+  // 승 (G) - type="text"로 변경하여 소수점 보존
   const gTd = document.createElement('td');
   gTd.className = 'orange-input-cell';
   const gInput = document.createElement('input');
-  gInput.type = 'number';
-  gInput.step = '0.01';
+  gInput.type = 'text';
+  gInput.inputMode = 'decimal';
+  gInput.pattern = '[0-9]*\\.?[0-9]*';
   gInput.dataset.k = 'G';
   gInput.dataset.colIndex = 6; // G열은 6번 인덱스
   gInput.addEventListener('click', function() {
@@ -234,21 +235,20 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 6);
   });
-  // 소수점 입력 시 보존을 위한 처리
   gInput.addEventListener('input', (e) => {
-    const currentValue = e.target.value;
-    // number 타입 input에서 소수점으로 끝나는 값을 보존
-    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
-      // 소수점으로 끝나는 경우 값 유지
-      return; // updateTime과 updateRow를 실행하지 않음
+    // 숫자와 소수점만 허용
+    let value = e.target.value;
+    value = value.replace(/[^0-9.-]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
     }
-    updateTime(gTd);
-    updateRow(tr);
-    saveToLocalStorage();
-  });
-  
-  // blur 이벤트: 포커스를 잃을 때 최종 검증
-  gInput.addEventListener('blur', () => {
+    if (value.startsWith('-')) {
+      value = '-' + value.slice(1).replace(/-/g, '');
+    } else {
+      value = value.replace(/-/g, '');
+    }
+    e.target.value = value;
     updateTime(gTd);
     updateRow(tr);
     saveToLocalStorage();
@@ -276,12 +276,13 @@ function addRow(rowNum) {
   tr.appendChild(hTd);
   tr.refs.H = hInput;
   
-  // 오버 (I)
+  // 오버 (I) - type="text"로 변경하여 소수점 보존
   const iTd = document.createElement('td');
   iTd.className = 'orange-input-cell';
   const iInput = document.createElement('input');
-  iInput.type = 'number';
-  iInput.step = '0.01';
+  iInput.type = 'text';
+  iInput.inputMode = 'decimal';
+  iInput.pattern = '[0-9]*\\.?[0-9]*';
   iInput.dataset.k = 'I';
   iInput.dataset.colIndex = 8; // I열은 8번 인덱스
   iInput.addEventListener('click', function() {
@@ -292,21 +293,20 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 8);
   });
-  // 소수점 입력 시 보존을 위한 처리
   iInput.addEventListener('input', (e) => {
-    const currentValue = e.target.value;
-    // number 타입 input에서 소수점으로 끝나는 값을 보존
-    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
-      // 소수점으로 끝나는 경우 값 유지
-      return; // updateTime과 updateRow를 실행하지 않음
+    // 숫자와 소수점만 허용
+    let value = e.target.value;
+    value = value.replace(/[^0-9.-]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
     }
-    updateTime(iTd);
-    updateRow(tr);
-    saveToLocalStorage();
-  });
-  
-  // blur 이벤트: 포커스를 잃을 때 최종 검증
-  iInput.addEventListener('blur', () => {
+    if (value.startsWith('-')) {
+      value = '-' + value.slice(1).replace(/-/g, '');
+    } else {
+      value = value.replace(/-/g, '');
+    }
+    e.target.value = value;
     updateTime(iTd);
     updateRow(tr);
     saveToLocalStorage();
@@ -315,12 +315,13 @@ function addRow(rowNum) {
   tr.appendChild(iTd);
   tr.refs.I = iInput;
   
-  // 75분전 승 (J)
+  // 75분전 승 (J) - type="text"로 변경하여 소수점 보존
   const jTd = document.createElement('td');
   jTd.className = 'orange-input-cell';
   const jInput = document.createElement('input');
-  jInput.type = 'number';
-  jInput.step = '0.01';
+  jInput.type = 'text';
+  jInput.inputMode = 'decimal';
+  jInput.pattern = '[0-9]*\\.?[0-9]*';
   jInput.dataset.k = 'J';
   jInput.dataset.colIndex = 9; // J열은 9번 인덱스
   jInput.addEventListener('click', function() {
@@ -331,21 +332,20 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 9);
   });
-  // 소수점 입력 시 보존을 위한 처리
   jInput.addEventListener('input', (e) => {
-    const currentValue = e.target.value;
-    // number 타입 input에서 소수점으로 끝나는 값을 보존
-    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
-      // 소수점으로 끝나는 경우 값 유지
-      return; // updateTime과 updateRow를 실행하지 않음
+    // 숫자와 소수점만 허용
+    let value = e.target.value;
+    value = value.replace(/[^0-9.-]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
     }
-    updateTime(jTd);
-    updateRow(tr);
-    saveToLocalStorage();
-  });
-  
-  // blur 이벤트: 포커스를 잃을 때 최종 검증
-  jInput.addEventListener('blur', () => {
+    if (value.startsWith('-')) {
+      value = '-' + value.slice(1).replace(/-/g, '');
+    } else {
+      value = value.replace(/-/g, '');
+    }
+    e.target.value = value;
     updateTime(jTd);
     updateRow(tr);
     saveToLocalStorage();
@@ -354,12 +354,13 @@ function addRow(rowNum) {
   tr.appendChild(jTd);
   tr.refs.J = jInput;
   
-  // 75분전 오버 (K)
+  // 75분전 오버 (K) - type="text"로 변경하여 소수점 보존
   const kTd = document.createElement('td');
   kTd.className = 'orange-input-cell';
   const kInput = document.createElement('input');
-  kInput.type = 'number';
-  kInput.step = '0.01';
+  kInput.type = 'text';
+  kInput.inputMode = 'decimal';
+  kInput.pattern = '[0-9]*\\.?[0-9]*';
   kInput.dataset.k = 'K';
   kInput.dataset.colIndex = 10; // K열은 10번 인덱스
   kInput.addEventListener('click', function() {
@@ -370,21 +371,20 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 10);
   });
-  // 소수점 입력 시 보존을 위한 처리
   kInput.addEventListener('input', (e) => {
-    const currentValue = e.target.value;
-    // number 타입 input에서 소수점으로 끝나는 값을 보존
-    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
-      // 소수점으로 끝나는 경우 값 유지
-      return; // updateTime과 updateRow를 실행하지 않음
+    // 숫자와 소수점만 허용
+    let value = e.target.value;
+    value = value.replace(/[^0-9.-]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
     }
-    updateTime(kTd);
-    updateRow(tr);
-    saveToLocalStorage();
-  });
-  
-  // blur 이벤트: 포커스를 잃을 때 최종 검증
-  kInput.addEventListener('blur', () => {
+    if (value.startsWith('-')) {
+      value = '-' + value.slice(1).replace(/-/g, '');
+    } else {
+      value = value.replace(/-/g, '');
+    }
+    e.target.value = value;
     updateTime(kTd);
     updateRow(tr);
     saveToLocalStorage();
@@ -393,12 +393,13 @@ function addRow(rowNum) {
   tr.appendChild(kTd);
   tr.refs.K = kInput;
   
-  // 현배당 승 (L)
+  // 현배당 승 (L) - type="text"로 변경하여 소수점 보존
   const lTd = document.createElement('td');
   lTd.className = 'orange-input-cell';
   const lInput = document.createElement('input');
-  lInput.type = 'number';
-  lInput.step = '0.01';
+  lInput.type = 'text';
+  lInput.inputMode = 'decimal';
+  lInput.pattern = '[0-9]*\\.?[0-9]*';
   lInput.dataset.k = 'L';
   lInput.dataset.colIndex = 11; // L열은 11번 인덱스
   lInput.addEventListener('click', function() {
@@ -409,21 +410,20 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 11);
   });
-  // 소수점 입력 시 보존을 위한 처리
   lInput.addEventListener('input', (e) => {
-    const currentValue = e.target.value;
-    // number 타입 input에서 소수점으로 끝나는 값을 보존
-    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
-      // 소수점으로 끝나는 경우 값 유지
-      return; // updateTime과 updateRow를 실행하지 않음
+    // 숫자와 소수점만 허용
+    let value = e.target.value;
+    value = value.replace(/[^0-9.-]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
     }
-    updateTime(lTd);
-    updateRow(tr);
-    saveToLocalStorage();
-  });
-  
-  // blur 이벤트: 포커스를 잃을 때 최종 검증
-  lInput.addEventListener('blur', () => {
+    if (value.startsWith('-')) {
+      value = '-' + value.slice(1).replace(/-/g, '');
+    } else {
+      value = value.replace(/-/g, '');
+    }
+    e.target.value = value;
     updateTime(lTd);
     updateRow(tr);
     saveToLocalStorage();
@@ -432,12 +432,13 @@ function addRow(rowNum) {
   tr.appendChild(lTd);
   tr.refs.L = lInput;
   
-  // 현배당 오버 (M)
+  // 현배당 오버 (M) - type="text"로 변경하여 소수점 보존
   const mTd = document.createElement('td');
   mTd.className = 'orange-input-cell';
   const mInput = document.createElement('input');
-  mInput.type = 'number';
-  mInput.step = '0.01';
+  mInput.type = 'text';
+  mInput.inputMode = 'decimal';
+  mInput.pattern = '[0-9]*\\.?[0-9]*';
   mInput.dataset.k = 'M';
   mInput.dataset.colIndex = 12; // M열은 12번 인덱스
   mInput.addEventListener('click', function() {
@@ -448,21 +449,20 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 12);
   });
-  // 소수점 입력 시 보존을 위한 처리
   mInput.addEventListener('input', (e) => {
-    const currentValue = e.target.value;
-    // number 타입 input에서 소수점으로 끝나는 값을 보존
-    if (currentValue && currentValue.endsWith('.') && !currentValue.endsWith('..')) {
-      // 소수점으로 끝나는 경우 값 유지
-      return; // updateTime과 updateRow를 실행하지 않음
+    // 숫자와 소수점만 허용
+    let value = e.target.value;
+    value = value.replace(/[^0-9.-]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
     }
-    updateTime(mTd);
-    updateRow(tr);
-    saveToLocalStorage();
-  });
-  
-  // blur 이벤트: 포커스를 잃을 때 최종 검증
-  mInput.addEventListener('blur', () => {
+    if (value.startsWith('-')) {
+      value = '-' + value.slice(1).replace(/-/g, '');
+    } else {
+      value = value.replace(/-/g, '');
+    }
+    e.target.value = value;
     updateTime(mTd);
     updateRow(tr);
     saveToLocalStorage();
