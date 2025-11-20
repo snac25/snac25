@@ -1,5 +1,7 @@
 // app.js에서 함수 import
-import { loadOptions, calculatePColumn, calculateQColumn, showAlert } from './app.js';
+import { loadOptions, calculatePColumn, calculateQColumn, showAlert, loadInputSheetData, setupInputSheetListener } from './app.js';
+
+let realtimeUnsubscribe = null; // 실시간 리스너 구독 해제 함수
 
 // 페이지 로드 시 로그인 체크
 window.addEventListener('DOMContentLoaded', async () => {
@@ -18,26 +20,41 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   
+  // 초기 데이터 로드
   await refreshData();
+  
+  // Firebase 실시간 리스너 설정 (입력 페이지에서 데이터 변경 시 자동 업데이트)
+  setupRealtimeListener();
+  
+  // 1분마다 자동 새로고침 (백업용)
+  setInterval(async () => {
+    console.log('🔄 1분 주기 자동 새로고침 실행');
+    await refreshData();
+  }, 60000); // 60000ms = 1분
 });
 
 // 데이터 새로고침
 async function refreshData() {
   try {
-    // localStorage에서 입력 페이지의 데이터 불러오기
-    const tempDataStr = localStorage.getItem('inputSheetTemp');
-    if (!tempDataStr) {
-      displayData([]);
-      document.getElementById('resultCount').textContent = '입력된 데이터가 없습니다.';
-      return;
+    // Firebase에서 입력 페이지의 데이터 불러오기 (우선순위 1)
+    let tempData = await loadInputSheetData();
+    
+    // Firebase에 데이터가 없으면 localStorage에서 불러오기 (백업)
+    if (!tempData || tempData.length === 0) {
+      console.log('⚠️ Firebase에 데이터가 없습니다. localStorage에서 불러옵니다.');
+      const tempDataStr = localStorage.getItem('inputSheetTemp');
+      if (tempDataStr) {
+        tempData = JSON.parse(tempDataStr);
+      }
     }
     
-    const tempData = JSON.parse(tempDataStr);
     if (!tempData || tempData.length === 0) {
       displayData([]);
       document.getElementById('resultCount').textContent = '입력된 데이터가 없습니다.';
       return;
     }
+    
+    console.log('✅ 데이터 로드 완료:', tempData.length, '행');
     
     // 옵션 불러오기 (P, Q 계산을 위해 필요)
     const options = await loadOptions();
@@ -340,6 +357,25 @@ window.onclick = function(event) {
     closeSheet1Modal();
   }
 }
+
+// Firebase 실시간 리스너 설정
+function setupRealtimeListener() {
+  realtimeUnsubscribe = setupInputSheetListener((data) => {
+    console.log('🔄 Firebase 실시간 업데이트 감지:', data.length, '행');
+    // 데이터가 변경되면 자동으로 새로고침
+    refreshData();
+  });
+  
+  console.log('✅ 실시간 리스너 설정 완료');
+}
+
+// 페이지 언로드 시 리스너 해제
+window.addEventListener('beforeunload', () => {
+  if (realtimeUnsubscribe) {
+    realtimeUnsubscribe();
+    console.log('✅ 실시간 리스너 해제');
+  }
+});
 
 // 전역으로 함수 export
 window.showSheet1Modal = showSheet1Modal;
