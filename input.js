@@ -2335,23 +2335,37 @@ function addMultipleRows() {
 window.addRow = addRow;
 // 조회 페이지로 이동 (로그인 우회)
 function handleViewClick(event) {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
+  try {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
+    sessionStorage.setItem('isLoggedIn', 'true');
+    
+    // 현재 URL의 경로를 기준으로 view.html 경로 생성
+    const currentUrl = window.location.href;
+    let viewUrl;
+    
+    if (currentUrl.includes('input.html')) {
+      viewUrl = currentUrl.replace('input.html', 'view.html');
+    } else {
+      const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+      viewUrl = baseUrl + 'view.html';
+    }
+    
+    console.log('현재 URL:', currentUrl);
+    console.log('이동할 URL:', viewUrl);
+    
+    // 즉시 이동
+    window.location.href = viewUrl;
+    
+    return false;
+  } catch (error) {
+    console.error('handleViewClick 오류:', error);
+    return false;
   }
-  // 입력 페이지에서 조회 페이지로 이동 시 로그인 상태 설정
-  // 여러 번 설정하여 확실하게 저장
-  sessionStorage.setItem('isLoggedIn', 'true');
-  
-  // 현재 URL의 경로를 기준으로 view.html 경로 생성
-  const currentUrl = window.location.href;
-  const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-  const viewUrl = baseUrl + 'view.html';
-  
-  console.log('이동할 URL:', viewUrl);
-  
-  // 즉시 이동
-  window.location.href = viewUrl;
 }
 
 // 전역으로 노출
