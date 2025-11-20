@@ -8,6 +8,8 @@ let pasteStartCell = null;
 let isDragging = false;
 let selectedCells = new Set(); // 선택된 셀들을 Set으로 관리
 let realtimeUnsubscribe = null; // 실시간 리스너 구독 해제 함수
+let isUserTyping = false; // 사용자가 입력 중인지 추적
+let typingTimeout = null; // 입력 종료 후 타임아웃
 let isUpdatingFromFirebase = false; // Firebase에서 업데이트 중인지 플래그
 let saveTimeout = null; // 디바운싱을 위한 타이머
 
@@ -151,7 +153,10 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 2);
   });
-  leagueInput.oninput = () => { saveToLocalStorage(); };
+  leagueInput.oninput = () => { 
+    markUserTyping(); // 사용자 입력 추적
+    saveToLocalStorage(); 
+  };
   leagueTd.appendChild(leagueInput);
   tr.appendChild(leagueTd);
   tr.refs.C = leagueInput;
@@ -170,7 +175,10 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 3);
   });
-  homeInput.oninput = () => { saveToLocalStorage(); };
+  homeInput.oninput = () => { 
+    markUserTyping(); // 사용자 입력 추적
+    saveToLocalStorage(); 
+  };
   homeTd.appendChild(homeInput);
   tr.appendChild(homeTd);
   tr.refs.D = homeInput;
@@ -189,7 +197,10 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 4);
   });
-  awayInput.oninput = () => { saveToLocalStorage(); };
+  awayInput.oninput = () => { 
+    markUserTyping(); // 사용자 입력 추적
+    saveToLocalStorage(); 
+  };
   awayTd.appendChild(awayInput);
   tr.appendChild(awayTd);
   tr.refs.E = awayInput;
@@ -236,13 +247,17 @@ function addRow(rowNum) {
     selectCell(this, rowIndex, 6);
   });
   gInput.addEventListener('input', (e) => {
+    markUserTyping(); // 사용자 입력 추적
     // 숫자와 소수점만 허용
     let value = e.target.value;
+    // 숫자, 소수점, 음수 부호만 허용
     value = value.replace(/[^0-9.-]/g, '');
+    // 소수점이 여러 개면 하나만 허용
     const parts = value.split('.');
     if (parts.length > 2) {
       value = parts[0] + '.' + parts.slice(1).join('');
     }
+    // 음수 부호가 여러 개면 하나만 허용 (처음에만)
     if (value.startsWith('-')) {
       value = '-' + value.slice(1).replace(/-/g, '');
     } else {
@@ -271,7 +286,10 @@ function addRow(rowNum) {
     const rowIndex = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
     selectCell(this, rowIndex, 7);
   });
-  hInput.oninput = () => { saveToLocalStorage(); };
+  hInput.oninput = () => { 
+    markUserTyping(); // 사용자 입력 추적
+    saveToLocalStorage(); 
+  };
   hTd.appendChild(hInput);
   tr.appendChild(hTd);
   tr.refs.H = hInput;
@@ -294,6 +312,7 @@ function addRow(rowNum) {
     selectCell(this, rowIndex, 8);
   });
   iInput.addEventListener('input', (e) => {
+    markUserTyping(); // 사용자 입력 추적
     // 숫자와 소수점만 허용
     let value = e.target.value;
     value = value.replace(/[^0-9.-]/g, '');
@@ -333,6 +352,7 @@ function addRow(rowNum) {
     selectCell(this, rowIndex, 9);
   });
   jInput.addEventListener('input', (e) => {
+    markUserTyping(); // 사용자 입력 추적
     // 숫자와 소수점만 허용
     let value = e.target.value;
     value = value.replace(/[^0-9.-]/g, '');
@@ -372,6 +392,7 @@ function addRow(rowNum) {
     selectCell(this, rowIndex, 10);
   });
   kInput.addEventListener('input', (e) => {
+    markUserTyping(); // 사용자 입력 추적
     // 숫자와 소수점만 허용
     let value = e.target.value;
     value = value.replace(/[^0-9.-]/g, '');
@@ -411,6 +432,7 @@ function addRow(rowNum) {
     selectCell(this, rowIndex, 11);
   });
   lInput.addEventListener('input', (e) => {
+    markUserTyping(); // 사용자 입력 추적
     // 숫자와 소수점만 허용
     let value = e.target.value;
     value = value.replace(/[^0-9.-]/g, '');
@@ -450,6 +472,7 @@ function addRow(rowNum) {
     selectCell(this, rowIndex, 12);
   });
   mInput.addEventListener('input', (e) => {
+    markUserTyping(); // 사용자 입력 추적
     // 숫자와 소수점만 허용
     let value = e.target.value;
     value = value.replace(/[^0-9.-]/g, '');
@@ -1487,7 +1510,8 @@ function pasteData(text, startCell) {
 function setupRealtimeListener() {
   realtimeUnsubscribe = setupInputSheetListener((data) => {
     // 자신이 저장한 변경사항은 무시 (무한 루프 방지)
-    if (!isUpdatingFromFirebase) {
+    // 사용자가 입력 중이면 실시간 업데이트를 무시 (데이터 손실 방지)
+    if (!isUpdatingFromFirebase && !isUserTyping) {
       // 디버깅: 실시간 업데이트 받은 데이터 확인
       const rowsWithL = data.filter(row => row.L !== undefined && row.L !== null && row.L !== '');
       const rowsWithM = data.filter(row => row.M !== undefined && row.M !== null && row.M !== '');
@@ -1506,8 +1530,26 @@ function setupRealtimeListener() {
       setTimeout(() => {
         isUpdatingFromFirebase = false;
       }, 500);
+    } else {
+      if (isUserTyping) {
+        console.log('⏸️ 사용자가 입력 중이므로 실시간 업데이트 무시');
+      }
     }
   });
+}
+
+// 입력 시작 추적 함수
+function markUserTyping() {
+  isUserTyping = true;
+  // 기존 타임아웃 취소
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+  }
+  // 3초 후 입력 종료로 표시
+  typingTimeout = setTimeout(() => {
+    isUserTyping = false;
+    console.log('✅ 사용자 입력 종료, 실시간 업데이트 재개 가능');
+  }, 3000);
 }
 
 // 배열 데이터를 테이블에 로드
@@ -1595,17 +1637,11 @@ function loadDataFromArray(data) {
     if (isFocusedCell && focusedColKey === key) {
       return focusedValue !== null && focusedValue !== undefined ? focusedValue : '';
     }
-    // 로드된 값 처리: null, undefined, 빈 문자열을 명시적으로 구분
-    const itemValue = item[key];
-    if (itemValue === null || itemValue === undefined) {
-      return '';
+    // 로드된 값이 있으면 사용 (숫자 0도 유효한 값)
+    if (item[key] !== null && item[key] !== undefined && item[key] !== '') {
+      return item[key];
     }
-    // 빈 문자열도 포함하여 반환
-    if (itemValue === '') {
-      return '';
-    }
-    // 숫자 0도 유효한 값이므로 포함
-    return itemValue;
+    return '';
   };
   
   sortedData.forEach((item, index) => {
@@ -1751,41 +1787,27 @@ function saveToLocalStorage() {
         return small ? small.textContent : '';
       };
       
-      // 모든 값을 명시적으로 저장 (숫자 0도 유효한 값이므로 처리)
-      const getValue = (ref) => {
-        if (!ref) return '';
-        const val = ref.value;
-        return val !== null && val !== undefined ? val : '';
-      };
-      
       const rowData = {
-        B: getValue(row.refs.B),
-        C: getValue(row.refs.C),
-        D: getValue(row.refs.D),
-        E: getValue(row.refs.E),
-        F: getValue(row.refs.F),
-        G: getValue(row.refs.G),
+        B: row.refs.B.value || '',
+        C: row.refs.C.value || '',
+        D: row.refs.D.value || '',
+        E: row.refs.E.value || '',
+        F: row.refs.F.value || '',
+        G: row.refs.G.value || '',
         G_time: getTimeFromCell(row.refs.G),
-        H: getValue(row.refs.H),
-        I: getValue(row.refs.I),
+        H: row.refs.H.value || '',
+        I: row.refs.I.value || '',
         I_time: getTimeFromCell(row.refs.I),
-        J: getValue(row.refs.J),
+        J: row.refs.J.value || '',
         J_time: getTimeFromCell(row.refs.J),
-        K: getValue(row.refs.K),
+        K: row.refs.K.value || '',
         K_time: getTimeFromCell(row.refs.K),
-        L: getValue(row.refs.L),
+        L: row.refs.L.value || '',
         L_time: getTimeFromCell(row.refs.L),
-        M: getValue(row.refs.M),
+        M: row.refs.M.value || '',
         M_time: getTimeFromCell(row.refs.M)
       };
       
-      // 디버깅: 처음 3개 행의 모든 데이터 확인
-      if (tempData.length < 3) {
-        console.log(`📝 행 ${tempData.length + 1} 저장:`, rowData);
-      }
-      
-      // 모든 행 저장 (빈 행도 포함)
-      tempData.push(rowData);
     }
   });
   
