@@ -993,11 +993,15 @@ async function saveAll() {
     for (const data of dataToSave) {
       await saveData(data);
     }
+    
+    // 팝업 메시지 표시
+    alert('저장되었습니다.');
     showAlert('저장되었습니다.');
     
     // 서버 저장 성공 시 localStorage도 업데이트
     saveToLocalStorage();
   } catch (error) {
+    alert('데이터 저장에 실패했습니다.');
     showAlert('데이터 저장에 실패했습니다.', 'error');
   }
 }
