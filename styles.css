@@ -71,6 +71,23 @@ h2 {
   background-color: #333333;
 }
 
+.nav button {
+  display: inline-block;
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  background-color: #1F4E78;
+  color: white;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.nav button:hover {
+  background-color: #1a4263;
+}
+
 .input-page .nav a {
   background-color: #000000;
   color: white;
@@ -542,6 +559,32 @@ small::before {
   background: #ff6666;
 }
 
+/* 금지 탭 삭제 버튼도 축구 탭과 동일한 색상 */
+.btn-small {
+  background: #ff6666 !important;
+  color: white !important;
+  border: none;
+}
+
+.btn-small:hover {
+  background: #ff5555 !important;
+}
+
+/* 금지 탭 테이블 내 삭제 버튼 색상 강제 적용 */
+#sheet1 .btn-small,
+.sheet-content .btn-small,
+.new-sheet-table .btn-small {
+  background: #ff6666 !important;
+  color: white !important;
+  border: none;
+}
+
+#sheet1 .btn-small:hover,
+.sheet-content .btn-small:hover,
+.new-sheet-table .btn-small:hover {
+  background: #ff5555 !important;
+}
+
 .hide-btn {
   background: #6c757d;
 }
@@ -855,12 +898,40 @@ input.selected.cell-selected {
   background-color: #0b7dda;
 }
 
+/* 옵션 패널의 옵션 설정 버튼 색상 */
+.options-panel .btn-secondary {
+  background-color: #BF8F00;
+}
+
+.options-panel .btn-secondary:hover {
+  background-color: #a67a00;
+}
+
+/* 축구 탭과 금지 탭의 저장하기 버튼 색상 */
+.sheet-buttons .btn-secondary {
+  background-color: #1F4E78;
+}
+
+.sheet-buttons .btn-secondary:hover {
+  background-color: #1a4263;
+}
+
 .btn-warning {
   background-color: #ff9800;
 }
 
 .btn-warning:hover {
   background-color: #e68900;
+}
+
+/* 옵션 패널의 계정 관리 버튼 색상 */
+.options-panel .btn-warning {
+  background-color: #C6E0B4;
+  color: #333;
+}
+
+.options-panel .btn-warning:hover {
+  background-color: #b5d3a0;
 }
 
 .btn-danger {
@@ -1499,6 +1570,16 @@ body.login-page {
   background-color: #c82333; /* 빨간색 hover */
 }
 
+/* 옵션 패널의 계정 생성 버튼 색상 */
+.options-panel .btn-info {
+  background-color: #C6E0B4;
+  color: #333;
+}
+
+.options-panel .btn-info:hover {
+  background-color: #b5d3a0;
+}
+
 .view-page .btn-info {
   background-color: #dc3545 !important; /* 빨간색 */
   color: white !important;
@@ -1992,19 +2073,27 @@ body.login-page {
 .modal .close {
   color: rgba(255, 255, 255, 0.8);
   float: right;
-  font-size: 28px;
+  font-size: 40px;
   font-weight: 300;
   position: absolute;
   right: 20px;
   top: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  line-height: 1;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal .close:hover,
 .modal .close:focus {
   color: #ffffff;
   transform: scale(1.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
 }
 
 /* =====================================
