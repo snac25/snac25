@@ -11,7 +11,8 @@ import {
   query,
   where,
   orderBy,
-  onSnapshot
+  onSnapshot,
+  updateDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Firebase Firestore를 사용한 옵션 불러오기
@@ -74,14 +75,45 @@ async function saveOptions(options) {
 }
 
 // Firebase Firestore를 사용한 데이터 저장하기
+// B, C, D, E 값이 같은 문서가 있으면 업데이트, 없으면 새로 생성
 async function saveData(data) {
   try {
     const dataRef = collection(db, 'data');
-    const docRef = await addDoc(dataRef, {
+    
+    // B, C, D, E 값으로 기존 문서 검색
+    const matchQuery = query(
+      dataRef,
+      where('B', '==', data.B || ''),
+      where('C', '==', data.C || ''),
+      where('D', '==', data.D || ''),
+      where('E', '==', data.E || '')
+    );
+    
+    const querySnapshot = await getDocs(matchQuery);
+    
+    const updateData = {
       ...data,
-      createdAt: new Date().toISOString()
-    });
-    return { success: true, data: { id: docRef.id, ...data } };
+      updatedAt: new Date().toISOString()
+    };
+    
+    if (!querySnapshot.empty) {
+      // 기존 문서가 있으면 업데이트 (첫 번째 문서만 업데이트)
+      const existingDoc = querySnapshot.docs[0];
+      const existingData = existingDoc.data();
+      
+      // createdAt은 유지하고 updatedAt만 추가
+      updateData.createdAt = existingData.createdAt || new Date().toISOString();
+      
+      await updateDoc(doc(db, 'data', existingDoc.id), updateData);
+      console.log(`✅ 기존 문서 업데이트: ${existingDoc.id} (매치: ${data.B}, ${data.C}, ${data.D}, ${data.E})`);
+      return { success: true, data: { id: existingDoc.id, ...updateData }, updated: true };
+    } else {
+      // 기존 문서가 없으면 새로 생성
+      updateData.createdAt = new Date().toISOString();
+      const docRef = await addDoc(dataRef, updateData);
+      console.log(`✅ 새 문서 생성: ${docRef.id} (매치: ${data.B}, ${data.C}, ${data.D}, ${data.E})`);
+      return { success: true, data: { id: docRef.id, ...updateData }, updated: false };
+    }
   } catch (error) {
     console.error('데이터 저장 실패:', error);
     throw error;

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SNAC 관리자</title>
-  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../styles.css?v=43">
 </head>
 <body class="input-page">
   <!-- 코드 입력 화면 -->
@@ -60,7 +60,6 @@
             <input type="password" id="accountPasswordConfirm" name="accountPasswordConfirm" required placeholder="비밀번호를 다시 입력하세요">
           </div>
           <button type="submit" class="btn btn-primary">저장</button>
-          <button type="button" class="btn btn-secondary" onclick="closeAccountModal()">취소</button>
         </form>
       </div>
     </div>
@@ -72,9 +71,6 @@
         <h2>계정 관리</h2>
         <div id="accountList" class="account-list">
           <!-- 계정 목록이 동적으로 추가됩니다 -->
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeAccountManageModal()">닫기</button>
         </div>
       </div>
     </div>
@@ -235,9 +231,9 @@
           });
         };
         
-        loadScript('../firebase-config.js')
-          .then(() => loadScript('../app.js'))
-          .then(() => loadScript('../input.js'))
+        loadScript('../firebase-config.js?v=43')
+          .then(() => loadScript('../app.js?v=43'))
+          .then(() => loadScript('../input.js?v=43'))
           .then(() => {
             // 모든 스크립트 로드 완료 후 초기화
             setTimeout(() => {
@@ -288,7 +284,7 @@
       });
     });
     
-    // 금지 탭 데이터를 전역 변수에 저장
+    // 금지 탭 데이터를 전역 변수에 저장 (최상단에 선언)
     let cachedSheet1Data = null;
     
     // 시트 전환 함수
