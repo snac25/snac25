@@ -88,6 +88,7 @@ async function refreshData() {
           F: item.F || '', // 승정보 (홈/원정)
           P: pValue,
           Q: qValue,
+          H: item.H || '',
           M: item.M || '',
           L: item.L || ''
         });
@@ -159,12 +160,13 @@ function displayData(data) {
     }
     row.appendChild(cellE);
     
-    // P열 (결과값 + M값)
+    // P열 (결과값 + H값 / M값)
     const cellP = document.createElement('td');
     if (item.P && ['a', 'b', 'c', 'd'].includes(item.P)) {
+      const hValue = item.H || '';
       const mValue = item.M || '';
       const pGrade = item.P.toUpperCase();
-      cellP.textContent = `${pGrade} ( ${mValue} )`;
+      cellP.textContent = `${pGrade} ( ${hValue} / ${mValue} )`;
       cellP.style.fontWeight = '900'; /* 매우 굵게 */
       cellP.style.fontSize = '1.8em'; /* 많이 크게 */
       cellP.style.color = '#000'; /* 검은색 */
