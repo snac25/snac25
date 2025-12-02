@@ -1,130 +1,156 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>입력 페이지</title>
-  <link rel="stylesheet" href="styles.css?v=90">
+    <meta charset="UTF-8">
+    <title>SNAC 입력 페이지</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAikXeQlUtHn1b4MLGT5M6tqD2NyIuM8Ns",
+            authDomain: "snac25.firebaseapp.com",
+            projectId: "snac25",
+            storageBucket: "snac25.appspot.com",
+            messagingSenderId: "681474514232",
+            appId: "1:681474514232:web:9b851d9272a2b19b81e5a8"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <style>
+        .auto-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        .auto-table {
+            width: 2400px;
+            border-collapse: collapse;
+            background: #ffffff;
+            font-size: 0.92em;
+        }
+        .auto-table th {
+            background: #333;
+            color: #fff;
+            padding: 7px;
+            font-weight: 900;
+            border-right: 1px solid #444;
+        }
+        .auto-table td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #eee;
+            text-align: center;
+            font-weight: 600;
+        }
+        .auto-table tr:nth-child(even) { background: #f7f7f7; }
+
+        .grade-select {
+            padding: 3px 5px;
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+        .readonly-cell {
+            background: #fafafa;
+            color: #444;
+        }
+
+        .tabs button {
+            padding: 10px 15px;
+            border: none;
+            background: #ddd;
+            margin-right: 5px;
+            font-weight: 700;
+        }
+        .tabs button:hover {
+            background: #bbb;
+            cursor: pointer;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>데이터 입력 페이지</h1>
-    
-    <div class="nav">
-      <a href="input.html" class="active">입력</a>
-      <a href="javascript:void(0)" onclick="handleViewClick(event); return false;">조회</a>
+
+    <h2>SNAC 입력 페이지</h2>
+
+    <!-- ▼ ▼ ▼ 탭 버튼 ▼ ▼ ▼ -->
+    <div class="tabs">
+        <button onclick="showTab('manual')">수동 입력</button>
+        <button onclick="showTab('auto')">자동 입력</button>
     </div>
 
-    <div class="options-panel">
-      <button class="btn btn-secondary" onclick="openOptions()">옵션 설정</button>
-      <button class="btn btn-info" onclick="openAccountModal()">계정 생성</button>
-      <button class="btn btn-warning" onclick="openAccountManageModal()">계정 관리</button>
-      <button class="btn btn-danger" onclick="deleteAllRows()">시트 전체 삭제</button>
-      <button class="btn btn-primary" onclick="runMigration()" style="background: #28a745;">🔄 필드 정리 (BC 제거)</button>
+    <!-- ----------------------------- -->
+    <!--  📌 1) 수동 입력 탭 (그대로 유지) -->
+    <!-- ----------------------------- -->
+    <div id="tab-manual" class="tab-content">
+        <div id="manualContainer"></div>
+        <button onclick="saveInputSheet()" class="primary-btn">저장하기</button>
     </div>
 
-    <!-- 조회 계정 설정 모달 -->
-    <div id="accountModal" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="closeAccountModal()">&times;</span>
-        <h2>계정 생성</h2>
-        <form id="accountForm" onsubmit="saveAccount(event)">
-          <div class="form-group">
-            <label for="accountId">아이디</label>
-            <input type="text" id="accountId" name="accountId" required placeholder="아이디를 입력하세요">
-          </div>
-          <div class="form-group">
-            <label for="accountPassword">비밀번호</label>
-            <input type="password" id="accountPassword" name="accountPassword" required placeholder="비밀번호를 입력하세요">
-          </div>
-          <div class="form-group">
-            <label for="accountPasswordConfirm">비밀번호 확인</label>
-            <input type="password" id="accountPasswordConfirm" name="accountPasswordConfirm" required placeholder="비밀번호를 다시 입력하세요">
-          </div>
-          <button type="submit" class="btn btn-primary">저장</button>
-        </form>
-      </div>
-    </div>
 
-    <!-- 계정 관리 모달 -->
-    <div id="accountManageModal" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="closeAccountManageModal()">&times;</span>
-        <h2>계정 관리</h2>
-        <div id="accountList" class="account-list">
-          <!-- 계정 목록이 동적으로 추가됩니다 -->
+
+    <!-- ----------------------------- -->
+    <!--  📌 2) 자동 입력 탭 (B~S 전체) -->
+    <!-- ----------------------------- -->
+    <div id="tab-auto" class="tab-content" style="display:none">
+
+        <h3>축구 (자동 입력)</h3>
+
+        <p style="margin-bottom:10px; color:#444;">
+            자동으로 Firestore(autoMatches)에 저장된 경기 데이터입니다.<br>
+            <b>C열(리그등급)만 수정 가능</b>하며 계산 열은 자동 반영됩니다.
+        </p>
+
+        <div class="auto-table-wrap">
+
+            <table id="autoTable" class="auto-table">
+                <thead>
+                    <tr>
+                        <th>B<br>시간</th>
+                        <th>C<br>등급</th>
+                        <th>D<br>리그</th>
+                        <th>E<br>홈</th>
+                        <th>F<br>원정</th>
+                        <th>G<br>승정보</th>
+                        <th>H<br>기준승</th>
+                        <th>I<br>오버기준</th>
+                        <th>J<br>기준오버</th>
+                        <th>K<br>75승</th>
+                        <th>L<br>75오버</th>
+                        <th>M<br>현승</th>
+                        <th>N<br>현오버</th>
+                        <th>O<br>승하락<br>(H−M)</th>
+                        <th>P<br>오버하락<br>(J−N)</th>
+                        <th>Q<br>오버등급</th>
+                        <th>R<br>승(o)</th>
+                        <th>S<br>반영시간</th>
+                    </tr>
+                </thead>
+
+                <tbody id="autoTableBody">
+                    <!-- input.js가 자동으로 만든다 -->
+                </tbody>
+            </table>
+
         </div>
-      </div>
     </div>
 
-    <h2>입력 시트</h2>
-    <div class="sheet-buttons">
-      <button class="btn btn-secondary btn-large" onclick="saveAll()">저장하기</button>
-      <button class="btn btn-large" onclick="addMultipleRows()">행 추가</button>
-      <span id="lastSaveTime" class="last-save-time"></span>
-    </div>
-    <div class="table-wrapper">
-    <table id="inputTable">
-      <colgroup>
-        <col style="width: 3%;">  <!-- 1. 번호 (3%) -->
-        <col style="width: 4.257%;">  <!-- 2. 시간 (A 그룹) -->
-        <col style="width: 3%;">  <!-- 3. 리그등급 (3%) -->
-        <col style="width: 9%;">  <!-- 4. 리그 (9%) -->
-        <col style="width: 9%;">  <!-- 5. 홈팀 (9%) -->
-        <col style="width: 9%;">  <!-- 6. 원정팀 (9%) -->
-        <col style="width: 4.257%;">  <!-- 7. 홈/원정 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 8. 승 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 9. 오버기준 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 10. 오버 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 11. 승 75분 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 12. 오버 75분 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 13. 승 현배당 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 14. 오버 현배당 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 15. 승 하락수치 (A 그룹) -->
-        <col style="width: 4.257%;">  <!-- 16. 오버 하락수치 (A 그룹) -->
-        <col style="width: 7.5%;">  <!-- 17. 오버 등급 (7.5%) -->
-        <col style="width: 5%;">  <!-- 18. 승 등급 (5%) -->
-        <col style="width: 8%;">  <!-- 19. 기능 (8%) -->
-      </colgroup>
-      <thead>
-        <tr>
-          <th rowspan="2">번호</th>
-          <th rowspan="2">시간</th>
-          <th rowspan="2" id="leagueGradeHeader">리그<br>등급</th>
-          <th rowspan="2">리그</th>
-          <th rowspan="2">홈팀</th>
-          <th rowspan="2">원정팀</th>
-          <th colspan="4">기준배당</th>
-          <th colspan="2">75</th>
-          <th colspan="2">현배당</th>
-          <th colspan="2">하락수치</th>
-          <th colspan="2">등급</th>
-          <th rowspan="2">기능</th>
-        </tr>
-        <tr>
-          <th>홈/원정 기준배당</th>
-          <th>승 기준배당</th>
-          <th>오버기준 기준배당</th>
-          <th>오버 기준배당</th>
-          <th>승</th>
-          <th>오버</th>
-          <th>승 현배당</th>
-          <th>오버 현배당</th>
-          <th>승 하락수치</th>
-          <th>오버 하락수치</th>
-          <th>오버 등급</th>
-          <th>승 등급</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <!-- 행이 동적으로 추가됩니다 -->
-      </tbody>
-    </table>
-    </div>
+    <!-- JS -->
+    <script src="app.js" type="module"></script>
+    <script src="input.js" type="module"></script>
 
-  <script type="module" src="firebase-config.js?v=90"></script>
-  <script type="module" src="app.js?v=98"></script>
-  <script type="module" src="input.js?v=94"></script>
+    <script>
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(`tab-${t}`).style.display = 'block';
+        }
+    </script>
+
 </body>
 </html>
-

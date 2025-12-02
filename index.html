@@ -1,70 +1,142 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SNAC</title>
-  <link rel="stylesheet" href="styles.css?v=18">
+    <meta charset="UTF-8">
+    <title>SNAC 25</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase 설정 (너의 Firebase로 자동 대체됨)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAikXeQlUtHn1b4MLGT5M6tqD2NyIuM8Ns",
+            authDomain: "snac25.firebaseapp.com",
+            projectId: "snac25",
+            storageBucket: "snac25.appspot.com",
+            messagingSenderId: "681474514232",
+            appId: "1:681474514232:web:9b851d9272a2b19b81e5a8"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <style>
+        /* 조회 테이블 가독성 향상 */
+        .view-table th:nth-child(1) { width: 80px; }
+        .view-table th:nth-child(2) { width: 180px; }
+        .view-table th:nth-child(3),
+        .view-table th:nth-child(4) { width: 150px; }
+        .view-table th:nth-child(5),
+        .view-table th:nth-child(6) { width: 140px; }
+    </style>
 </head>
-<body class="view-page">
-  <div class="view-hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <a href="#" onclick="handleLogout(); return false;" class="logout-btn">로그아웃</a>
-      <h1>S N A C</h1>
-    </div>
-  </div>
-  
-  <div class="container view-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; position: relative; z-index: 10;">
-      <h2 style="margin: 0;">조회 결과</h2>
-      <button class="btn btn-info" onclick="showSheet1Modal()" style="margin-left: auto; flex-shrink: 0; position: relative; z-index: 10; display: block !important; visibility: visible !important;">금지</button>
-    </div>
-    <div id="resultCount"></div>
-    <table id="viewTable">
-      <thead>
-        <tr>
-          <th>시간</th>
-          <th>리그</th>
-          <th>홈팀</th>
-          <th>원정팀</th>
-          <th>등급</th>
-          <th>승여부</th>
-        </tr>
-      </thead>
-      <tbody id="viewTableBody">
-        <!-- 필터링된 데이터가 여기에 표시됩니다 -->
-      </tbody>
-    </table>
-  </div>
 
-  <!-- 시트1 팝업 모달 - body의 직접 자식으로 배치 -->
-  <div id="sheet1Modal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeSheet1Modal()">&times;</span>
-      <h2>금지</h2>
-      <div id="sheet1TableContainer">
-        <table id="sheet1Table">
-          <thead>
-            <tr>
-              <th>번호</th>
-              <th>시간</th>
-              <th>리그</th>
-              <th>홈팀</th>
-              <th>원정팀</th>
-              <th>내용</th>
-            </tr>
-          </thead>
-          <tbody id="sheet1TableBody">
-            <!-- 시트1 데이터가 여기에 표시됩니다 -->
-          </tbody>
+<body>
+
+    <!-- 상단 탭 -->
+    <ul class="tabs">
+        <li onclick="showTab('input')">입력</li>
+        <li onclick="showTab('view')">조회</li>
+        <li onclick="showTab('sheet1')">금지</li>
+        <li onclick="handleLogout()">로그아웃</li>
+    </ul>
+
+
+    <!-- ✔ 입력 탭 -->
+    <div id="tab-input" class="tab-content">
+        <h2>입력</h2>
+
+        <div id="inputContainer"></div>
+
+        <button onclick="saveInputSheet()" class="primary-btn">저장하기</button>
+    </div>
+
+
+    <!-- ✔ 조회 탭 (자동 + 수동 통합 조회) -->
+    <div id="tab-view" class="tab-content" style="display:none">
+
+        <h2 class="page-title">조회</h2>
+
+        <table class="view-table">
+            <thead>
+                <tr>
+                    <th>시간</th>
+                    <th>리그</th>
+                    <th>홈</th>
+                    <th>원정</th>
+                    <th>오버 등급</th>
+                    <th>승 등급</th>
+                </tr>
+            </thead>
+
+            <tbody id="viewTableBody">
+                <!-- view.js가 자동 채움 -->
+            </tbody>
         </table>
-      </div>
-    </div>
-  </div>
 
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="app.js"></script>
-  <script type="module" src="view.js"></script>
+        <div id="resultCount" style="margin-top:15px; font-size:1.2em; font-weight:700;"></div>
+
+    </div>
+
+
+    <!-- ✔ 금지 탭 (Sheet1) -->
+    <div id="tab-sheet1" class="tab-content" style="display:none;">
+        <h2>금지 목록</h2>
+
+        <button onclick="showSheet1Modal()" class="primary-btn">금지 목록 보기</button>
+    </div>
+
+
+    <!-- ✔ 금지 모달 -->
+    <div id="sheet1Modal" class="modal">
+        <div class="modal-content">
+            <h2>금지된 경기 목록</h2>
+
+            <table id="sheet1Table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>시간</th>
+                        <th>리그</th>
+                        <th>홈</th>
+                        <th>원정</th>
+                        <th>내용</th>
+                    </tr>
+                </thead>
+
+                <tbody id="sheet1TableBody"></tbody>
+            </table>
+
+            <button onclick="closeSheet1Modal()" class="close-btn">닫기</button>
+        </div>
+    </div>
+
+
+    <!-- JS 로딩 -->
+    <script src="app.js" type="module"></script>
+    <script src="input.js" type="module"></script>
+    <script src="view.js" type="module"></script>
+
+    <script>
+        /* 탭 전환 */
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(`tab-${tab}`).style.display = 'block';
+        }
+
+        /* 로그아웃 */
+        function handleLogout() {
+            if (confirm("로그아웃 하시겠습니까?")) {
+                sessionStorage.removeItem("isLoggedIn");
+                window.location.href = "login.html";
+            }
+        }
+    </script>
+
 </body>
 </html>
