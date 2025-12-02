@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>옵션 설정</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>옵션 설정</h1>
+    
+    <div class="nav">
+      <a href="bjb" class="back-btn">돌아가기</a>
+      <button type="button" class="btn btn-large" onclick="saveOptionsData()">옵션 저장</button>
+    </div>
+
+    <form id="optionsForm">
+      <!-- 옵션 탭 네비게이션 -->
+      <div class="options-tabs-container">
+        <div class="options-tabs">
+          <button type="button" class="options-tab active" data-tab="over">오버 등급</button>
+          <button type="button" class="options-tab" data-tab="win">승</button>
+        </div>
+      </div>
+
+      <!-- 오버 등급 탭 -->
+      <div id="over-tab" class="options-tab-content active">
+        <div class="options-panel">
+          <h2>오버 등급</h2>
+        
+        <div class="option-group">
+          <div class="result-mapping">
+            <!-- a 등급 -->
+            <div class="result-mapping-item">
+              <label><strong>A 등급:</strong></label>
+              <div>
+                <label>10열-14열 범위 (J-N 범위):</label>
+                <input type="number" id="aJMinusNMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aJMinusNMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>I열 값 범위 (9열):</label>
+                <input type="number" id="aIValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aIValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="aHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="aMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="aJGreaterThanLGreaterThanN">
+                  10열>12열>14열 조건 (J>L>N) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>12열(L열) 값:</label>
+                  <input type="number" id="aLValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>14열(N열) 값:</label>
+                  <input type="number" id="aNValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div class="league-grade-check">
+                <label>리그등급 체크:</label>
+                <label>
+                  <input type="checkbox" id="aLeagueGradeA"> A
+                </label>
+                <label>
+                  <input type="checkbox" id="aLeagueGradeB"> B
+                </label>
+                <label>
+                  <input type="checkbox" id="aLeagueGradeC"> C
+                </label>
+                <label>
+                  <input type="checkbox" id="aLeagueGradeS"> S
+                </label>
+              </div>
+            </div>
+
+            <!-- b 등급 -->
+            <div class="result-mapping-item">
+              <label><strong>B 등급:</strong></label>
+              <div>
+                <label>10열-14열 범위 (J-N 범위):</label>
+                <input type="number" id="bJMinusNMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bJMinusNMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>I열 값 범위 (9열):</label>
+                <input type="number" id="bIValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bIValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="bHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="bMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="bJGreaterThanLGreaterThanN">
+                  10열>12열>14열 조건 (J>L>N) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>12열(L열) 값:</label>
+                  <input type="number" id="bLValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>14열(N열) 값:</label>
+                  <input type="number" id="bNValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div class="league-grade-check">
+                <label>리그등급 체크:</label>
+                <label>
+                  <input type="checkbox" id="bLeagueGradeA"> A
+                </label>
+                <label>
+                  <input type="checkbox" id="bLeagueGradeB"> B
+                </label>
+                <label>
+                  <input type="checkbox" id="bLeagueGradeC"> C
+                </label>
+                <label>
+                  <input type="checkbox" id="bLeagueGradeS"> S
+                </label>
+              </div>
+            </div>
+
+            <!-- c 등급 -->
+            <div class="result-mapping-item">
+              <label><strong>C 등급:</strong></label>
+              <div>
+                <label>10열-14열 범위 (J-N 범위):</label>
+                <input type="number" id="cJMinusNMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="cJMinusNMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>I열 값 범위 (9열):</label>
+                <input type="number" id="cIValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="cIValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="cHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="cHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="cMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="cMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="cJGreaterThanLGreaterThanN">
+                  10열>12열>14열 조건 (J>L>N) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>12열(L열) 값:</label>
+                  <input type="number" id="cLValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>14열(N열) 값:</label>
+                  <input type="number" id="cNValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div class="league-grade-check">
+                <label>리그등급 체크:</label>
+                <label>
+                  <input type="checkbox" id="cLeagueGradeA"> A
+                </label>
+                <label>
+                  <input type="checkbox" id="cLeagueGradeB"> B
+                </label>
+                <label>
+                  <input type="checkbox" id="cLeagueGradeC"> C
+                </label>
+                <label>
+                  <input type="checkbox" id="cLeagueGradeS"> S
+                </label>
+              </div>
+            </div>
+
+            <!-- a+ 등급 -->
+            <div class="result-mapping-item">
+              <label><strong>A+ 등급:</strong></label>
+              <div>
+                <label>10열-14열 범위 (J-N 범위):</label>
+                <input type="number" id="aPlusJMinusNMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aPlusJMinusNMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>I열 값 범위 (9열):</label>
+                <input type="number" id="aPlusIValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aPlusIValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="aPlusHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aPlusHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="aPlusMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="aPlusMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="aPlusJGreaterThanLGreaterThanN">
+                  10열>12열>14열 조건 (J>L>N) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>12열(L열) 값:</label>
+                  <input type="number" id="aPlusLValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>14열(N열) 값:</label>
+                  <input type="number" id="aPlusNValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div class="league-grade-check">
+                <label>리그등급 체크:</label>
+                <label>
+                  <input type="checkbox" id="aPlusLeagueGradeA"> A
+                </label>
+                <label>
+                  <input type="checkbox" id="aPlusLeagueGradeB"> B
+                </label>
+                <label>
+                  <input type="checkbox" id="aPlusLeagueGradeC"> C
+                </label>
+                <label>
+                  <input type="checkbox" id="aPlusLeagueGradeS"> S
+                </label>
+              </div>
+            </div>
+
+            <!-- b+ 등급 -->
+            <div class="result-mapping-item">
+              <label><strong>B+ 등급:</strong></label>
+              <div>
+                <label>10열-14열 범위 (J-N 범위):</label>
+                <input type="number" id="bPlusJMinusNMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bPlusJMinusNMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>I열 값 범위 (9열):</label>
+                <input type="number" id="bPlusIValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bPlusIValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="bPlusHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bPlusHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="bPlusMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="bPlusMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="bPlusJGreaterThanLGreaterThanN">
+                  10열>12열>14열 조건 (J>L>N) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>12열(L열) 값:</label>
+                  <input type="number" id="bPlusLValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>14열(N열) 값:</label>
+                  <input type="number" id="bPlusNValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div class="league-grade-check">
+                <label>리그등급 체크:</label>
+                <label>
+                  <input type="checkbox" id="bPlusLeagueGradeA"> A
+                </label>
+                <label>
+                  <input type="checkbox" id="bPlusLeagueGradeB"> B
+                </label>
+                <label>
+                  <input type="checkbox" id="bPlusLeagueGradeC"> C
+                </label>
+                <label>
+                  <input type="checkbox" id="bPlusLeagueGradeS"> S
+                </label>
+              </div>
+            </div>
+
+            <!-- d 등급 -->
+            <div class="result-mapping-item">
+              <label><strong>D 등급:</strong></label>
+              <div>
+                <label>10열-14열 범위 (J-N 범위):</label>
+                <input type="number" id="dJMinusNMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="dJMinusNMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>I열 값 범위 (9열):</label>
+                <input type="number" id="dIValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="dIValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="dHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="dHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="dMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="dMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="dJGreaterThanLGreaterThanN">
+                  10열>12열>14열 조건 (J>L>N) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>12열(L열) 값:</label>
+                  <input type="number" id="dLValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>14열(N열) 값:</label>
+                  <input type="number" id="dNValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div class="league-grade-check">
+                <label>리그등급 체크:</label>
+                <label>
+                  <input type="checkbox" id="dLeagueGradeA"> A
+                </label>
+                <label>
+                  <input type="checkbox" id="dLeagueGradeB"> B
+                </label>
+                <label>
+                  <input type="checkbox" id="dLeagueGradeC"> C
+                </label>
+                <label>
+                  <input type="checkbox" id="dLeagueGradeS"> S
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- 승 탭 -->
+      <div id="win-tab" class="options-tab-content">
+        <div class="options-panel win-panel">
+          <h2>승</h2>
+        
+        <div class="option-group win-option-group">
+          
+          <div class="result-mapping">
+            <!-- A 리그등급 -->
+            <div class="result-mapping-item">
+              <label><strong>리그등급 A:</strong></label>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="leagueAHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueAHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="leagueAMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueAMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>H열 값 범위 (8열):</label>
+                <input type="number" id="leagueAHValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueAHValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="leagueAHGreaterThanKGreaterThanM">
+                  8열>11열>13열 조건 (H>K>M) 만족해야 함
+                </label>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>11열(K열) 값:</label>
+                    <input type="number" id="leagueAKValue" step="0.01" placeholder="값">
+                  </div>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>13열(M열) 값:</label>
+                    <input type="number" id="leagueAMValue" step="0.01" placeholder="값">
+                  </div>
+              </div>
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+                <label><strong>옵션 세트 2:</strong></label>
+                <div>
+                  <label>8열-13열 범위 (H-M 범위):</label>
+                  <input type="number" id="leagueA2HMinusMMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueA2HMinusMMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>M열 값 범위 (13열):</label>
+                  <input type="number" id="leagueA2MValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueA2MValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>H열 값 범위 (8열):</label>
+                  <input type="number" id="leagueA2HValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueA2HValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>
+                    <input type="checkbox" id="leagueA2HGreaterThanKGreaterThanM">
+                    8열>11열>13열 조건 (H>K>M) 만족해야 함
+                  </label>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>11열(K열) 값:</label>
+                    <input type="number" id="leagueA2KValue" step="0.01" placeholder="값">
+                  </div>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>13열(M열) 값:</label>
+                    <input type="number" id="leagueA2MValue" step="0.01" placeholder="값">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- B 리그등급 -->
+            <div class="result-mapping-item">
+              <label><strong>리그등급 B:</strong></label>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="leagueBHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueBHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="leagueBMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueBMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>H열 값 범위 (8열):</label>
+                <input type="number" id="leagueBHValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueBHValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="leagueBHGreaterThanKGreaterThanM">
+                  8열>11열>13열 조건 (H>K>M) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>11열(K열) 값:</label>
+                  <input type="number" id="leagueBKValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>13열(M열) 값:</label>
+                  <input type="number" id="leagueBMValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+                <label><strong>옵션 세트 2:</strong></label>
+                <div>
+                  <label>8열-13열 범위 (H-M 범위):</label>
+                  <input type="number" id="leagueB2HMinusMMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueB2HMinusMMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>M열 값 범위 (13열):</label>
+                  <input type="number" id="leagueB2MValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueB2MValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>H열 값 범위 (8열):</label>
+                  <input type="number" id="leagueB2HValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueB2HValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>
+                    <input type="checkbox" id="leagueB2HGreaterThanKGreaterThanM">
+                    8열>11열>13열 조건 (H>K>M) 만족해야 함
+                  </label>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>11열(K열) 값:</label>
+                    <input type="number" id="leagueB2KValue" step="0.01" placeholder="값">
+                  </div>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>13열(M열) 값:</label>
+                    <input type="number" id="leagueB2MValue" step="0.01" placeholder="값">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- C 리그등급 -->
+            <div class="result-mapping-item">
+              <label><strong>리그등급 C:</strong></label>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="leagueCHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueCHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="leagueCMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueCMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>H열 값 범위 (8열):</label>
+                <input type="number" id="leagueCHValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueCHValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="leagueCHGreaterThanKGreaterThanM">
+                  8열>11열>13열 조건 (H>K>M) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>11열(K열) 값:</label>
+                  <input type="number" id="leagueCKValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>13열(M열) 값:</label>
+                  <input type="number" id="leagueCMValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+                <label><strong>옵션 세트 2:</strong></label>
+                <div>
+                  <label>8열-13열 범위 (H-M 범위):</label>
+                  <input type="number" id="leagueC2HMinusMMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueC2HMinusMMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>M열 값 범위 (13열):</label>
+                  <input type="number" id="leagueC2MValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueC2MValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>H열 값 범위 (8열):</label>
+                  <input type="number" id="leagueC2HValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueC2HValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>
+                    <input type="checkbox" id="leagueC2HGreaterThanKGreaterThanM">
+                    8열>11열>13열 조건 (H>K>M) 만족해야 함
+                  </label>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>11열(K열) 값:</label>
+                    <input type="number" id="leagueC2KValue" step="0.01" placeholder="값">
+                  </div>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>13열(M열) 값:</label>
+                    <input type="number" id="leagueC2MValue" step="0.01" placeholder="값">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- S 리그등급 -->
+            <div class="result-mapping-item">
+              <label><strong>리그등급 S:</strong></label>
+              <div>
+                <label>8열-13열 범위 (H-M 범위):</label>
+                <input type="number" id="leagueSHMinusMMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueSHMinusMMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>M열 값 범위 (13열):</label>
+                <input type="number" id="leagueSMValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueSMValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>H열 값 범위 (8열):</label>
+                <input type="number" id="leagueSHValueMin" step="0.01" placeholder="최소값">
+                <span>~</span>
+                <input type="number" id="leagueSHValueMax" step="0.01" placeholder="최대값">
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" id="leagueSHGreaterThanKGreaterThanM">
+                  8열>11열>13열 조건 (H>K>M) 만족해야 함
+                </label>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>11열(K열) 값:</label>
+                  <input type="number" id="leagueSKValue" step="0.01" placeholder="값">
+                </div>
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <label>13열(M열) 값:</label>
+                  <input type="number" id="leagueSMValue" step="0.01" placeholder="값">
+                </div>
+              </div>
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+                <label><strong>옵션 세트 2:</strong></label>
+                <div>
+                  <label>8열-13열 범위 (H-M 범위):</label>
+                  <input type="number" id="leagueS2HMinusMMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueS2HMinusMMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>M열 값 범위 (13열):</label>
+                  <input type="number" id="leagueS2MValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueS2MValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>H열 값 범위 (8열):</label>
+                  <input type="number" id="leagueS2HValueMin" step="0.01" placeholder="최소값">
+                  <span>~</span>
+                  <input type="number" id="leagueS2HValueMax" step="0.01" placeholder="최대값">
+                </div>
+                <div>
+                  <label>
+                    <input type="checkbox" id="leagueS2HGreaterThanKGreaterThanM">
+                    8열>11열>13열 조건 (H>K>M) 만족해야 함
+                  </label>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>11열(K열) 값:</label>
+                    <input type="number" id="leagueS2KValue" step="0.01" placeholder="값">
+                  </div>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <label>13열(M열) 값:</label>
+                    <input type="number" id="leagueS2MValue" step="0.01" placeholder="값">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
+
+
+
+
